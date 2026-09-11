@@ -555,8 +555,22 @@ export default function DomainListingCard({
                         ? t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })
                         : t('inAuction', { defaultValue: 'In Auction' })}
                     </span>
-                  </div>
-                );
+                  </button>
+                ) : onPutForAuction ? (
+                  <button
+                    type="button"
+                    className={OWNER_ACTION_BTN_AUCTION}
+                    onClick={(e) => { stop(e); onPutForAuction(); }}
+                    title={t('putAuction', { defaultValue: 'Put Auction' })}
+                  >
+                    <Gavel size={14} className="shrink-0" />
+                    <span>{t('putAuction', { defaultValue: 'Put Auction' })}</span>
+                  </button>
+                ) : (
+                  <span className={OWNER_ACTION_BTN_MUTED}>
+                    {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+                  </span>
+                )
               }
             />
             {onDelete && !browseMode ? (

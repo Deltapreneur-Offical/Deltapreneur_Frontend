@@ -38,6 +38,7 @@
   "storefrontPriceGst": "GST ({{rate}}%)",
   "storefrontPriceTotal": "Total payable",
   "storefrontPriceGstNote": "GST is added at checkout. The total amount is charged via Razorpay.",
+  "domainCardGstIncluded": "GST included",
   "storefrontPriceBreakdownTitle": "Payment summary",
   "storefrontPayNow": "Pay & register",
   "storefrontPayOpening": "Opening payment…",

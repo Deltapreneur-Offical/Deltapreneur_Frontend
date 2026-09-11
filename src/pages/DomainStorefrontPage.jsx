@@ -218,13 +218,20 @@ export default function DomainStorefrontPage() {
         const newRenew = it.renewalPrice ?? it.renewalPriceInr ?? null;
         const existingReg = existing.registrationPrice ?? existing.unitPrice ?? null;
         const newReg = it.registrationPrice ?? it.unitPrice ?? null;
+        const existingTotal = existing.totalInr ?? null;
+        const newTotal = it.totalInr ?? null;
+        const existingRenewTotal = existing.renewalTotalInr ?? null;
+        const newRenewTotal = it.renewalTotalInr ?? null;
         byDomain.set(domain, {
           ...existing,
           ...it,
           isPremium: true,
           renewalPrice: newRenew ?? existingRenew,
           renewalPriceInr: newRenew ?? existingRenew,
+          renewalTotalInr: newRenewTotal ?? existingRenewTotal,
           registrationPrice: newReg ?? existingReg,
+          totalInr: newTotal ?? existingTotal,
+          gstEnabled: it.gstEnabled ?? existing.gstEnabled,
         });
       }
     };
@@ -244,8 +251,11 @@ export default function DomainStorefrontPage() {
           status: 'available',
           available: true,
           isPremium: true,
-          registrationPrice: checkResult.unitPrice ?? checkResult.price,
+          registrationPrice: checkResult.unitPrice,
+          totalInr: checkResult.totalInr,
+          gstEnabled: checkResult.gstEnabled,
           renewalPrice: checkResult.renewalPrice,
+          renewalTotalInr: checkResult.renewalTotalInr,
           minPeriodYears: checkResult.minPeriodYears || 1,
         });
       }
@@ -512,7 +522,11 @@ export default function DomainStorefrontPage() {
       status: 'available',
       isPremium: true,
       unitPrice: hit.registrationPrice ?? hit.registrationPriceInr,
-      price: hit.registrationPrice ?? hit.registrationPriceInr,
+      price: hit.totalInr ?? prev?.price ?? null,
+      totalInr: hit.totalInr ?? prev?.totalInr ?? null,
+      gstEnabled: hit.gstEnabled ?? prev?.gstEnabled,
+      renewalPrice: hit.renewalPrice ?? prev?.renewalPrice,
+      renewalTotalInr: hit.renewalTotalInr ?? prev?.renewalTotalInr,
       minPeriodYears: hit.minPeriodYears || 1,
     }));
   }, [premiumMarketplaceItems, checkResult?.domain, checkResult?.status]);
@@ -772,8 +786,11 @@ export default function DomainStorefrontPage() {
                         tld: String(checkResult.domain || '').split('.').slice(1).join('.'),
                         status: 'available',
                         available: true,
-                        registrationPrice: checkResult.unitPrice ?? checkResult.price,
+                        registrationPrice: checkResult.unitPrice,
+                        totalInr: checkResult.totalInr,
+                        gstEnabled: checkResult.gstEnabled,
                         renewalPrice: checkResult.renewalPrice,
+                        renewalTotalInr: checkResult.renewalTotalInr,
                         // Cart starts at 1-year unit; minPeriodYears is checkout metadata only.
                         period: 1,
                         minPeriodYears: checkResult.minPeriodYears || 1,

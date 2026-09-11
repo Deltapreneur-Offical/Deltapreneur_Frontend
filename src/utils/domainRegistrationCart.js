@@ -18,7 +18,7 @@ export function domainToProductId(domain) {
 /**
  * Build cart metadata. Price is always INR (ex-GST **1-year** selling price with commission baked in).
  * Registration period is selected later in Cart/Checkout — do not bake min-period into line price here.
- * @param {{ domain: string, tld?: string, registrationPriceInr?: number, price?: number, period?: number, minPeriodYears?: number, isPremium?: boolean, premiumProvider?: string }} item
+ * @param {{ domain: string, tld?: string, registrationPriceInr?: number, unitPrice?: number, registrationPrice?: number, period?: number, minPeriodYears?: number, isPremium?: boolean, premiumProvider?: string }} item
  */
 export function domainRegistrationCartMetadata(item) {
   const domain = String(item.domain || '').toLowerCase().trim();
@@ -27,7 +27,9 @@ export function domainRegistrationCartMetadata(item) {
       /^\./,
       '',
     );
-  const price = Number(item.registrationPriceInr ?? item.price ?? item.registrationPrice ?? 0);
+  const price = Number(
+    item.registrationPriceInr ?? item.unitPrice ?? item.registrationPrice ?? 0,
+  );
   const minPeriodYears = Math.max(1, Number(item.minPeriodYears || 1));
   // Cart line starts at 1-year unit price; period is applied only after the user
   // selects years in Cart (updateDomainRegistrationPeriod / checkout quote).

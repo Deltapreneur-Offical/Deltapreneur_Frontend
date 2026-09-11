@@ -12,6 +12,7 @@ import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
 import { APP_BASE_URL } from '../../config/urls';
+import { normalizePublicImageUrl } from '../../utils/imageUrl';
 
 import ListingCardStatsFooter from './ListingCardStatsFooter';
 
@@ -147,7 +148,7 @@ export default function VentureListingCard({
 
   const sellerAsk = resolveSellerAskSummary(venture);
 
-  const ventureImage = b.ventureImageUrl && !imgFailed ? b.ventureImageUrl : null;
+  const ventureImage = b.ventureImageUrl && !imgFailed ? normalizePublicImageUrl(b.ventureImageUrl) : null;
 
   const coVentureInvestment = isCoVenture ? resolveCoVentureInvestmentSeeking(venture) : null;
 

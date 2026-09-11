@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { APP_BASE_URL } from '../../config/urls';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
+import { normalizePublicImageUrl } from '../../utils/imageUrl';
 import { REQUIRE_TECHNOLOGY_VERIFICATION_BEFORE_PURCHASE } from '../../config/featureFlags';
 import {
   canRequestTechnologyAuction,
@@ -449,7 +450,7 @@ export default function TechnologyListingCard({
 
   const techName = item.name || t('listingCardTechnology');
   const techCategory = (item.category || 'Technology').replace(/_/g, ' ');
-  const techImage = item.imageUrl && !imgFailed ? item.imageUrl : null;
+  const techImage = item.imageUrl && !imgFailed ? normalizePublicImageUrl(item.imageUrl) : null;
   const useCase = item.whatItDoes || item.what_it_does || item.description || '';
   const statusKey = (item.softwareStatus || 'AVAILABLE').toUpperCase();
   const priceAmount = Number(item.price || 0);

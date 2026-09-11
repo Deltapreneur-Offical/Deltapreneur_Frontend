@@ -530,13 +530,10 @@ export function mergeHomepageAuctions({
   });
 }
 
-/** Homepage auction row: featured live auctions first, then remaining live auctions. */
+/** Homepage auction row: only auctions enabled in Admin → Homepage Features. */
 export function pickHomepagePreviewAuctions(auctions, limit = HOMEPAGE_PREVIEW_LIMIT) {
   const live = mergeHomepageAuctions(auctions);
-  const featured = live.filter((item) => Boolean(item.featured));
-  const featuredIds = new Set(featured.map((item) => `${item.category}:${item.id}`));
-  const rest = live.filter((item) => !featuredIds.has(`${item.category}:${item.id}`));
-  return [...featured, ...rest].slice(0, limit);
+  return live.filter((item) => Boolean(item.featured)).slice(0, limit);
 }
 
 /** Normalize admin auction rows into homepage-feature selector items. */

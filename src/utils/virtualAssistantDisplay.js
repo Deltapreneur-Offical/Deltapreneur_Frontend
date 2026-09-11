@@ -1,3 +1,6 @@
+import { API_ORIGIN } from '../config/urls';
+import { normalizePublicImageUrl } from './imageUrl';
+
 export function formatVaApplicationNumberDisplay(applicationNumber, applicationNumberDisplay) {
   if (applicationNumberDisplay) return applicationNumberDisplay;
   if (applicationNumber == null || applicationNumber === '') return null;
@@ -28,7 +31,7 @@ export function resolveVaProfilePhotoUrl(source) {
     || source.photoUrl
     || source.photo_url
     || null;
-  if (direct) return direct;
+  if (direct) return normalizePublicImageUrl(direct);
 
   const key = source.profilePhotoKey || source.profile_photo_key;
   if (!key || typeof key !== 'string') return null;

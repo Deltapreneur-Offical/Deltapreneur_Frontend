@@ -27,7 +27,7 @@ export default function CommunitySection() {
           (params) => communityAPI.getAll(params),
           'community',
           undefined,
-          { featuredQuery: {} },
+          { featuredQuery: {}, fillCatalog: false },
         );
         setCommunities(rows);
       } catch {

@@ -20,7 +20,7 @@ import OperationsRequestSuccess from '../operations/OperationsRequestSuccess';
 /**
  * Homepage Operations carousel section (Virtual Assistance or Compliance).
  *
- * Virtual Assistance shows Featured Virtual Assistant profiles (published + featured).
+ * Virtual Assistance shows only profiles enabled in Admin → Homepage Features.
  * Business Solutions (Compliance) continues to use the operations services catalog.
  */
 export default function HomeOperationsCarouselSection({ sectionId }) {
@@ -35,7 +35,10 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const [requestTarget, setRequestTarget] = useState(null);
   const [requestSuccess, setRequestSuccess] = useState(null);
 
-  const vaFeatured = useFeaturedVirtualAssistants(48, { enabled: isAssistanceSection });
+  const vaFeatured = useFeaturedVirtualAssistants(48, {
+    enabled: isAssistanceSection,
+    featuredOnly: true,
+  });
   const [offices, setOffices] = useState([]);
   const [officesLoading, setOfficesLoading] = useState(false);
   const [cityFilter, setCityFilter] = useState('');

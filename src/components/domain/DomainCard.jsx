@@ -127,6 +127,10 @@ export default function DomainCard({
 
   const priceText =
     item.registrationPriceInr != null ? formatDomainPrice(item.registrationPriceInr) : null;
+  const priceYearSuffix = item.isPremium
+    ? t('domainCardFirstYearSuffix', { defaultValue: ' (1st Year)' })
+    : t('domainCardYearSuffix', { defaultValue: '/yr' });
+  const priceTitle = priceText ? `${priceText}${priceYearSuffix}` : undefined;
   const renewalText =
     item.renewalPriceInr != null ? formatDomainPrice(item.renewalPriceInr) : null;
 
@@ -183,11 +187,13 @@ export default function DomainCard({
             <p className="domain-card-standard-label text-xs font-semibold text-teal-700">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
           ) : null}
           {priceText ? (
-            <p className="text-xl sm:text-2xl font-extrabold text-gray-950 leading-none" translate="no">
+            <p
+              className="text-xl sm:text-2xl font-extrabold text-gray-950 leading-none"
+              translate="no"
+              title={priceTitle}
+            >
               {priceText}
-              <span className="text-xs font-medium text-gray-400 ml-1.5">
-                {item.isPremium ? t('domainCardFirstYearSuffix', { defaultValue: ' (1st Year)' }) : t('domainCardYearSuffix', { defaultValue: '/yr' })}
-              </span>
+              <span className="text-xs font-medium text-gray-400 ml-1.5">{priceYearSuffix}</span>
             </p>
           ) : (
             <p className="text-sm font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>
@@ -276,11 +282,13 @@ export default function DomainCard({
           <p className="domain-card-standard-label text-[11px] font-semibold text-teal-700">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
         ) : null}
         {priceText ? (
-          <p className="text-base font-extrabold text-gray-950 leading-none pt-0.5" translate="no">
+          <p
+            className="text-base font-extrabold text-gray-950 leading-none pt-0.5"
+            translate="no"
+            title={priceTitle}
+          >
             {priceText}
-            <span className="text-[11px] font-medium text-gray-400 ml-1">
-              {item.isPremium ? t('domainCardFirstYearSuffix', { defaultValue: ' (1st Year)' }) : t('domainCardYearSuffix', { defaultValue: '/yr' })}
-            </span>
+            <span className="text-[11px] font-medium text-gray-400 ml-1">{priceYearSuffix}</span>
           </p>
         ) : (
           <p className="text-xs font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>

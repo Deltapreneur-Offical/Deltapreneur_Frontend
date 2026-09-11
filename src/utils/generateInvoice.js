@@ -76,6 +76,26 @@ function formatMoney(amount, currencyCode = 'INR') {
   );
 }
 
+function numberOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function firstNumber(...values) {
+  for (const value of values) {
+    const n = numberOrNull(value);
+    if (n !== null) return n;
+  }
+  return null;
+}
+
+function formatRate(rate) {
+  const n = Number(rate);
+  if (!Number.isFinite(n)) return null;
+  return Number.isInteger(n) ? String(n) : String(Number(n.toFixed(2)));
+}
+
 function today() {
   return new Date().toLocaleDateString('en-IN', {
     day: '2-digit',
@@ -266,13 +286,33 @@ function buildLineItems({ type, item }) {
 
   const sw = item.software || {};
   const productName = sw.name || 'Software License';
-  const amount = Number(sw.price || item.price || 0);
+  const gst = firstNumber(item.gstAmount, item.gst_amount, item.gstInr, item.gst_inr) || 0;
+  const total = firstNumber(
+    item.totalAmountInr,
+    item.total_amount_inr,
+    item.totalAmount,
+    item.total_amount,
+    item.amountCharged,
+    item.amount_charged,
+    item.grossAmountInr,
+    item.gross_amount_inr,
+  );
+  const subtotal = firstNumber(
+    item.subtotalExGst,
+    item.subtotal_ex_gst,
+    item.subtotalInr,
+    item.subtotal_inr,
+  ) ?? (
+    gst > 0 && total != null && total > gst
+      ? total - gst
+      : Number(sw.price || item.price || 0)
+  );
   lines.push({
     name: productName,
     description: sw.description || 'Software purchase',
     qty: 1,
-    unitPrice: amount,
-    amount,
+    unitPrice: subtotal,
+    amount: subtotal,
   });
   if (item.coBrotherHelpPaid) {
     lines.push({
@@ -283,8 +323,8 @@ function buildLineItems({ type, item }) {
       amount: 1000,
     });
   }
-  const subtotal = lines.reduce((s, l) => s + l.amount, 0);
-  return { lines, gst: 0, total: subtotal };
+  const lineSubtotal = lines.reduce((s, l) => s + l.amount, 0);
+  return { lines, gst, total: total != null ? total : lineSubtotal + gst };
 }
 
 /**
@@ -312,6 +352,11 @@ export function generateInvoice({ type, item, user = {}, invoiceSequence = null 
   const paymentRef = item.razorpayPaymentId || item.razorpay_payment_id || '';
   const { lines, gst, total } = buildLineItems({ type, item });
   const subtotal = lines.reduce((s, l) => s + Number(l.amount || 0), 0);
+  const gstRate = formatRate(
+    item.gstRate
+    ?? item.gst_rate
+    ?? (subtotal > 0 && gst > 0 ? (gst / subtotal) * 100 : null)
+  );
 
   const chargeCurrency = item.chargeCurrency || 'INR';
   const displayTotal =
@@ -669,7 +714,7 @@ export function generateInvoice({ type, item, user = {}, invoiceSequence = null 
         <span>${formatINR(subtotal)}</span>
       </div>
       <div class="totals-row">
-        <span>GST (18%)</span>
+        <span>GST${gstRate ? ` (${escapeHtml(gstRate)}%)` : ''}</span>
         <span>${gst > 0 ? formatINR(gst) : '—'}</span>
       </div>
       <div class="totals-row bold">

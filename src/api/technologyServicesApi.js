@@ -13,7 +13,7 @@ export const technologyServicesAPI = {
   /** Get user's active & past technology subscriptions. */
   getMySubscriptions: () => api.get('/api/v1/technology-services/subscriptions/me'),
 
-  /** Get detailed subscription info & credentials. */
+  /** Get detailed subscription info. */
   getSubscriptionDetail: (id) => api.get(`/api/v1/technology-services/subscriptions/${id}`),
 
   /** Renew subscription. */
@@ -49,8 +49,17 @@ export const technologyServicesAPI = {
   /** Admin Panel: Fetch orders history. */
   getOrders: () => api.get('/api/v1/technology-services/admin/orders'),
 
-  /** Admin Panel: Fetch subscriptions history. */
-  getAdminSubscriptions: () => api.get('/api/v1/technology-services/admin/subscriptions'),
+  /** Admin Panel: Fetch subscriptions history. Optional email filter. */
+  getAdminSubscriptions: (params) =>
+    api.get('/api/v1/technology-services/admin/subscriptions', { params }),
+
+  /** Admin Panel: Explicitly retrieve decrypted access details for one subscription. */
+  getAdminSubscriptionAccessDetails: (id) =>
+    api.get(`/api/v1/technology-services/admin/subscriptions/${id}/access-details`),
+
+  /** Admin Panel: Resend the existing access email. Does not reprovision or charge. */
+  resendAccessEmail: (id) =>
+    api.post(`/api/v1/technology-services/admin/subscriptions/${id}/resend-access-email`),
 
   /** Admin Panel: Fetch renewals list. */
   getRenewals: () => api.get('/api/v1/technology-services/admin/renewals'),

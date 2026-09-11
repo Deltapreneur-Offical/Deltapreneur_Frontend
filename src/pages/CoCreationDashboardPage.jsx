@@ -378,8 +378,17 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const sw           = purchase.software || {};
-  const isConfirmed  = purchase.completionStatus === 'CONFIRMED';
-  const isPending    = purchase.completionStatus === 'PENDING' &&
+  const isTechnologyService = Boolean(
+    purchase.isTechnologyService || purchase.activationStatus || purchase.provisioningStatus
+  );
+  const activationStatus = String(purchase.activationStatus || '').toUpperCase();
+  const activationLabel = purchase.activationStatusLabel
+    || (activationStatus === 'ACTIVE' ? 'Active'
+      : activationStatus === 'PENDING_ACTIVATION' ? 'Pending Activation'
+      : activationStatus === 'ACTIVATION_ISSUE' ? 'Activation Issue'
+      : null);
+  const isConfirmed  = !isTechnologyService && purchase.completionStatus === 'CONFIRMED';
+  const isPending    = !isTechnologyService && purchase.completionStatus === 'PENDING' &&
                        purchase.paymentStatus === 'COMPLETED';
   const helpPaid     = purchase.coBrotherHelpPaid;
   const planLabel    = PLAN_LABELS[purchase.pricingPlan] || 'One-Time Purchase';
@@ -430,11 +439,21 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
             <span className="text-[0.65rem] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md tracking-wider">
               {planLabel}
             </span>
-            {isConfirmed && (
+            {isTechnologyService && activationLabel ? (
+              <span className={`text-[0.65rem] font-bold px-2 py-0.5 rounded-md tracking-wider ${
+                activationStatus === 'ACTIVE'
+                  ? 'text-green-700 bg-green-50 border border-green-200'
+                  : activationStatus === 'ACTIVATION_ISSUE'
+                    ? 'text-red-700 bg-red-50 border border-red-200'
+                    : 'text-amber-800 bg-amber-50 border border-amber-200'
+              }`}>
+                {activationStatus === 'ACTIVE' ? '✓ Active' : activationLabel}
+              </span>
+            ) : isConfirmed ? (
               <span className="text-[0.65rem] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-md tracking-wider">
                 ✓ Confirmed
               </span>
-            )}
+            ) : null}
             {isPending && (
               <span className="text-[0.65rem] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md tracking-wider">
                 ⏳ Awaiting Confirmation

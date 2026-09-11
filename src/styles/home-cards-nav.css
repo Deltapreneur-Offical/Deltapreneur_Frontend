@@ -1,0 +1,216 @@
+/* Homepage listing rows — left/right paging (same pattern as Delta Registrations) */
+
+.home-cards-nav-wrap {
+  --home-nav-accent: #c2410c;
+  --home-nav-accent-soft: #fff7ed;
+  --home-nav-border: #f6c98f;
+  --home-nav-hover-border: #f59e0b;
+  --home-nav-pulse: rgba(245, 158, 11, 0.55);
+  position: relative;
+  min-width: 0;
+  overflow: visible;
+  /* Keep arrows in the side gutter so they never sit on cards */
+  padding-inline: 3.15rem;
+}
+
+.home-cards-nav-wrap--domain,
+.home-cards-nav-wrap--venture,
+.home-cards-nav-wrap--technology,
+.home-cards-nav-wrap--operations,
+.home-cards-nav-wrap--community {
+  --home-nav-accent: #c2410c;
+  --home-nav-accent-soft: #fff7ed;
+  --home-nav-border: #f6c98f;
+  --home-nav-hover-border: #f59e0b;
+  --home-nav-pulse: rgba(245, 158, 11, 0.55);
+}
+
+.home-cards-nav-wrap--coventure {
+  --home-nav-accent: #147A43;
+  --home-nav-accent-soft: #F3FDE8;
+  --home-nav-border: #BEF38A;
+  --home-nav-hover-border: #1ED891;
+  --home-nav-pulse: rgba(30, 216, 145, 0.45);
+}
+
+.home-cards-nav-wrap--auction {
+  --home-nav-accent: #9a3412;
+  --home-nav-accent-soft: #ffedd5;
+  --home-nav-border: #fdba74;
+  --home-nav-hover-border: #f97316;
+  --home-nav-pulse: rgba(249, 115, 22, 0.5);
+}
+
+.home-cards-nav-wrap--assistance {
+  --home-nav-accent: #92400e;
+  --home-nav-accent-soft: #fef3c7;
+  --home-nav-border: #fcd34d;
+  --home-nav-hover-border: #f59e0b;
+  --home-nav-pulse: rgba(245, 158, 11, 0.5);
+}
+
+
+.home-cards-nav-wrap .home-preview-row.home-cards-nav-row {
+  cursor: grab;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-inline: 0 !important;
+  justify-content: flex-start !important;
+  scroll-snap-type: none !important;
+  scroll-behavior: auto;
+}
+
+.home-cards-nav-wrap .home-preview-row.home-cards-nav-row .home-preview-row__item {
+  scroll-snap-align: none !important;
+  scroll-snap-stop: normal !important;
+}
+
+.home-cards-nav-wrap .home-preview-row.home-cards-nav-row .home-preview-row__item:first-child,
+.home-cards-nav-wrap .home-preview-row.home-cards-nav-row .home-preview-row__item:last-child {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Homepage domain / premium cards — compact, content-sized (not 355px-tall) */
+.home-domains-section .home-preview-row {
+  align-items: stretch;
+}
+
+.home-domains-section .home-preview-row__item,
+.home-domains-section .home-preview-row__card,
+.home-domains-section .home-preview-row__card > div:not(.home-preview-card-shell) {
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+.home-domains-section .domain-search-card {
+  height: auto !important;
+  min-height: 0 !important;
+  max-width: 100%;
+  flex: 1 1 auto;
+  justify-content: flex-start;
+}
+
+.home-domains-section .domain-search-card > *:last-child {
+  margin-top: auto;
+}
+
+.home-cards-nav-row--dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.home-cards-nav {
+  position: absolute;
+  top: var(--home-nav-center, 50%);
+  bottom: auto;
+  z-index: 50;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border-radius: 999px;
+  border: 1px solid var(--home-nav-border);
+  background: #fff;
+  color: var(--home-nav-accent);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
+  transform: translateY(-50%);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-cards-nav:hover:not(:disabled) {
+  background: var(--home-nav-accent-soft);
+  border-color: var(--home-nav-hover-border);
+  color: var(--home-nav-accent);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+}
+
+.home-cards-nav:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--home-nav-hover-border);
+}
+
+.home-cards-nav:disabled {
+  cursor: default;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+}
+
+.home-cards-nav--prev {
+  left: 0.2rem;
+}
+
+.home-cards-nav--next {
+  right: 0.2rem;
+}
+
+.home-cards-nav svg {
+  position: relative;
+  z-index: 1;
+}
+
+.home-cards-nav::before,
+.home-cards-nav::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 0 0 var(--home-nav-pulse);
+  animation: home-cards-nav-pulse 2s ease-out infinite;
+}
+
+.home-cards-nav::after {
+  animation-delay: 1s;
+}
+
+/* Keep the same ripple on both arrows, including the disabled left button at the start */
+
+@keyframes home-cards-nav-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--home-nav-pulse);
+    opacity: 1;
+  }
+  80%,
+  100% {
+    box-shadow: 0 0 0 11px transparent;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-cards-nav::before,
+  .home-cards-nav::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.home-cards-nav-wrap--no-overflow {
+  padding-inline: 0;
+}
+
+@media (max-width: 767px) {
+  .home-cards-nav-wrap {
+    padding-inline: 2.7rem;
+  }
+
+  .home-cards-nav-wrap--no-overflow {
+    padding-inline: 0;
+  }
+
+  .home-cards-nav {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}

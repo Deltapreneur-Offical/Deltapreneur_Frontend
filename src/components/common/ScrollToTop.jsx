@@ -1,24 +1,22 @@
 import { useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-
-function scrollAllContainersToTop() {
-  if (typeof window === 'undefined') return;
-  window.scrollTo(0, 0);
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
-  document.querySelector('[data-app-layout-scroll]')?.scrollTo(0, 0);
-}
+import { scheduleScrollAppLayoutToTop } from '../../utils/preserveAppLayoutScroll';
 
 /** Reset scroll when route changes (e.g. Home → Operations dashboard). */
 export default function ScrollToTop() {
   const { pathname } = useLocation();
 
   useLayoutEffect(() => {
-    scrollAllContainersToTop();
-    // AppLayout may mount after lazy route load — run again next frame.
-    const id = requestAnimationFrame(scrollAllContainersToTop);
-    return () => cancelAnimationFrame(id);
+    scheduleScrollAppLayoutToTop();
   }, [pathname]);
 
   return null;
+}
+
+/** Scroll the dashboard shell to top when an inline form/page replaces the list. */
+export function useScrollAppLayoutToTopWhen(active) {
+  useLayoutEffect(() => {
+    if (!active) return;
+    scheduleScrollAppLayoutToTop();
+  }, [active]);
 }

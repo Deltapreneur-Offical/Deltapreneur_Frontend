@@ -333,7 +333,7 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
               : t('techVerifyTrackerTitle', 'View verification progress')}
           </button>
 
-          {canRequestTechnologyAuction(item, auctionStatus) && (
+          {canRequestTechnologyAuction(item, auctionStatus) ? (
             <button
               type="button"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-lg hover:bg-amber-100 font-semibold transition-colors"
@@ -341,7 +341,16 @@ function ListingRow({ item, auctionStatus, onShowVerification, onAnalytics, onAu
             >
               🔨 List for auction
             </button>
-          )}
+          ) : !isTechnologyAuctionLive(item, auctionStatus) && !isTechnologyAuctionPending(item, auctionStatus) && item.softwareStatus !== 'SOLD' && item.software_status !== 'SOLD' ? (
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-lg font-semibold transition-colors opacity-60 cursor-not-allowed"
+              disabled
+              title={t('listingCardVerificationPending', { defaultValue: 'Verification pending' })}
+            >
+              🔨 List for auction
+            </button>
+          ) : null}
           {isTechnologyAuctionLive(item, auctionStatus) && (
             <span className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded-lg">
               🟢 On Live Auction

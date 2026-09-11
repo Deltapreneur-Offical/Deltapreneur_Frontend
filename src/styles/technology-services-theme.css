@@ -58,10 +58,10 @@
   border: 1.5px solid transparent;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #c2410c 0%, #f97316 100%) border-box;
+    linear-gradient(90deg, #fbbf24 0%, #fb923c 100%) border-box;
   background-origin: padding-box, border-box;
   background-clip: padding-box, border-box;
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.22), 0 6px 16px rgba(194, 65, 12, 0.16);
+  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.18), 0 6px 16px rgba(251, 146, 60, 0.12);
   outline: none;
 }
 
@@ -182,4 +182,25 @@ body.home-page-body .tech-service-card:hover .tech-service-card__icon,
   .tech-service-card__price-amount {
     font-size: 0.98rem;
   }
+}
+
+/* Home DeltaOs cards — light cream triangle across the full card. */
+.tech-service-card--home {
+  isolation: isolate;
+  transform: translateZ(0);
+}
+
+.tech-service-card--home::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: #fff1e8;
+  opacity: 0.42;
+  clip-path: polygon(0 4%, 0 96%, 72% 50%);
+}
+
+.tech-service-card--home > * {
+  z-index: 1;
 }

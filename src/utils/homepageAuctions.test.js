@@ -28,7 +28,7 @@ describe('homepageAuctions', () => {
     expect(merged.map((a) => a.id)).toEqual(['s1', 'c1', 'd1']);
   });
 
-  it('selects only admin-featured auctions (Homepage Features rule)', () => {
+  it('selects only featured live auctions for the homepage', () => {
     const picked = pickHomepagePreviewAuctions({
       domains: [
         { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: '2026-06-30T00:00:00Z' },
@@ -39,10 +39,16 @@ describe('homepageAuctions', () => {
     expect(picked.map((a) => a.id)).toEqual(['d2']);
   });
 
-  it('returns no homepage auctions when none are featured', () => {
+  it('returns an empty homepage row when no live auctions are featured', () => {
     const picked = pickHomepagePreviewAuctions({
       domains: [
         { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: '2026-06-30T00:00:00Z' },
+      ],
+      community: [
+        { id: 'c1', status: 'ACTIVE', featured: false, community: { name: 'Creator One' }, endTime: '2026-06-25T00:00:00Z' },
+      ],
+      software: [
+        { id: 's1', status: 'ACTIVE', featured: false, software: { name: 'Tool One' }, endTime: '2026-06-20T00:00:00Z' },
       ],
     }, 6);
 

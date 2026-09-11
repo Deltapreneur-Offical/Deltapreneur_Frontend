@@ -1,4 +1,4 @@
-﻿/* Homepage listing previews — full card height, no zoom clipping */
+/* Homepage listing previews — full card height, no zoom clipping */
 
 
 
@@ -11,8 +11,9 @@
   overflow-y: visible;
   padding-top: 10px;
   padding-bottom: 1.25rem;
-  padding-inline: 0.25rem;
+  padding-inline: 0;
   scroll-snap-type: x mandatory;
+  scroll-behavior: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
@@ -22,170 +23,155 @@
   display: none;
 }
 
-/* ─── Mobile < 640px: outer=1rem + inner=1rem = 2rem total each side ─────────
-   Cards are capped at 18rem (288px, ~desktop card width) and centered so they
-   never stretch across the viewport. The row still bleeds edge-to-edge for
-   smooth scrolling; matching padding + scroll-padding keep the first card
-   visually centered. */
+/* ─── Mobile < 640px: stay inside the content column, equal gutters ─────────
+   Cards are capped at 18rem so they never stretch across the viewport. */
 @media (max-width: 639px) {
   .home-preview-row {
-    /* negate the 2rem total container padding to bleed edge-to-edge */
-    margin-left: -2rem !important;
-    margin-right: -2rem !important;
-    padding-inline: max(1.5rem, calc((100vw - 18rem) / 2)) !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-inline: 0 !important;
     gap: 1rem !important;
-    width: auto !important;
-    /* keep the capped first card centered instead of snapping it flush */
-    scroll-padding-inline: max(1.5rem, calc((100vw - 18rem) / 2));
+    width: 100% !important;
+    justify-content: flex-start !important;
+    scroll-padding-inline: 0;
   }
   .home-preview-row .home-preview-row__item {
-    width: min(calc(100vw - 3rem), 18rem) !important;
+    width: min(18rem, 100%) !important;
   }
-  /* Operations / Business Solutions cards follow the same compact width */
   .home-preview-row .home-preview-row__item:has(.home-operations-preview-card) {
-    width: min(calc(100vw - 3rem), 18rem) !important;
+    width: min(18rem, 100%) !important;
   }
   .home-preview-row__item:first-child { margin-left: 0 !important; }
   .home-preview-row__item:last-child  { margin-right: 0 !important; }
   .home-auto-scroll-row {
-    margin-left: -2rem !important;
-    margin-right: -2rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     padding-inline: 0 !important;
     gap: 1rem !important;
-    width: auto !important;
+    width: 100% !important;
   }
   .home-auto-scroll-row__viewport {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0;
+    padding-right: 0;
     box-sizing: border-box;
   }
-  /* Compact capped cards in the marquee rows too (base rule lives later) */
   .home-auto-scroll-row .home-auto-scroll-row__item {
-    width: min(calc(100vw - 2.5rem), 18rem) !important;
+    width: min(18rem, 100%) !important;
   }
   .home-auto-scroll-row .home-auto-scroll-row__item:has(.home-operations-preview-card) {
-    width: min(calc(100vw - 1.75rem), 18rem) !important;
+    width: min(18rem, 100%) !important;
   }
 }
 
-/* ─── Large phone 640–767px: outer=1.5rem + inner=1.5rem = 3rem each side ───
-   Same compact centered cards as below 640px — a single card here would
-   otherwise stretch to nearly the full viewport width. */
+/* ─── Large phone 640–767px: same compact cards, equal gutters ─────────────── */
 @media (min-width: 640px) and (max-width: 767px) {
   .home-preview-row {
-    margin-left: -3rem !important;
-    margin-right: -3rem !important;
-    padding-inline: max(1.5rem, calc((100vw - 18rem) / 2)) !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-inline: 0 !important;
     gap: 1rem !important;
-    width: auto !important;
-    scroll-padding-inline: max(1.5rem, calc((100vw - 18rem) / 2));
+    width: 100% !important;
+    justify-content: flex-start !important;
+    scroll-padding-inline: 0;
   }
   .home-preview-row .home-preview-row__item {
-    width: min(calc(100vw - 3.5rem), 18rem) !important;
+    width: min(18rem, 100%) !important;
   }
   .home-preview-row .home-preview-row__item:has(.home-operations-preview-card) {
-    width: min(calc(100vw - 3.5rem), 18rem) !important;
+    width: min(18rem, 100%) !important;
   }
   .home-preview-row__item:first-child { margin-left: 0 !important; }
   .home-preview-row__item:last-child  { margin-right: 0 !important; }
   .home-auto-scroll-row {
-    margin-left: -3rem !important;
-    margin-right: -3rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     padding-inline: 0 !important;
     gap: 1rem !important;
-    width: auto !important;
+    width: 100% !important;
   }
   .home-auto-scroll-row__viewport {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0;
+    padding-right: 0;
     box-sizing: border-box;
   }
   .home-auto-scroll-row .home-auto-scroll-row__item {
-    width: min(calc(100vw - 2.5rem), 18rem) !important;
+    width: min(18rem, 100%) !important;
   }
   .home-auto-scroll-row .home-auto-scroll-row__item:has(.home-operations-preview-card) {
-    width: min(calc(100vw - 2.5rem), 18rem) !important;
+    width: min(18rem, 100%) !important;
   }
 }
 
-/* ─── Tablet 768–1023px: outer=2.5rem+1.25rem, inner=1rem each side ─────────
-   left total=3.5rem, right total=2.25rem → negate both                        */
+/* ─── Tablet 768–1023px: 2 compact cards, equal gutters ───────────────────── */
 @media (min-width: 768px) and (max-width: 1023px) {
   .home-preview-row {
-    margin-left: -3.5rem !important;
-    margin-right: -2.25rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     padding-inline: 0 !important;
     gap: 1.25rem !important;
-    width: auto !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
   }
-  .home-preview-row__item:first-child { margin-left: 1.25rem !important; }
-  .home-preview-row__item:last-child  { margin-right: 1.25rem !important; }
+  .home-preview-row__item:first-child { margin-left: 0 !important; }
+  .home-preview-row__item:last-child  { margin-right: 0 !important; }
   .home-auto-scroll-row {
-    margin-left: -3.5rem !important;
-    margin-right: -2.25rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     padding-inline: 0 !important;
     gap: 1.25rem !important;
-    width: auto !important;
+    width: 100% !important;
   }
   .home-auto-scroll-row__viewport {
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+    padding-left: 0;
+    padding-right: 0;
     box-sizing: border-box;
   }
 }
 
-/* ─── Desktop ≥ 1024px: outer=5rem+2rem, inner=2rem each side ───────────────*/
+/* ─── Desktop ≥ 1024px: stay in the content column, equal gutters ─────────── */
 @media (min-width: 1024px) {
   .home-preview-row {
-    margin-left: -7rem !important;
-    margin-right: -4rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     padding-inline: 0 !important;
     gap: 1.25rem !important;
-    width: auto !important;
+    width: 100% !important;
     display: flex !important;
     flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
     overflow-x: auto !important;
     overflow-y: visible !important;
     scroll-snap-type: x mandatory !important;
   }
 
   .home-preview-row .home-preview-row__item:first-child {
-    margin-left: 1.5rem !important;
+    margin-left: 0 !important;
   }
 
   .home-preview-row .home-preview-row__item:last-child {
-    margin-right: 1.5rem !important;
+    margin-right: 0 !important;
   }
 
   .home-auto-scroll-row {
-    margin-left: -7rem !important;
-    margin-right: -4rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     padding-inline: 0 !important;
     gap: 1.25rem !important;
-    width: auto !important;
+    width: 100% !important;
   }
   .home-auto-scroll-row__viewport {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: 0;
+    padding-right: 0;
     box-sizing: border-box;
   }
 }
 
 /* ─── Card item widths ───────────────────────────────────────────────────────
-   Mobile < 640px:
-     card = 100vw - 3rem
-   Large phone 640–767px:
-     card = 100vw - 3.5rem
-   Tablet 768–1023px: 2 cards per view
-     card = (100% - 1.25rem) / 2
-   Laptop 1024–1199px: 3 cards per view
-     card = (100% - 2 * 1.25rem) / 3
-   Desktop ≥ 1200px: 4 cards per view
-     card = (100% - 3 * 1.25rem) / 4 */
+   Cards stay inside the content column and never grow past 18rem. */
 
 .home-preview-row__item {
   flex: 0 0 auto !important;
-  width: calc(100vw - 3rem) !important;
+  width: min(18rem, 100%) !important;
   scroll-snap-align: start !important;
   scroll-snap-stop: always !important;
   display: flex;
@@ -204,45 +190,44 @@
   box-sizing: border-box;
 }
 
-/* Tablet 640–767px: same 1-card formula, same width */
 @media (min-width: 640px) and (max-width: 767px) {
   .home-preview-row__item {
-    width: calc(100vw - 3.5rem) !important;
+    width: min(18rem, 100%) !important;
   }
 }
 
-/* Tablet 768px-1023px: compact centered cards */
+/* Tablet 768px-1023px: up to 2 compact cards */
 @media (min-width: 768px) and (max-width: 1023px) {
   .home-preview-row {
-    justify-content: center !important;
-    padding-inline: 1.5rem !important;
-    gap: 1rem !important;
+    justify-content: flex-start !important;
+    padding-inline: 0 !important;
+    gap: 1.25rem !important;
   }
   .home-preview-row__item {
-    width: min(calc((100% - 1rem) / 2), 18rem) !important;
+    width: min(18rem, calc((100% - 1.25rem) / 2)) !important;
     flex: 0 0 auto !important;
   }
   .home-auto-scroll-row {
-    padding-inline: 1.5rem !important;
-    gap: 1rem !important;
+    padding-inline: 0 !important;
+    gap: 1.25rem !important;
   }
   .home-auto-scroll-row__item {
-    width: min(calc((100% - 1rem) / 2), 18rem) !important;
+    width: min(18rem, calc((100% - 1.25rem) / 2)) !important;
     flex: 0 0 auto !important;
   }
 }
 
-/* Laptop 1024px-1199px: exactly 3 cards */
+/* Laptop 1024px-1199px: up to 3 compact cards */
 @media (min-width: 1024px) and (max-width: 1199px) {
   .home-preview-row__item {
-    width: calc((100% - 2 * 1.25rem) / 3) !important;
+    width: min(18rem, calc((100% - 2 * 1.25rem) / 3)) !important;
   }
 }
 
-/* Desktop ≥1200px: exactly 4 cards */
+/* Desktop ≥1200px: up to 4 compact cards */
 @media (min-width: 1200px) {
   .home-preview-row__item {
-    width: calc((100% - 3 * 1.25rem) / 4) !important;
+    width: min(18rem, calc((100% - 3 * 1.25rem) / 4)) !important;
   }
 }
 
@@ -379,6 +364,8 @@
   display: flex;
   flex-direction: column;
   border-radius: 1.5rem;
+  isolation: isolate;
+  transform: translateZ(0);
   border: 1px solid var(--home-card-border) !important;
   background: #FFFCF8 !important;
   box-shadow:
@@ -481,7 +468,7 @@
   border: 2px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #0F766E 0%, #115E59 100%) border-box !important;
+    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow: none !important;
@@ -495,7 +482,7 @@
 
 .home-preview-card-border--coventure .domain-listing-card__price-cta,
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta {
-  color: #0F766E !important;
+  color: #1ED891 !important;
 }
 
 .home-preview-card-border:hover .domain-listing-card__price-box,
@@ -551,6 +538,7 @@
   flex-direction: column;
   border-radius: inherit;
   overflow: hidden;
+  isolation: isolate;
   background: #FFFCF8;
 }
 
@@ -612,8 +600,8 @@
 }
 
 .home-preview-card-border__inner .venture-listing-card--coventure {
-  border: 1px solid #0F766E !important;
-  box-shadow: 0 1px 2px rgba(15, 118, 110, 0.04) !important;
+  border: 1px solid #1ED891 !important;
+  box-shadow: 0 1px 2px rgba(30, 216, 145, 0.08) !important;
 }
 
 /* Venture / co-venture rows — content-sized cards inside colored border */
@@ -859,7 +847,13 @@
   font-weight: 600;
 }
 
-.home-preview-row .venture-listing-card--home-preview .venture-listing-card__price-label {
+.home-preview-row .venture-listing-card--home-preview .venture-listing-card__price-block,
+.home-auto-scroll-row .venture-listing-card--home-preview .venture-listing-card__price-block {
+  gap: 0.22rem;
+}
+
+.home-preview-row .venture-listing-card--home-preview .venture-listing-card__price-label,
+.home-auto-scroll-row .venture-listing-card--home-preview .venture-listing-card__price-label {
   font-size: 0.56rem;
 }
 
@@ -1125,29 +1119,25 @@
   font-weight: 600 !important;
 }
 
-.home-preview-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta,
-.home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta {
-  width: 1.5rem !important;
-  height: 1.5rem !important;
-  background: #000000 !important;
-  border-color: #000000 !important;
-  color: #ffffff !important;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18) !important;
-}
-
-.home-preview-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta svg,
-.home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta svg {
-  color: #ffffff !important;
-  stroke: currentColor;
-}
-
-.home-preview-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta:hover,
-.home-auto-scroll-row .home-auction-preview-card--home-preview .domain-listing-card__price-cta:hover {
-  background: #000000 !important;
-  border-color: #000000 !important;
-  color: #ffffff !important;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24) !important;
+.home-preview-row .home-auction-preview-card--home-preview .home-auction-preview-card__nav-cta,
+.home-auto-scroll-row .home-auction-preview-card--home-preview .home-auction-preview-card__nav-cta,
+.home-preview-row .home-auction-preview-card--home-preview .home-auction-preview-card__nav-cta:hover,
+.home-auto-scroll-row .home-auction-preview-card--home-preview .home-auction-preview-card__nav-cta:hover {
+  flex: 0 0 2.35rem !important;
+  width: 2.35rem !important;
+  min-width: 2.35rem !important;
+  max-width: 2.35rem !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: #f59e0b !important;
+  box-shadow: none !important;
+  transform: none !important;
+  overflow: hidden !important;
 }
 
 .home-preview-row .home-preview-browse-card,
@@ -1198,26 +1188,26 @@
    breakpoints, scoped with :has() so Technologies / Creators carousels are
    unaffected. !important is required to override the base row item widths. */
 .home-preview-row__item:has(.home-operations-preview-card) {
-  width: calc(100vw - 2rem) !important;
+  width: min(18rem, 100%) !important;
 }
 @media (min-width: 640px) {
   .home-preview-row__item:has(.home-operations-preview-card) {
-    width: calc(100vw - 2.5rem) !important;
+    width: min(18rem, 100%) !important;
   }
 }
 @media (min-width: 768px) {
   .home-preview-row__item:has(.home-operations-preview-card) {
-    width: min(calc((100% - 1rem) / 2 * 1.12), 18rem) !important;
+    width: min(18rem, calc((100% - 1.25rem) / 2)) !important;
   }
 }
 @media (min-width: 1024px) {
   .home-preview-row__item:has(.home-operations-preview-card) {
-    width: calc((100% - 2.5rem) / 3 * 1.12) !important;
+    width: min(18rem, calc((100% - 2 * 1.25rem) / 3)) !important;
   }
 }
 @media (min-width: 1200px) {
   .home-preview-row__item:has(.home-operations-preview-card) {
-    width: calc((100% - 3.75rem) / 4 * 1.12) !important;
+    width: min(18rem, calc((100% - 3 * 1.25rem) / 4)) !important;
   }
 }
 
@@ -1262,6 +1252,27 @@
   transform: translateY(-2px) !important;
   border-color: #fb923c !important;
   box-shadow: 0 12px 28px rgba(255, 153, 51, 0.22) !important;
+}
+
+/* Home Delta Registrars cards — light cream triangle across the full card. */
+.home-operations-preview-card--compliance {
+  isolation: isolate;
+}
+
+.home-operations-preview-card--compliance::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: #fff1e8;
+  opacity: 0.42;
+  clip-path: polygon(0 4%, 0 96%, 72% 50%);
+}
+
+.home-operations-preview-card--compliance > * {
+  position: relative;
+  z-index: 1;
 }
 
 @supports (-webkit-touch-callout: none) {
@@ -1426,10 +1437,10 @@
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #c2410c 0%, #f97316 100%) border-box !important;
+    linear-gradient(90deg, #fbbf24 0%, #fb923c 100%) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.22), 0 6px 16px rgba(194, 65, 12, 0.16) !important;
+  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.18), 0 6px 16px rgba(251, 146, 60, 0.12) !important;
 }
 
 .home-operations-preview-card__price-text {
@@ -1765,8 +1776,8 @@
   box-shadow: none;
 }
 
-.home-preview-row .domain-listing-card__price-cta:not(.home-auction-preview-card__nav-cta),
-.home-auto-scroll-row .domain-listing-card__price-cta:not(.home-auction-preview-card__nav-cta) {
+.home-preview-row .domain-listing-card__price-cta,
+.home-auto-scroll-row .domain-listing-card__price-cta {
   background-image: none !important;
   background-color: transparent !important;
   color: #ff751f !important;
@@ -1801,15 +1812,15 @@
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure) .domain-listing-card__price-box {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #0F766E 0%, #115E59 100%) border-box !important;
+    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-box,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-box {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #0F766E 0%, #115E59 100%) border-box !important;
-  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.18), 0 6px 16px rgba(15, 118, 110, 0.12) !important;
+    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
+  box-shadow: 0 0 0 1px rgba(30, 216, 145, 0.18), 0 6px 16px rgba(30, 216, 145, 0.12) !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card) .domain-listing-card__price-cta,
@@ -1839,22 +1850,22 @@
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure) .domain-listing-card__price-cta,
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-cta,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-cta {
-  color: #0F766E !important;
+  color: #1ED891 !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure) .domain-listing-card__price-cta svg,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure) .domain-listing-card__price-cta svg,
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-cta svg,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-cta svg {
-  fill: #0F766E !important;
-  color: #0F766E !important;
+  fill: #1ED891 !important;
+  color: #1ED891 !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure) .price-section-v-icon,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure) .price-section-v-icon,
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .price-section-v-icon,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .price-section-v-icon {
-  filter: brightness(0) saturate(100%) invert(31%) sepia(35%) saturate(1322%) hue-rotate(130deg) brightness(94%) contrast(88%) !important;
+  filter: brightness(0) saturate(100%) invert(67%) sepia(50%) saturate(520%) hue-rotate(95deg) brightness(98%) contrast(91%) !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card) .domain-listing-card__price-cta:hover,
@@ -2121,19 +2132,19 @@
   outline: none;
 }
 
-/* Delta Ventures — teal View All button */
+/* Delta Ventures — lime-mint View All button */
 .home-section-header--coventure .home-section-header__view-all {
-  background: #F0FDFA;
-  border-color: #0F766E;
-  color: #0F766E;
+  background: #F3FDE8;
+  border-color: #1ED891;
+  color: #147A43;
 }
 
 .home-section-header--coventure .home-section-header__view-all:hover,
 .home-section-header--coventure .home-section-header__view-all:focus-visible {
-  background: #E6F5F3;
-  border-color: #0F766E;
-  color: #0F766E;
-  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.12);
+  background: #E7F9D6;
+  border-color: #1ED891;
+  color: #147A43;
+  box-shadow: 0 4px 14px rgba(30, 216, 145, 0.16);
   transform: translateY(-1px);
   outline: none;
 }
@@ -2813,6 +2824,11 @@
   animation-play-state: paused !important;
 }
 
+/* Hovering any card in the row also pauses, even if JS pause lags */
+.home-auto-scroll-row:hover .home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static) {
+  animation-play-state: paused !important;
+}
+
 /* When user is interacting (touch/wheel) the viewport becomes scrollable */
 .home-auto-scroll-row__viewport--scrollable {
   overflow-x: auto;
@@ -2964,6 +2980,24 @@
 .home-preview-row .tech-service-card {
   will-change: transform;
   transform: translateZ(0);
+  flex: 0 0 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  justify-content: flex-start;
+}
+
+.home-preview-row__item:has(.tech-service-card) {
+  align-self: flex-start;
+  height: auto;
+}
+
+.home-preview-row__item:has(.tech-service-card) .home-preview-row__card {
+  flex: 0 0 auto;
+  height: auto;
+}
+
+.home-preview-row .tech-service-card__footer {
+  margin-top: 0.75rem;
 }
 
 /* Same root-cause fix for the homepage card border shells (Technology Register
@@ -3249,11 +3283,15 @@
 
 .home-auction-preview-card__metrics-row {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.5rem 0.625rem;
-  border-radius: 0.875rem;
+  gap: 0.35rem;
+  height: 2.55rem;
+  min-height: 2.55rem;
+  max-height: 2.55rem;
+  padding: 0 0 0 0.7rem;
+  overflow: hidden;
+  border-radius: 9999px;
   background: #fff7ed;
   border: 1px solid #fed7aa;
   box-shadow: 0 2px 8px rgba(255, 153, 51, 0.14), 0 1px 3px rgba(230, 115, 0, 0.08);
@@ -3261,10 +3299,12 @@
 
 .home-auction-preview-card__live-bid {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: row;
   align-items: center;
   gap: 0.4375rem;
   min-width: 0;
+  align-self: center;
 }
 
 .home-auction-preview-card__live-bid-icon {
@@ -3328,8 +3368,24 @@
 }
 
 .home-auction-preview-card__nav-cta {
-  flex-shrink: 0;
-  align-self: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 2.35rem !important;
+  width: 2.35rem !important;
+  min-width: 2.35rem !important;
+  max-width: 2.35rem !important;
+  height: 100% !important;
+  align-self: stretch;
+  overflow: hidden !important;
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer;
 }
 
 .home-auction-preview-card__stats-footer {

@@ -7,6 +7,13 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
 import { resolveDomainDisplay } from '../../utils/domainDisplay';
 import { listingBuyerPayable } from '../../utils/marketplaceListingPrice';
+import { listingAuctionPhase } from '../../utils/listingAuctionPhase';
+import ListingOwnerActionPair, {
+  OWNER_ACTION_BTN_AUCTION,
+  OWNER_ACTION_BTN_AUCTION_SOFT,
+  OWNER_ACTION_BTN_EDIT,
+  OWNER_ACTION_BTN_MUTED,
+} from './ListingOwnerActionPair';
 import { APP_BASE_URL } from '../../config/urls';
 import ListingCardStatsFooter from './ListingCardStatsFooter';
 import AddToCartButton from '../cart/AddToCartButton';
@@ -107,7 +114,10 @@ export default function DomainListingCard({
   const ownerMenuPortalRef = useRef(null);
   const [ownerMenuCoords, setOwnerMenuCoords] = useState({ top: 0, left: 0 });
 
-  const isAuction = domain.saleType === 'AUCTION' || Boolean(domain.onAuction) || Boolean(domain.isAuction);
+  const auctionPhase = listingAuctionPhase(domain);
+  const isLiveAuction = auctionPhase === 'live';
+  const isWinnerPhase = auctionPhase === 'winner';
+  const isAuction = isLiveAuction || isWinnerPhase;
   const auction = domain.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const auctionStartBid = Number(auction?.minBidPrice ?? 0);
@@ -118,8 +128,8 @@ export default function DomainListingCard({
   const needsVerification = false;
   const purchaseBlocked = needsVerification && !isOwner;
 
-  const basePrice = isAuction
-    ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid)
+  const basePrice = isLiveAuction || isWinnerPhase
+    ? (auctionCurrentBid > 0 ? auctionCurrentBid : auctionStartBid) || listingBuyerPayable(domain)
     : listingBuyerPayable(domain);
   const priceAmount = basePrice;
 
@@ -309,10 +319,10 @@ export default function DomainListingCard({
                   stop(e);
                   onPutForAuction();
                 }}
-                title={t('startAuction', { defaultValue: 'Start Auction' })}
+                title={t('putAuction', { defaultValue: 'Put Auction' })}
               >
                 <Gavel size={13} className="shrink-0" />
-                <span className="truncate">{t('startAuction', { defaultValue: 'Start Auction' })}</span>
+                <span>{t('putAuction', { defaultValue: 'Put Auction' })}</span>
               </button>
             )}
             {isAuction && (
@@ -445,7 +455,7 @@ export default function DomainListingCard({
         </div>
 
         {/* Content: badges + domain + price — matches DomainCard structure */}
-        <div className="pr-9 min-w-0 space-y-1.5">
+        <div className="pr-9 min-w-0 flex-1 space-y-1.5">
           {/* Badges row — extra pb matches Premium card's renewal text spacing */}
           <div className="flex flex-wrap items-center gap-1.5 pb-1.5 min-w-0">
             <span
@@ -496,30 +506,93 @@ export default function DomainListingCard({
           )}
         </div>
 
-        {/* Bottom: Cart button + Share — matches DomainCard layout */}
-        <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2">
-          {isAuction && auctionLive ? (
+        {/* Bottom: pencil | Put Auction (auction label gets remaining width) */}
+        <div className="mt-auto pt-3">
+          {isOwner ? (
+            <div className="flex w-full min-w-0 items-center gap-2">
+            <ListingOwnerActionPair
+              className="min-w-0 flex-1"
+              left={
+                onEdit ? (
+                  <button
+                    type="button"
+                    className={OWNER_ACTION_BTN_EDIT}
+                    onClick={(e) => { stop(e); onEdit(); }}
+                    aria-label={t('edit')}
+                    title={t('edit')}
+                  >
+                    <EditIcon size={15} />
+                  </button>
+                ) : (
+                  <span className={OWNER_ACTION_BTN_MUTED}>
+                    {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+                  </span>
+                )
+              }
+              right={
+                isWinnerPhase ? (
+                  <button
+                    type="button"
+                    className={OWNER_ACTION_BTN_AUCTION_SOFT}
+                    onClick={(e) => { stop(e); onViewAuction?.(); }}
+                    title={t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}
+                  >
+                    <Gavel size={14} className="shrink-0" />
+                    <span>{t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}</span>
+                  </button>
+                ) : isLiveAuction ? (
+                  <button
+                    type="button"
+                    className={OWNER_ACTION_BTN_AUCTION_SOFT}
+                    onClick={(e) => { stop(e); onViewAuction?.(); }}
+                    title={auctionLive
+                      ? t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })
+                      : t('inAuction', { defaultValue: 'In Auction' })}
+                  >
+                    <Gavel size={14} className="shrink-0" />
+                    <span>
+                      {auctionLive
+                        ? t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })
+                        : t('inAuction', { defaultValue: 'In Auction' })}
+                    </span>
+                  </button>
+                ) : onPutForAuction ? (
+                  <button
+                    type="button"
+                    className={OWNER_ACTION_BTN_AUCTION}
+                    onClick={(e) => { stop(e); onPutForAuction(); }}
+                    title={t('putAuction', { defaultValue: 'Put Auction' })}
+                  >
+                    <Gavel size={14} className="shrink-0" />
+                    <span>{t('putAuction', { defaultValue: 'Put Auction' })}</span>
+                  </button>
+                ) : (
+                  <span className={OWNER_ACTION_BTN_MUTED}>
+                    {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+                  </span>
+                )
+              }
+            />
+            {onDelete && !browseMode ? (
+              <button
+                type="button"
+                className="domain-search-card__delete-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 transition-colors"
+                onClick={(e) => { stop(e); onDelete(); }}
+                aria-label={t('delete', { defaultValue: 'Delete' })}
+                title={t('delete', { defaultValue: 'Delete' })}
+              >
+                <Trash2 size={15} strokeWidth={2} />
+              </button>
+            ) : null}
+            </div>
+          ) : isAuction && auctionLive ? (
             <button
               type="button"
-              className="inline-flex w-fit min-w-[8.5rem] items-center gap-1.5 px-4 py-2.5 rounded-lg font-bold text-sm bg-sky-500 text-white hover:bg-sky-600 transition-colors whitespace-nowrap"
+              className={`${OWNER_ACTION_BTN_AUCTION} !w-fit min-w-[8.5rem] px-4`}
               onClick={(e) => { stop(e); onViewAuction?.(); }}
             >
               <Gavel size={13} className="shrink-0" /> {t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })} →
             </button>
-          ) : isOwner ? (
-            onEdit ? (
-              <button
-                type="button"
-                className="inline-flex w-fit min-w-[8.5rem] items-center justify-center px-4 py-2.5 rounded-lg font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-colors whitespace-nowrap"
-                onClick={(e) => { stop(e); onEdit(); }}
-              >
-                {t('edit')}
-              </button>
-            ) : (
-              <span className="inline-flex w-fit min-w-[8.5rem] items-center justify-center px-4 py-2.5 rounded-lg font-bold text-sm bg-slate-100 text-slate-500 whitespace-nowrap">
-                {t('listingCardYourListing', { defaultValue: 'Your listing' })}
-              </span>
-            )
           ) : canBuy ? (
             <AddToCartButton
               productType="DOMAIN_LISTING"

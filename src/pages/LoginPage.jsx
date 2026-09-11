@@ -9,7 +9,7 @@ import {
   startGoogleOAuth,
   startLinkedInOAuth,
 } from '../utils/socialOAuth';
-import { checkBackendDatabaseReady, DATABASE_UNAVAILABLE_HINT } from '../utils/backendReady';
+import { checkBackendDatabaseReady, getDatabaseUnavailableMessage } from '../utils/backendReady';
 import BotProtectionFields from '../components/common/BotProtectionFields';
 import { useBotProtection } from '../hooks/useBotProtection';
 import AuthShell from '../components/auth/AuthShell';
@@ -18,7 +18,7 @@ import AuthAlert from '../components/auth/AuthAlert';
 import AuthPrimaryButton from '../components/auth/AuthPrimaryButton';
 import GoogleIcon from '../components/auth/GoogleIcon';
 import LinkedInIcon from '../components/auth/LinkedInIcon';
-import { readApiError } from '../utils/apiError';
+import { readApiError, isSafeUserFacingMessage } from '../utils/apiError';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -103,10 +103,7 @@ export default function LoginPage() {
         'googleOAuthSecretMissing',
         'Google sign-in is temporarily unavailable. Please try again later.',
       ),
-      database_unavailable: t(
-        'databaseUnavailable',
-        DATABASE_UNAVAILABLE_HINT,
-      ),
+      database_unavailable: getDatabaseUnavailableMessage(),
       oauth_network_error: t(
         'oauthNetworkError',
         'Could not reach Google to complete sign-in. Check your internet connection and try again.',
@@ -134,16 +131,13 @@ export default function LoginPage() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const databaseUnavailableMessage = t(
-    'databaseUnavailable',
-    DATABASE_UNAVAILABLE_HINT,
-  );
+  const databaseUnavailableMessage = getDatabaseUnavailableMessage();
 
   useEffect(() => {
     if (!import.meta.env.DEV) return undefined;
 
     let cancelled = false;
-    checkBackendDatabaseReady({ retries: 2, delayMs: 1000, timeoutMs: 3000 }).then((ready) => {
+    checkBackendDatabaseReady({ retries: 4, delayMs: 1500, timeoutMs: 20000 }).then((ready) => {
       if (!ready && !cancelled) {
         setInfo(databaseUnavailableMessage);
       } else if (ready && !cancelled) {
@@ -222,7 +216,7 @@ export default function LoginPage() {
       }
       const body = err.response?.data;
       if (body?.emailVerified === false) {
-        setError(body?.error || body?.message || t('verifyEmailBeforeLogin', 'Please verify your email before logging in.'));
+        setError(readApiError(err, t('verifyEmailBeforeLogin', 'Please verify your email before logging in.')));
         setInfo(t('verifyEmailResendHint', 'Use “Resend verification” below, or sign in with OTP to verify instantly.'));
       } else {
         setError(
@@ -257,11 +251,14 @@ export default function LoginPage() {
         return;
       }
       const body = err.response?.data;
-      setError(
-        body?.error ||
-        body?.message ||
-        t('failedToSendOtp'),
-      );
+      if (body?.emailVerified === false) {
+        setError(readApiError(err, t('verifyEmailBeforeLogin', 'Please verify your email before logging in.')));
+        setInfo(t('verifyEmailResendHint', 'Use “Resend verification” below, or sign in with OTP to verify instantly.'));
+      } else {
+        setError(
+          readApiError(err, t('invalidEmailOrPassword')),
+        );
+      }
     } finally {
       setBusy(false);
     }
@@ -292,11 +289,8 @@ export default function LoginPage() {
         setError(databaseUnavailableMessage);
         return;
       }
-      const body = err.response?.data;
       setError(
-        body?.error ||
-        body?.message ||
-        t('invalidOtp'),
+        readApiError(err, t('invalidOtp')),
       );
     } finally {
       setBusy(false);
@@ -325,10 +319,9 @@ export default function LoginPage() {
     }
     try {
       const { data } = await authAPI.resendVerification(form.email, getProtectionPayload());
-      setInfo(
-        data?.message ||
-          'If this email is pending verification, you will receive a link shortly.',
-      );
+      const fallback =
+        'If this email is pending verification, you will receive a link shortly.';
+      setInfo(isSafeUserFacingMessage(data?.message) ? data.message : fallback);
       resetProtection();
     } catch (err) {
       resetProtection();
@@ -336,8 +329,7 @@ export default function LoginPage() {
         setError(databaseUnavailableMessage);
         return;
       }
-      const body = err.response?.data;
-      setError(body?.error || body?.message || 'Unable to resend verification link.');
+      setError(readApiError(err, 'Unable to resend verification link.'));
     } finally {
       setBusy(false);
     }

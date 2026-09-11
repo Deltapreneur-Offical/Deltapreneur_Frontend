@@ -57,4 +57,13 @@ describe('apiError', () => {
       sanitizeUserErrorMessage('', undefined, { context: 'ai' }),
     ).toContain('Bro is unavailable');
   });
+
+  it('does not surface local database tunnel hints', () => {
+    const hint =
+      'Database is not reachable. For local dev, ensure PostgreSQL is running and DATABASE_URL in CoBrother_Backend/.env is correct, then restart the backend (run_dev.ps1). For production data, run .\\run_rds_tunnel.ps1 and point DATABASE_URL at 127.0.0.1:5433.';
+    expect(isSafeUserFacingMessage(hint)).toBe(false);
+    expect(readApiError({
+      response: { status: 503, data: { error: hint, message: hint } },
+    })).toBe("We're having trouble right now. Please try again in a moment.");
+  });
 });

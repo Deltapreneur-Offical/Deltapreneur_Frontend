@@ -4,14 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { cocreationAPI } from '../../api/services';
 import { technologyServicesAPI } from '../../api/technologyServicesApi';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
+import { asArray } from '../../utils/asArray';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
-import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
-import HomeAutoScrollRow, { HomeAutoScrollRowItem } from './HomeAutoScrollRow';
-import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import HomeCardsNavRow from './HomeCardsNavRow';
+import { HomePreviewRowItem } from './HomePreviewRow';
 import TechnologyListingCard from '../listings/TechnologyListingCard';
 import TechnologyServiceCard from '../technology/TechnologyServiceCard';
 import { ArrowRight, Sparkles } from 'lucide-react';
@@ -33,16 +33,19 @@ export default function TechnologySection() {
             (params) => cocreationAPI.getAll(params),
             'software',
             undefined,
-            { featuredQuery: {} },
+            { featuredQuery: {}, fillCatalog: false },
           ),
-          technologyServicesAPI.getServices({ featured_only: true }),
+          technologyServicesAPI.getServices(),
         ]);
 
         if (rows.status === 'fulfilled') {
           setPreviewSoftwares(rows.value || []);
         }
         if (servRes.status === 'fulfilled') {
-          setFeaturedServices((servRes.value?.data || servRes.value || []).slice(0, 8));
+          const services = servRes.value?.data || servRes.value || [];
+          setFeaturedServices(
+            asArray(services).slice().sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured))),
+          );
         }
       } catch {
         setPreviewSoftwares([]);
@@ -59,8 +62,6 @@ export default function TechnologySection() {
   const handleViewDetails = (softwareId) => {
     navigateToListingDetail(navigate, 'software', softwareId);
   };
-
-  const shouldAutoScroll = useShouldAutoScroll(previewSoftwares.length);
 
   const renderTechnologyCard = (item) => (
     <HomePreviewCardShell accent="technology">
@@ -85,24 +86,17 @@ export default function TechnologySection() {
         {/* 1. Marketplace Technology Listings */}
         {previewSoftwares.length > 0 && (
           <div>
-            <HomeSectionHeader title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology" />
-            {shouldAutoScroll ? (
-              <HomeAutoScrollRow durationSec={50} ariaLabel={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}>
-                {previewSoftwares.map((item) => (
-                  <HomeAutoScrollRowItem key={item.id}>
-                    {renderTechnologyCard(item)}
-                  </HomeAutoScrollRowItem>
-                ))}
-              </HomeAutoScrollRow>
-            ) : (
-              <HomePreviewRow>
-                {previewSoftwares.map((item) => (
-                  <HomePreviewRowItem key={item.id}>
-                    {renderTechnologyCard(item)}
-                  </HomePreviewRowItem>
-                ))}
-              </HomePreviewRow>
-            )}
+            <HomeSectionHeader title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology" accent="technology" />
+            <HomeCardsNavRow
+              accent="technology"
+              ariaLabel={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}
+            >
+              {previewSoftwares.map((item) => (
+                <HomePreviewRowItem key={item.id}>
+                  {renderTechnologyCard(item)}
+                </HomePreviewRowItem>
+              ))}
+            </HomeCardsNavRow>
           </div>
         )}
 
@@ -127,13 +121,13 @@ export default function TechnologySection() {
             </button>
           </div>
 
-          <HomeAutoScrollRow durationSec={50} ariaLabel="Technology Register">
+          <HomeCardsNavRow accent="technology" ariaLabel="Technology Register">
             {featuredServices.map((service) => (
-              <HomeAutoScrollRowItem key={service.id || service.slug}>
+              <HomePreviewRowItem key={service.id || service.slug}>
                 <TechnologyServiceCard service={service} compact homeLayout />
-              </HomeAutoScrollRowItem>
+              </HomePreviewRowItem>
             ))}
-          </HomeAutoScrollRow>
+          </HomeCardsNavRow>
         </div>
 
       </div>

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { adminAPI, domainAPI } from '../../api/services';
+import { invalidateTldMarqueeCache } from '../../utils/tldPriceMarqueeCache';
 
 const SUPPORTED_TLDS = ['.com', '.in', '.net', '.org', '.co', '.io', '.ai'];
 const PAGE_SIZE_OPTIONS = [25, 50, 100];
@@ -493,6 +494,7 @@ export default function AdminOpenProviderCommissionTab() {
       };
 
       await adminAPI.updateDomainCommission(payload);
+      invalidateTldMarqueeCache();
       alert(t('adminCommissionUpdated', 'OpenProvider commission configuration saved successfully.'));
       loadConfig();
     } catch (err) {

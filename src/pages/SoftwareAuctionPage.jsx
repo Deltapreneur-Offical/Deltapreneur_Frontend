@@ -701,7 +701,9 @@ export default function SoftwareAuctionPage() {
                   {t('auctionDetailNoBidsReauctionTitle')}
                 </h3>
                 <p style={{ fontSize: '0.83rem', color: '#6b7280', margin: '0 0 1rem' }}>
-                  {t('auctionDetailNoBidsReauctionDesc')}
+                  {t('auctionDetailEndedNoBidsRestorePrice', {
+                    defaultValue: 'No bids were placed. This listing is back at its original asking price. You can sell it as usual or start a new auction.',
+                  })}
                 </p>
                 <button className="btn-glow w-full"
                   onClick={() => navigate(`/technology`)}>

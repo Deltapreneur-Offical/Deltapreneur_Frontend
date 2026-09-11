@@ -101,9 +101,11 @@ export default function DomainCard({
   item: rawItem,
   featured = false,
   showStyleBadge = false,
+  stackPremiumBadge = false,
   className = '',
   /** { shareType, originalQuery } — enables the Share & Earn button on this card. */
   shareContext = null,
+  onDelete = null,
 }) {
   const { t } = useTranslation();
   const { formatDomainPrice } = useCurrency();
@@ -162,7 +164,7 @@ export default function DomainCard({
           </div>
         ) : null}
         <div className="pr-10 space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className={stackPremiumBadge && item.isPremium ? 'flex flex-col items-start gap-1' : 'flex flex-wrap items-center gap-2'}>
             <StatusBadge status={item.status} />
             {item.isPremium ? <RegistryPremiumBadge /> : item.available ? <RegistryStandardBadge /> : null}
           </div>
@@ -255,7 +257,7 @@ export default function DomainCard({
         </div>
       ) : null}
       <div className="pr-9 space-y-1.5">
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className={stackPremiumBadge && item.isPremium ? 'flex flex-col items-start gap-1' : 'flex flex-wrap items-center gap-1.5'}>
           <StatusBadge status={item.status} />
           {item.isPremium ? <RegistryPremiumBadge /> : item.available ? <RegistryStandardBadge /> : null}
         </div>
@@ -330,6 +332,7 @@ export function DomainCardGrid({
   items,
   featuredFirst = true,
   showStyleBadge = false,
+  stackPremiumBadge = false,
   /** Skeleton slots rendered in the grid after loaded secondary cards. */
   skeletonCount = 0,
   /** { shareType, originalQuery } — enables Share & Earn on rendered cards. */
@@ -342,12 +345,12 @@ export function DomainCardGrid({
   return (
     <div className="space-y-4">
       {featured ? (
-        <DomainCard item={featured} featured showStyleBadge={showStyleBadge} shareContext={shareContext} />
+        <DomainCard item={featured} featured showStyleBadge={showStyleBadge} stackPremiumBadge={stackPremiumBadge} shareContext={shareContext} />
       ) : null}
       {(rest.length > 0 || skeletonCount > 0) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {rest.map((it) => (
-            <DomainCard key={it.domain} item={it} showStyleBadge={showStyleBadge} shareContext={shareContext} />
+            <DomainCard key={it.domain} item={it} showStyleBadge={showStyleBadge} stackPremiumBadge={stackPremiumBadge} shareContext={shareContext} />
           ))}
           {Array.from({ length: skeletonCount }).map((_, i) => (
             <DomainCardSkeleton key={`sk-${i}`} />

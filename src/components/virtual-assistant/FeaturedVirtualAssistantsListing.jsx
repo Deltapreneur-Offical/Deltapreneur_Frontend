@@ -9,15 +9,14 @@ import {
   mapVirtualAssistantToCreatorCard,
   normalizeHomepageListing,
 } from '../../utils/homepagePreview';
-import { useShouldAutoScroll } from '../../hooks/useShouldAutoScroll';
 import { useLikes } from '../../hooks/useLikes';
 import CommunityListingCard from '../listings/CommunityListingCard';
 import HomePreviewCardShell from '../home/HomePreviewCardShell';
-import HomeAutoScrollRow, { HomeAutoScrollRowItem } from '../home/HomeAutoScrollRow';
-import HomePreviewRow, { HomePreviewRowItem } from '../home/HomePreviewRow';
+import HomeCardsNavRow from '../home/HomeCardsNavRow';
+import { HomePreviewRowItem } from '../home/HomePreviewRow';
 import PageContentSkeleton from '../common/PageContentSkeleton';
 
-export function useFeaturedVirtualAssistants(pageSize = 20, { enabled = true } = {}) {
+export function useFeaturedVirtualAssistants(pageSize = 48, { enabled = true, featuredOnly = false } = {}) {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(enabled);
 
@@ -30,16 +29,24 @@ export function useFeaturedVirtualAssistants(pageSize = 20, { enabled = true } =
     let cancelled = false;
     setLoading(true);
 
-    virtualAssistantAPI
-      .getPublicList({ featured_only: true, page_size: pageSize })
+    const request = featuredOnly
+      ? virtualAssistantAPI.getPublicList({ featured_only: true, page_size: pageSize })
+      : virtualAssistantAPI.getPublicList({ page_size: pageSize });
+
+    request
       .then(async (response) => {
         let list = unwrapApiList(response);
-        // Homepage should not stay empty when none are marked featured yet.
-        if (!cancelled && asArray(list).length === 0) {
-          const fallback = await virtualAssistantAPI.getPublicList({ page_size: pageSize });
+        if (!featuredOnly && !cancelled && asArray(list).length === 0) {
+          const fallback = await virtualAssistantAPI.getPublicList({
+            featured_only: true,
+            page_size: pageSize,
+          });
           list = unwrapApiList(fallback);
         }
-        if (!cancelled) setProfiles(list);
+        const sorted = asArray(list).slice().sort((a, b) => (
+          Number(Boolean(b.featured)) - Number(Boolean(a.featured))
+        ));
+        if (!cancelled) setProfiles(sorted);
       })
       .catch(() => {
         if (!cancelled) setProfiles([]);
@@ -51,7 +58,7 @@ export function useFeaturedVirtualAssistants(pageSize = 20, { enabled = true } =
     return () => {
       cancelled = true;
     };
-  }, [pageSize, enabled]);
+  }, [pageSize, enabled, featuredOnly]);
 
   const patchProfile = useCallback((id, patch) => {
     setProfiles((prev) => prev.map((item) => (
@@ -101,6 +108,7 @@ export function FeaturedVirtualAssistantCard({
 export default function FeaturedVirtualAssistantsListing({
   layout = 'row',
   pageSize = 20,
+  featuredOnly = false,
   cards: externalCards,
   loading: externalLoading,
   emptyMessage,
@@ -111,11 +119,13 @@ export default function FeaturedVirtualAssistantsListing({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const internal = useFeaturedVirtualAssistants(pageSize, { enabled: externalCards === undefined });
+  const internal = useFeaturedVirtualAssistants(pageSize, {
+    enabled: externalCards === undefined,
+    featuredOnly,
+  });
   const cards = externalCards ?? internal.cards;
   const loading = externalLoading ?? internal.loading;
   const count = cards.length;
-  const shouldAutoScroll = useShouldAutoScroll(count);
   // Dedicated like bucket — do not reuse COMMUNITY (Creators) likes.
   const { toggle: toggleLike, get: getLike } = useLikes('VIRTUAL_ASSISTANT', cards);
 
@@ -159,25 +169,17 @@ export default function FeaturedVirtualAssistantsListing({
     );
   }
 
-  if (shouldAutoScroll) {
-    return (
-      <HomeAutoScrollRow durationSec={50} className="home-va-auto-scroll-row" ariaLabel={ariaLabel || 'Featured Virtual Assistants'}>
-        {cards.map((profile, index) => (
-          <HomeAutoScrollRowItem key={cardKey(profile, index)}>
-            {renderCard(profile)}
-          </HomeAutoScrollRowItem>
-        ))}
-      </HomeAutoScrollRow>
-    );
-  }
-
   return (
-    <HomePreviewRow>
+    <HomeCardsNavRow
+      accent="assistance"
+      className="home-va-auto-scroll-row"
+      ariaLabel={ariaLabel || 'Featured Virtual Assistants'}
+    >
       {cards.map((profile, index) => (
         <HomePreviewRowItem key={cardKey(profile, index)}>
           {renderCard(profile)}
         </HomePreviewRowItem>
       ))}
-    </HomePreviewRow>
+    </HomeCardsNavRow>
   );
 }

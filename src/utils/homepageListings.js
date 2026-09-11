@@ -150,10 +150,10 @@ export function filterFeaturedListings(items, type = 'domain') {
   return asArray(items).filter((item) => isHomepageFeaturedListing(item, type));
 }
 
-/** Homepage hero rows: admin-featured listings only. */
-export const HOMEPAGE_PREVIEW_LIMIT = 6;
+/** Homepage carousel: enough cards to page, without mounting a full catalog. */
+export const HOMEPAGE_PREVIEW_LIMIT = 16;
 
-function isOpenProviderShowcaseRow(item) {
+export function isOpenProviderShowcaseRow(item) {
   return item?.source === 'openprovider_showcase' || Boolean(item?.showcaseId);
 }
 
@@ -162,14 +162,25 @@ export function pickHomepagePreviewListings(
   type = 'domain',
   limit = HOMEPAGE_PREVIEW_LIMIT,
 ) {
-  const eligible = asArray(items).filter((item) => (
+  const list = asArray(items);
+  const featured = list.filter((item) => (
     isHomepageFeaturedListing(item, type)
     && isHomepageVerifiedListing(item, type)
   ));
-  if (type !== 'domain') {
-    return eligible.slice(0, limit);
+  const featuredIds = new Set(featured.map((item) => item?.id).filter((id) => id != null));
+
+  let orderedFeatured = featured;
+  if (type === 'domain') {
+    const showcase = featured.filter(isOpenProviderShowcaseRow);
+    const restFeatured = featured.filter((item) => !isOpenProviderShowcaseRow(item));
+    orderedFeatured = [...showcase, ...restFeatured];
   }
-  const showcase = eligible.filter(isOpenProviderShowcaseRow);
-  const rest = eligible.filter((item) => !isOpenProviderShowcaseRow(item));
-  return [...showcase, ...rest].slice(0, limit);
+
+  const rest = filterHomepageListings(list, type).filter((item) => (
+    item?.id != null
+    && !featuredIds.has(item.id)
+    && isHomepageVerifiedListing(item, type)
+  ));
+
+  return [...orderedFeatured, ...rest].slice(0, limit);
 }

@@ -12,6 +12,7 @@ import { EditIcon } from '../common/EditActionLabel';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
 import { APP_BASE_URL } from '../../config/urls';
+import { normalizePublicImageUrl } from '../../utils/imageUrl';
 
 import ListingCardStatsFooter from './ListingCardStatsFooter';
 
@@ -147,7 +148,7 @@ export default function VentureListingCard({
 
   const sellerAsk = resolveSellerAskSummary(venture);
 
-  const ventureImage = b.ventureImageUrl && !imgFailed ? b.ventureImageUrl : null;
+  const ventureImage = b.ventureImageUrl && !imgFailed ? normalizePublicImageUrl(b.ventureImageUrl) : null;
 
   const coVentureInvestment = isCoVenture ? resolveCoVentureInvestmentSeeking(venture) : null;
 
@@ -629,6 +630,15 @@ return (
             ? 'justify-between gap-2.5 p-3.5'
             : 'justify-between gap-2.5 p-4'
         }`}>
+        <svg
+          className="venture-listing-card__body-watermark"
+          viewBox="0 0 236 206"
+          preserveAspectRatio="none"
+          aria-hidden
+          focusable="false"
+        >
+          <polygon points="0,10 0,196 168,103" />
+        </svg>
 
         <div className="flex flex-col gap-2.5">
 
@@ -744,6 +754,14 @@ return (
           {/* Price Box */}
 
           {showPriceBox && (
+            <div className="venture-listing-card__price-block">
+              {!isAuction && showPriceText ? (
+                <span className="venture-listing-card__price-label uppercase leading-none">
+                  {isHomePreview
+                    ? (isCoVenture ? t('listingCardInvestment', 'Investment') : t('listingCardAskingPrice', 'Asking Price'))
+                    : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
+                </span>
+              ) : null}
 
             <div
 
@@ -763,16 +781,7 @@ return (
                 </div>
               ) : showPriceText ? (
 
-                <div className="domain-listing-card__price-text min-w-0 flex flex-col">
-
-                  <span className="venture-listing-card__price-label uppercase leading-none">
-
-                    {isHomePreview
-                      ? (isCoVenture ? t('listingCardInvestment', 'Investment') : t('listingCardAskingPrice', 'Asking Price'))
-                      : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
-
-                  </span>
-
+                <div className="domain-listing-card__price-text min-w-0">
                   <span className={`domain-listing-card__price-value currency-display truncate ${compact ? 'venture-listing-card__price-value--compact' : ''
                     }`}>
 
@@ -806,7 +815,7 @@ return (
               ) : null}
 
             </div>
-
+            </div>
           )}
 
 

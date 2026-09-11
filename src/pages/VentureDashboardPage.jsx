@@ -290,7 +290,7 @@ function VentureListingRow({ venture, onVerify, onListingChanged }) {
           {b.brandName || '—'}
           <span className={`text-[0.72rem] font-bold px-2 py-0.5 rounded border ${
             listingMode === 'CO_VENTURE'
-              ? 'text-teal-600 bg-teal-50 border-teal-200'
+              ? 'text-[#147A43] bg-[#F3FDE8] border-[#BEF38A]'
               : 'text-blue-600 bg-blue-50 border-blue-200'
           }`}>
             {listingMode === 'CO_VENTURE' ? 'Co-Venture' : 'Venture'}
@@ -814,7 +814,7 @@ function IncomingApplications() {
           {grouped.map(({ ventureId, title, subtitle, apps }) => (
             <div key={ventureId}>
               <h3 className="text-gray-900 mb-1 text-base font-semibold flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-teal-500" aria-hidden />
+                <span className="w-2 h-2 rounded-full bg-[#1ED891]" aria-hidden />
                 {title}
                 <span className="text-gray-500 font-normal text-sm">
                   ({apps.length} application{apps.length !== 1 ? 's' : ''})
@@ -894,13 +894,13 @@ function ApplicationCard({ app, expanded, onToggle, onApprove, onReject, onSelec
   const stop = (e) => e.stopPropagation();
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:border-teal-200/80 transition-colors">
+    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:border-[#1ED891]/80 transition-colors">
       <button
         type="button"
         className="w-full flex items-center gap-4 p-4 text-left hover:bg-gray-50/80 transition-colors"
         onClick={onToggle}
       >
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-100 to-indigo-100 flex items-center justify-center font-bold text-teal-700 text-base flex-shrink-0">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#F3FDE8] to-[#E7F9D6] flex items-center justify-center font-bold text-[#147A43] text-base flex-shrink-0">
           {app.fullName?.[0]?.toUpperCase() || '?'}
         </div>
 
@@ -927,7 +927,7 @@ function ApplicationCard({ app, expanded, onToggle, onApprove, onReject, onSelec
       {expanded && (
         <div className="border-t border-gray-100 px-4 pb-4 pt-3 bg-gradient-to-b from-gray-50/50 to-white">
           {equityLabel && (
-            <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-teal-50 border border-teal-100 text-xs font-semibold text-teal-800">
+            <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#F3FDE8] border border-[#BEF38A] text-xs font-semibold text-[#147A43]">
               Equity offered on listing: {equityLabel}
             </div>
           )}
@@ -1065,7 +1065,7 @@ function MyApplications() {
             >
               {brandImage
                 ? <img src={brandImage} alt={b.brandName} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
-                : <div className="w-11 h-11 rounded-xl bg-teal-100 flex items-center justify-center font-bold text-teal-700 flex-shrink-0">{b.brandName?.[0] || '?'}</div>
+                : <div className="w-11 h-11 rounded-xl bg-[#F3FDE8] flex items-center justify-center font-bold text-[#147A43] flex-shrink-0">{b.brandName?.[0] || '?'}</div>
               }
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-gray-900">{b.brandName || 'Unknown Venture'}</div>

@@ -509,68 +509,87 @@ export default function DomainListingCard({
         {/* Bottom: pencil | Put Auction (auction label gets remaining width) */}
         <div className="mt-auto pt-3">
           {isOwner ? (
-            <ListingOwnerActionPair
-              left={
-                onEdit ? (
-                  <button
-                    type="button"
-                    className={OWNER_ACTION_BTN_EDIT}
-                    onClick={(e) => { stop(e); onEdit(); }}
-                    aria-label={t('edit')}
-                    title={t('edit')}
-                  >
-                    <EditIcon size={15} />
-                  </button>
-                ) : (
-                  <span className={OWNER_ACTION_BTN_MUTED}>
-                    {t('listingCardYourListing', { defaultValue: 'Your listing' })}
-                  </span>
-                )
-              }
-              right={
-                isWinnerPhase ? (
-                  <button
-                    type="button"
-                    className={OWNER_ACTION_BTN_AUCTION_SOFT}
-                    onClick={(e) => { stop(e); onViewAuction?.(); }}
-                    title={t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}
-                  >
-                    <Gavel size={14} className="shrink-0" />
-                    <span>{t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}</span>
-                  </button>
-                ) : isLiveAuction ? (
-                  <button
-                    type="button"
-                    className={OWNER_ACTION_BTN_AUCTION_SOFT}
-                    onClick={(e) => { stop(e); onViewAuction?.(); }}
-                    title={auctionLive
-                      ? t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })
-                      : t('inAuction', { defaultValue: 'In Auction' })}
-                  >
-                    <Gavel size={14} className="shrink-0" />
-                    <span>
-                      {auctionLive
-                        ? t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })
-                        : t('inAuction', { defaultValue: 'In Auction' })}
+            (() => {
+              const hasOwnerEdit = Boolean(onEdit);
+              const hasAuctionCta = Boolean(onPutForAuction) || isLiveAuction || isWinnerPhase;
+
+              // When this compact card is just informing the owner (no edit/auction actions),
+              // avoid rendering two identical "Your listing" pills — show a single centered label instead.
+              if (!hasOwnerEdit && !hasAuctionCta) {
+                return (
+                  <div className="flex w-full justify-center">
+                    <span className={`${OWNER_ACTION_BTN_MUTED} px-4`}>
+                      {t('listingCardYourListing', { defaultValue: 'Your listing' })}
                     </span>
-                  </button>
-                ) : onPutForAuction ? (
-                  <button
-                    type="button"
-                    className={OWNER_ACTION_BTN_AUCTION}
-                    onClick={(e) => { stop(e); onPutForAuction(); }}
-                    title={t('putAuction', { defaultValue: 'Put Auction' })}
-                  >
-                    <Gavel size={14} className="shrink-0" />
-                    <span>{t('putAuction', { defaultValue: 'Put Auction' })}</span>
-                  </button>
-                ) : (
-                  <span className={OWNER_ACTION_BTN_MUTED}>
-                    {t('listingCardYourListing', { defaultValue: 'Your listing' })}
-                  </span>
-                )
+                  </div>
+                );
               }
-            />
+
+              return (
+                <ListingOwnerActionPair
+                  left={
+                    hasOwnerEdit ? (
+                      <button
+                        type="button"
+                        className={OWNER_ACTION_BTN_EDIT}
+                        onClick={(e) => { stop(e); onEdit(); }}
+                        aria-label={t('edit')}
+                        title={t('edit')}
+                      >
+                        <EditIcon size={15} />
+                      </button>
+                    ) : (
+                      <span className={OWNER_ACTION_BTN_MUTED}>
+                        {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+                      </span>
+                    )
+                  }
+                  right={
+                    isWinnerPhase ? (
+                      <button
+                        type="button"
+                        className={OWNER_ACTION_BTN_AUCTION_SOFT}
+                        onClick={(e) => { stop(e); onViewAuction?.(); }}
+                        title={t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}
+                      >
+                        <Gavel size={14} className="shrink-0" />
+                        <span>{t('auctionDetailEndedTitle', { defaultValue: 'View winner' })}</span>
+                      </button>
+                    ) : isLiveAuction ? (
+                      <button
+                        type="button"
+                        className={OWNER_ACTION_BTN_AUCTION_SOFT}
+                        onClick={(e) => { stop(e); onViewAuction?.(); }}
+                        title={auctionLive
+                          ? t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })
+                          : t('inAuction', { defaultValue: 'In Auction' })}
+                      >
+                        <Gavel size={14} className="shrink-0" />
+                        <span>
+                          {auctionLive
+                            ? t('listingCardOnLiveAuction', { defaultValue: 'On Live Auction' })
+                            : t('inAuction', { defaultValue: 'In Auction' })}
+                        </span>
+                      </button>
+                    ) : onPutForAuction ? (
+                      <button
+                        type="button"
+                        className={OWNER_ACTION_BTN_AUCTION}
+                        onClick={(e) => { stop(e); onPutForAuction(); }}
+                        title={t('putAuction', { defaultValue: 'Put Auction' })}
+                      >
+                        <Gavel size={14} className="shrink-0" />
+                        <span>{t('putAuction', { defaultValue: 'Put Auction' })}</span>
+                      </button>
+                    ) : (
+                      <span className={OWNER_ACTION_BTN_MUTED}>
+                        {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+                      </span>
+                    )
+                  }
+                />
+              );
+            })()
           ) : isAuction && auctionLive ? (
             <button
               type="button"

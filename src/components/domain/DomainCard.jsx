@@ -105,6 +105,7 @@ export default function DomainCard({
   className = '',
   /** { shareType, originalQuery } — enables the Share & Earn button on this card. */
   shareContext = null,
+  onDelete = null,
 }) {
   const { t } = useTranslation();
   const { formatDomainPrice } = useCurrency();

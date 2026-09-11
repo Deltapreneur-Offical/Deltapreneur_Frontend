@@ -1266,8 +1266,15 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       tld: item.ext || item.tld,
       status: item.status,
       available: true,
-      registrationPrice: item.unitPrice ?? item.price,
+      // Cart unit stays ex-GST; display uses GST-inclusive totalInr.
+      registrationPrice: item.unitPrice ?? item.registrationPrice ?? null,
+      unitPrice: item.unitPrice ?? item.registrationPrice ?? null,
+      totalInr: item.totalInr ?? null,
+      gstInr: item.gstInr ?? null,
+      gstRate: item.gstRate ?? null,
+      gstEnabled: item.gstEnabled ?? null,
       renewalPrice: item.renewalPrice,
+      renewalTotalInr: item.renewalTotalInr ?? null,
       period: 1,
       minPeriodYears: item.minPeriodYears || 1,
       isPremium: item.isPremium === true,
@@ -1298,7 +1305,10 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           isPremium: true,
           renewalPrice: newRenew ?? existingRenew,
           renewalPriceInr: newRenew ?? existingRenew,
+          renewalTotalInr: it.renewalTotalInr ?? existing.renewalTotalInr,
           registrationPrice: newReg ?? existingReg,
+          totalInr: it.totalInr ?? existing.totalInr,
+          gstEnabled: it.gstEnabled ?? existing.gstEnabled,
         });
       }
     };

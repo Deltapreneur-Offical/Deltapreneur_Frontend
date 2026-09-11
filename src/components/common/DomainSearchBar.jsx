@@ -43,7 +43,7 @@ import {
 } from '../home/motion/homeMotion';
 
 const PREMIUM_LOADING_MESSAGES = 3;
-const SEARCH_MODE_IDS = ['new', 'premium', 'ai', 'auction'];
+const SEARCH_MODE_IDS = ['new', 'ai', 'premium', 'auction'];
 const SEARCH_MODE_CONFIG = {
   ai: { label: 'Delta Brand Names', labelKey: 'searchTabAi', placeholderKey: 'searchPlaceholderAi' },
   new: { label: 'Domain Names', labelKey: 'searchTabNew', placeholderKey: 'searchPlaceholderNew' },

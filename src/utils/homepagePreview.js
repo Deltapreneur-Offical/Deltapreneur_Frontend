@@ -7,6 +7,7 @@ import {
 import { filterPublicMarketplaceListings } from './listingVisibility';
 import { fetchListPage, HOME_PREVIEW_PAGE_SIZE } from './listPagination';
 import { resolveVaProfilePhotoUrl } from './virtualAssistantDisplay';
+import { normalizePublicImageUrl } from './imageUrl';
 
 /** Normalize API rows into the shape listing cards expect. */
 export function normalizeHomepageListing(item, type = 'domain') {
@@ -25,7 +26,7 @@ export function normalizeHomepageListing(item, type = 'domain') {
       auctionApprovalStatus: item.auctionApprovalStatus ?? item.auction_approval_status ?? null,
       verified: Boolean(item.verified ?? item.is_verified),
       featured: Boolean(item.featured),
-      logo: item.logo ?? item.image_url ?? null,
+      logo: normalizePublicImageUrl(item.logo ?? item.image_url ?? null),
       listedBy: item.listedBy ?? item.listed_by ?? null,
       likeCount: Number(item.likeCount ?? item.like_count ?? 0),
       views: Number(item.views ?? item.view_count ?? 0),
@@ -44,7 +45,8 @@ export function normalizeHomepageListing(item, type = 'domain') {
         description: brand.description ?? brand.brand_description ?? '',
         industry: brand.industry ?? brand.brand_industry ?? '',
         dealValue: Number(brand.dealValue ?? brand.deal_value ?? 0),
-        logo: brand.logo ?? brand.brand_logo ?? item.logo ?? null,
+        logo: normalizePublicImageUrl(brand.logo ?? brand.brand_logo ?? item.logo ?? null),
+        ventureImageUrl: normalizePublicImageUrl(brand.ventureImageUrl ?? brand.venture_image_url ?? null),
       },
       listingApprovalStatus: item.listingApprovalStatus ?? item.listing_approval_status,
       saleType: item.saleType ?? item.sale_type ?? null,
@@ -65,7 +67,7 @@ export function normalizeHomepageListing(item, type = 'domain') {
       industry: item.industry ?? '',
       skills: item.skills ?? '',
       location: item.location ?? '',
-      imageUrl: item.imageUrl ?? item.image_url ?? null,
+      imageUrl: normalizePublicImageUrl(item.imageUrl ?? item.image_url ?? null),
       whyImHere: item.whyImHere ?? item.why_im_here ?? '',
       expectedRate: item.expectedRate ?? item.expected_rate ?? null,
       featured: Boolean(item.featured),
@@ -89,7 +91,7 @@ export function normalizeHomepageListing(item, type = 'domain') {
       yearsExperience: item.yearsExperience ?? item.years_experience ?? '',
       availability: item.availability ?? '',
       location: item.location ?? '',
-      profilePhotoUrl: resolveVaProfilePhotoUrl(item) ?? item.profilePhotoUrl ?? item.profile_photo_url ?? null,
+      profilePhotoUrl: normalizePublicImageUrl(resolveVaProfilePhotoUrl(item) ?? item.profilePhotoUrl ?? item.profile_photo_url ?? null),
       publicMonthlyPriceInr: item.publicMonthlyPriceInr ?? item.public_monthly_price_inr ?? null,
       publishStatus: item.publishStatus ?? item.publish_status ?? '',
       overallStatus: item.overallStatus ?? item.overall_status ?? '',
@@ -273,6 +275,7 @@ export async function fetchHomepageVenturePreview(
   requestFn,
   listingMode,
   limit = HOMEPAGE_PREVIEW_LIMIT,
+  fillCatalog = false,
 ) {
   const filterFn = listingMode === 'CO_VENTURE'
     ? (venture) => (venture.listingMode ?? venture.listing_mode) === 'CO_VENTURE'
@@ -281,5 +284,6 @@ export async function fetchHomepageVenturePreview(
   return fetchHomepageSectionPreview(requestFn, 'venture', limit, {
     filterFn,
     featuredQuery: { mode: listingMode },
+    fillCatalog,
   });
 }

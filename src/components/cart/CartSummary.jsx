@@ -493,9 +493,13 @@ export default function CartSummary({
     () => (cart?.items || []).some((it) => it.productType === 'DOMAIN_REGISTRATION'),
     [cart?.items],
   );
+  const hasDomainListingAddons = useMemo(
+    () => (cart?.items || []).some((it) => it.productType === 'DOMAIN_LISTING'),
+    [cart?.items],
+  );
   const money = hasDomainRegistration ? formatDomainPrice : formatPrice;
   const { services: vaServices } = useVirtualAssistantCatalog();
-  const { priceByAddonKey } = useOperationsServicesCatalog();
+  const { priceByAddonKey } = useOperationsServicesCatalog({ enabled: hasDomainListingAddons });
 
   const orderView = useMemo(() => {
     const breakdowns = (cart?.items || []).map((item) =>

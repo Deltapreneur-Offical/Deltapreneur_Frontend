@@ -197,8 +197,10 @@ export default function CartPage() {
     }
   };
 
+  const items = cart?.items || [];
+  const hasDomainListingAddons = items.some((it) => it.productType === 'DOMAIN_LISTING');
   const { services: vaServices } = useVirtualAssistantCatalog();
-  const { priceByAddonKey } = useOperationsServicesCatalog();
+  const { priceByAddonKey } = useOperationsServicesCatalog({ enabled: hasDomainListingAddons });
 
   const productOrderTotal = useMemo(() => {
     const backendTotal = Number(cart?.total);
@@ -209,7 +211,6 @@ export default function CartPage() {
     return buildCartOrderViewModel(breakdowns).productTotal;
   }, [cart?.items, cart?.total, vaServices, priceByAddonKey]);
 
-  const items = cart?.items || [];
   const technologyItems = useMemo(
     () => items.filter((it) => it.productType === 'TECHNOLOGY'),
     [items],

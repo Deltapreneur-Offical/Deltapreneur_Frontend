@@ -33,7 +33,7 @@ export default function TechnologySection() {
             (params) => cocreationAPI.getAll(params),
             'software',
             undefined,
-            { featuredQuery: {} },
+            { featuredQuery: {}, fillCatalog: false },
           ),
           technologyServicesAPI.getServices(),
         ]);

@@ -16,7 +16,7 @@ import HomeCardsNavRow from '../home/HomeCardsNavRow';
 import { HomePreviewRowItem } from '../home/HomePreviewRow';
 import PageContentSkeleton from '../common/PageContentSkeleton';
 
-export function useFeaturedVirtualAssistants(pageSize = 48, { enabled = true } = {}) {
+export function useFeaturedVirtualAssistants(pageSize = 48, { enabled = true, featuredOnly = false } = {}) {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(enabled);
 
@@ -29,11 +29,14 @@ export function useFeaturedVirtualAssistants(pageSize = 48, { enabled = true } =
     let cancelled = false;
     setLoading(true);
 
-    virtualAssistantAPI
-      .getPublicList({ page_size: pageSize })
+    const request = featuredOnly
+      ? virtualAssistantAPI.getPublicList({ featured_only: true, page_size: pageSize })
+      : virtualAssistantAPI.getPublicList({ page_size: pageSize });
+
+    request
       .then(async (response) => {
         let list = unwrapApiList(response);
-        if (!cancelled && asArray(list).length === 0) {
+        if (!featuredOnly && !cancelled && asArray(list).length === 0) {
           const fallback = await virtualAssistantAPI.getPublicList({
             featured_only: true,
             page_size: pageSize,
@@ -55,7 +58,7 @@ export function useFeaturedVirtualAssistants(pageSize = 48, { enabled = true } =
     return () => {
       cancelled = true;
     };
-  }, [pageSize, enabled]);
+  }, [pageSize, enabled, featuredOnly]);
 
   const patchProfile = useCallback((id, patch) => {
     setProfiles((prev) => prev.map((item) => (
@@ -105,6 +108,7 @@ export function FeaturedVirtualAssistantCard({
 export default function FeaturedVirtualAssistantsListing({
   layout = 'row',
   pageSize = 20,
+  featuredOnly = false,
   cards: externalCards,
   loading: externalLoading,
   emptyMessage,
@@ -115,7 +119,10 @@ export default function FeaturedVirtualAssistantsListing({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const internal = useFeaturedVirtualAssistants(pageSize, { enabled: externalCards === undefined });
+  const internal = useFeaturedVirtualAssistants(pageSize, {
+    enabled: externalCards === undefined,
+    featuredOnly,
+  });
   const cards = externalCards ?? internal.cards;
   const loading = externalLoading ?? internal.loading;
   const count = cards.length;

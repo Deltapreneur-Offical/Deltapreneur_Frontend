@@ -187,6 +187,7 @@ body.home-page-body .tech-service-card:hover .tech-service-card__icon,
 /* Home DeltaOs cards — light cream triangle across the full card. */
 .tech-service-card--home {
   isolation: isolate;
+  transform: translateZ(0);
 }
 
 .tech-service-card--home::before {

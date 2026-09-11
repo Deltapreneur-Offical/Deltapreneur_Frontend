@@ -364,6 +364,8 @@
   display: flex;
   flex-direction: column;
   border-radius: 1.5rem;
+  isolation: isolate;
+  transform: translateZ(0);
   border: 1px solid var(--home-card-border) !important;
   background: #FFFCF8 !important;
   box-shadow:
@@ -536,6 +538,7 @@
   flex-direction: column;
   border-radius: inherit;
   overflow: hidden;
+  isolation: isolate;
   background: #FFFCF8;
 }
 

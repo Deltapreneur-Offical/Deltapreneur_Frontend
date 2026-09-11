@@ -15,6 +15,7 @@ import TruncatedTextTooltip from '../common/TruncatedTextTooltip';
 import VaProfilePhoto from '../virtual-assistant/VaProfilePhoto';
 import { getListingBrowsePath, getVirtualAssistantDetailPath } from '../../utils/listingNavigation';
 import { useAuth } from '../../context/AuthContext';
+import { normalizePublicImageUrl } from '../../utils/imageUrl';
 import '../../styles/domain-listing-cards.css';
 import '../../styles/virtual-assistant-listing-card.css';
 
@@ -29,6 +30,7 @@ function isVirtualAssistantProfile(profile) {
 }
 
 function CreatorAvatar({ imageUrl, name, profile }) {
+  const normalizedUrl = normalizePublicImageUrl(imageUrl);
   const initial = name?.[0]?.toUpperCase() || '?';
   const [failedUrl, setFailedUrl] = useState(null);
 
@@ -36,7 +38,7 @@ function CreatorAvatar({ imageUrl, name, profile }) {
     return (
       <div className="creator-profile-card__avatar-container">
         <VaProfilePhoto
-          source={{ ...profile, profilePhotoUrl: imageUrl || profile.profilePhotoUrl }}
+          source={{ ...profile, profilePhotoUrl: normalizedUrl || profile.profilePhotoUrl }}
           applicationId={profile.id}
           refreshScope="public"
           alt={name || 'Virtual Assistant'}
@@ -47,16 +49,16 @@ function CreatorAvatar({ imageUrl, name, profile }) {
     );
   }
 
-  const showImage = Boolean(imageUrl) && failedUrl !== imageUrl;
+  const showImage = Boolean(normalizedUrl) && failedUrl !== normalizedUrl;
 
   return (
     <div className="creator-profile-card__avatar-container">
       {showImage ? (
         <img
-          src={imageUrl}
+          src={normalizedUrl}
           alt={name || 'Deltapreneur'}
           className="creator-profile-card__avatar"
-          onError={() => setFailedUrl(imageUrl)}
+          onError={() => setFailedUrl(normalizedUrl)}
         />
       ) : (
         <div className="creator-profile-card__avatar creator-profile-card__avatar--fallback" aria-hidden>

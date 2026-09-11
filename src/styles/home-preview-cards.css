@@ -1,4 +1,4 @@
-﻿/* Homepage listing previews — full card height, no zoom clipping */
+/* Homepage listing previews — full card height, no zoom clipping */
 
 
 
@@ -13,6 +13,7 @@
   padding-bottom: 1.25rem;
   padding-inline: 0;
   scroll-snap-type: x mandatory;
+  scroll-behavior: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
@@ -465,7 +466,7 @@
   border: 2px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #0F766E 0%, #115E59 100%) border-box !important;
+    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow: none !important;
@@ -479,7 +480,7 @@
 
 .home-preview-card-border--coventure .domain-listing-card__price-cta,
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta {
-  color: #0F766E !important;
+  color: #1ED891 !important;
 }
 
 .home-preview-card-border:hover .domain-listing-card__price-box,
@@ -596,8 +597,8 @@
 }
 
 .home-preview-card-border__inner .venture-listing-card--coventure {
-  border: 1px solid #0F766E !important;
-  box-shadow: 0 1px 2px rgba(15, 118, 110, 0.04) !important;
+  border: 1px solid #1ED891 !important;
+  box-shadow: 0 1px 2px rgba(30, 216, 145, 0.08) !important;
 }
 
 /* Venture / co-venture rows — content-sized cards inside colored border */
@@ -1808,15 +1809,15 @@
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure) .domain-listing-card__price-box {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #0F766E 0%, #115E59 100%) border-box !important;
+    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-box,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-box {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #0F766E 0%, #115E59 100%) border-box !important;
-  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.18), 0 6px 16px rgba(15, 118, 110, 0.12) !important;
+    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
+  box-shadow: 0 0 0 1px rgba(30, 216, 145, 0.18), 0 6px 16px rgba(30, 216, 145, 0.12) !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card) .domain-listing-card__price-cta,
@@ -1846,22 +1847,22 @@
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure) .domain-listing-card__price-cta,
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-cta,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-cta {
-  color: #0F766E !important;
+  color: #1ED891 !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure) .domain-listing-card__price-cta svg,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure) .domain-listing-card__price-cta svg,
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-cta svg,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .domain-listing-card__price-cta svg {
-  fill: #0F766E !important;
-  color: #0F766E !important;
+  fill: #1ED891 !important;
+  color: #1ED891 !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure) .price-section-v-icon,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure) .price-section-v-icon,
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .price-section-v-icon,
 .home-auto-scroll-row .home-preview-card-shell:has(.venture-listing-card--coventure):hover .price-section-v-icon {
-  filter: brightness(0) saturate(100%) invert(31%) sepia(35%) saturate(1322%) hue-rotate(130deg) brightness(94%) contrast(88%) !important;
+  filter: brightness(0) saturate(100%) invert(67%) sepia(50%) saturate(520%) hue-rotate(95deg) brightness(98%) contrast(91%) !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card) .domain-listing-card__price-cta:hover,
@@ -2128,19 +2129,19 @@
   outline: none;
 }
 
-/* Delta Ventures — teal View All button */
+/* Delta Ventures — lime-mint View All button */
 .home-section-header--coventure .home-section-header__view-all {
-  background: #F0FDFA;
-  border-color: #0F766E;
-  color: #0F766E;
+  background: #F3FDE8;
+  border-color: #1ED891;
+  color: #147A43;
 }
 
 .home-section-header--coventure .home-section-header__view-all:hover,
 .home-section-header--coventure .home-section-header__view-all:focus-visible {
-  background: #E6F5F3;
-  border-color: #0F766E;
-  color: #0F766E;
-  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.12);
+  background: #E7F9D6;
+  border-color: #1ED891;
+  color: #147A43;
+  box-shadow: 0 4px 14px rgba(30, 216, 145, 0.16);
   transform: translateY(-1px);
   outline: none;
 }
@@ -2976,6 +2977,24 @@
 .home-preview-row .tech-service-card {
   will-change: transform;
   transform: translateZ(0);
+  flex: 0 0 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  justify-content: flex-start;
+}
+
+.home-preview-row__item:has(.tech-service-card) {
+  align-self: flex-start;
+  height: auto;
+}
+
+.home-preview-row__item:has(.tech-service-card) .home-preview-row__card {
+  flex: 0 0 auto;
+  height: auto;
+}
+
+.home-preview-row .tech-service-card__footer {
+  margin-top: 0.75rem;
 }
 
 /* Same root-cause fix for the homepage card border shells (Technology Register

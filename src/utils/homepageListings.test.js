@@ -54,4 +54,16 @@ describe('pickHomepagePreviewListings', () => {
     expect(picked).toHaveLength(8);
     expect(picked.slice(0, 2).every((row) => row.featured)).toBe(true);
   });
+
+  it('defaults to 16 homepage preview cards', () => {
+    const marketplace = Array.from({ length: 24 }, (_, i) => ({
+      id: `m${i}`,
+      featured: true,
+      verified: true,
+      status: true,
+      domainName: `listed${i}.com`,
+    }));
+
+    expect(pickHomepagePreviewListings(marketplace, 'domain')).toHaveLength(16);
+  });
 });

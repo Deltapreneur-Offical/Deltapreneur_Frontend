@@ -470,11 +470,11 @@ export default function VentureForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
               { value: 'VENTURE', label: 'Venture', desc:'List your venture for acquisition or equity sale. Buyers can submit offers.', accent: 'blue' },
-              { value: 'CO_VENTURE', label: 'Delta-Ventures', desc: 'Find a co-founder or partner. Partners apply to join.', accent: 'teal' },
+              { value: 'CO_VENTURE', label: 'Delta-Ventures', desc: 'Find a co-founder or partner. Partners apply to join.', accent: 'mint' },
             ].map((opt) => {
               const selected = listingType === opt.value;
-              const borderCls = opt.accent === 'teal'
-                ? (selected ? 'border-teal-400 bg-teal-50/40' : 'border-gray-200')
+              const borderCls = opt.accent === 'mint'
+                ? (selected ? 'border-[#1ED891] bg-[#F3FDE8]/70' : 'border-gray-200')
                 : (selected ? 'border-blue-400 bg-blue-50/40' : 'border-gray-200');
               return (
                 <button

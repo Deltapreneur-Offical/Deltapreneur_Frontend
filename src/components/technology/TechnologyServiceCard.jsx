@@ -74,14 +74,16 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
   return (
     <div
       onClick={handleCardClick}
-      className={`tech-service-card group relative flex flex-col justify-between rounded-2xl border border-blue-200 bg-white p-6 shadow-sm transition-[transform,border-color,box-shadow] duration-[120ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-orange-500 hover:shadow-xl hover:shadow-orange-800/15 cursor-pointer overflow-hidden${homeLayout ? ' tech-service-card--home' : ''}`}
+      className={`tech-service-card group relative flex flex-col rounded-2xl border border-blue-200 bg-white shadow-sm transition-[transform,border-color,box-shadow] duration-[120ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-orange-500 hover:shadow-xl hover:shadow-orange-800/15 cursor-pointer overflow-hidden ${
+        homeLayout ? 'tech-service-card--home justify-start p-5' : 'justify-between p-6'
+      }`}
     >
       {/* Top Accent Glow */}
       <div className="tech-service-card__accent-glow absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br from-sky-500/10 to-blue-600/10 blur-xl transition-all duration-75 group-hover:scale-150 group-hover:from-orange-600/25 group-hover:to-orange-800/25" />
 
       <div>
         {/* Header Row */}
-        <div className="flex items-start justify-between gap-2 mb-4 min-w-0">
+        <div className={`flex items-start justify-between gap-2 min-w-0 ${homeLayout ? 'mb-3' : 'mb-4'}`}>
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="tech-service-card__icon flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-50 to-blue-50 text-blue-600 transition-all duration-75 group-hover:scale-110 group-hover:from-orange-700 group-hover:to-orange-800 group-hover:text-white shadow-inner shrink-0">
               <IconComponent className="h-6 w-6" />
@@ -128,7 +130,7 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
         </div>
 
         {/* Short Description */}
-        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mb-4">
+        <p className={`text-sm text-gray-600 line-clamp-2 leading-relaxed ${homeLayout ? 'mb-0' : 'mb-4'}`}>
           {techT(t, `techDesc_${service.slug}_`, service.short_description)}
         </p>
 
@@ -146,7 +148,7 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
       </div>
 
       {/* Footer / Price & CTA */}
-      <div className="tech-service-card__footer flex items-center justify-between gap-1.5 sm:gap-2 border-t border-gray-100 pt-3.5 mt-2 min-w-0">
+      <div className={`tech-service-card__footer flex items-center justify-between gap-1.5 sm:gap-2 border-t border-gray-100 min-w-0 ${homeLayout ? 'pt-3 mt-3' : 'pt-3.5 mt-2'}`}>
         {homeLayout ? (
           <button
             type="button"

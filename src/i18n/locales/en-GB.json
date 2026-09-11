@@ -34,6 +34,7 @@
   "storefrontPeriod": "Registration period",
   "storefrontYear": "year",
   "storefrontYears": "years",
+  "domainCardGstIncluded": "GST included",
   "storefrontPayNow": "Pay & register",
   "storefrontPayOpening": "Opening payment…",
   "storefrontOrderFailed": "Could not start checkout.",

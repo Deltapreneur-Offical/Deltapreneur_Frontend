@@ -8,9 +8,16 @@ import { isRegistryPremium } from '../../utils/registryPremium';
 import ShareButton from '../share/ShareButton';
 import { useTranslation } from 'react-i18next';
 
+function positiveMoney(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 /**
  * Normalize any discovery-source item into the shared DomainCard shape.
- * Price fields are always INR (ex-GST selling price with commission baked in).
+ * Cart unit is always INR ex-GST (commission baked in). Display uses the
+ * GST-inclusive payable when the API provides it — never write display totals
+ * into cart metadata.
  */
 export function normalizeDomainCardItem(raw = {}) {
   const name = String(raw.name || raw.domain?.split('.')?.[0] || '').toLowerCase();
@@ -27,10 +34,16 @@ export function normalizeDomainCardItem(raw = {}) {
     ? 'available'
     : String(raw.status || 'taken').toLowerCase();
 
-  const registrationPriceInr = Number(
-    raw.registrationPriceInr ?? raw.registrationPrice ?? raw.unitPrice ?? 0,
+  // Never read GST-inclusive aliases (price / totalInr / payableInr) as the cart unit.
+  const registrationPriceInr = positiveMoney(
+    raw.registrationPriceInr ?? raw.registrationPrice ?? raw.unitPrice,
   );
-  const renewalPriceInr = Number(raw.renewalPriceInr ?? raw.renewalPrice ?? 0);
+  const displayPriceInr = positiveMoney(
+    raw.displayPriceInr ?? raw.totalInr ?? raw.payableInr ?? raw.registrationTotalInr,
+  ) ?? registrationPriceInr;
+  const renewalPriceInr = positiveMoney(raw.renewalPriceInr ?? raw.renewalPrice);
+  const renewalDisplayPriceInr =
+    positiveMoney(raw.renewalTotalInr ?? raw.renewalDisplayPriceInr) ?? renewalPriceInr;
   const minPeriodYears = Math.max(1, Number(raw.minPeriodYears || 1));
   // Display/cart base is always 1-year; minPeriodYears is metadata for checkout only.
   const period = 1;
@@ -41,16 +54,23 @@ export function normalizeDomainCardItem(raw = {}) {
   const premiumProvider = raw.premiumProvider
     ? String(raw.premiumProvider).toLowerCase()
     : null;
+  const gstEnabled = raw.gstEnabled === true || raw.gst_enabled === true;
+  const gstIncluded = gstEnabled || (
+    displayPriceInr != null
+    && registrationPriceInr != null
+    && displayPriceInr > registrationPriceInr + 0.001
+  );
 
   // [RENEWAL_PRICE_DEBUG] Log raw vs normalized renewal price to trace the pipeline.
   if (raw.isPremium || registryPremium) {
     console.debug(
       '[RENEWAL_PRICE] DomainCard.normalizeDomainCardItem domain=%s ' +
-      'raw.renewalPrice=%o raw.renewalPriceInr=%o normalized_renewalPriceInr=%o',
+      'raw.renewalPrice=%o raw.renewalPriceInr=%o raw.renewalTotalInr=%o normalized=%o',
       domain,
       raw.renewalPrice,
       raw.renewalPriceInr,
-      Number.isFinite(renewalPriceInr) && renewalPriceInr > 0 ? renewalPriceInr : null,
+      raw.renewalTotalInr,
+      renewalDisplayPriceInr,
     );
   }
 
@@ -61,10 +81,12 @@ export function normalizeDomainCardItem(raw = {}) {
     status,
     available,
     isPremium: registryPremium,
-    registrationPriceInr: Number.isFinite(registrationPriceInr) && registrationPriceInr > 0
-      ? registrationPriceInr
-      : null,
-    renewalPriceInr: Number.isFinite(renewalPriceInr) && renewalPriceInr > 0 ? renewalPriceInr : null,
+    registrationPriceInr,
+    displayPriceInr,
+    renewalPriceInr,
+    renewalDisplayPriceInr,
+    gstEnabled,
+    gstIncluded,
     period,
     minPeriodYears,
     style: raw.style || raw.brand_category || null,
@@ -72,6 +94,16 @@ export function normalizeDomainCardItem(raw = {}) {
     premiumProvider,
     managedAcquisition: raw.managedAcquisition === true || raw.managed_acquisition === true,
   };
+}
+
+function GstIncludedCaption({ show }) {
+  const { t } = useTranslation();
+  if (!show) return null;
+  return (
+    <span className="block mt-1 text-[10px] font-semibold text-gray-400">
+      {t('domainCardGstIncluded', { defaultValue: 'GST included' })}
+    </span>
+  );
 }
 
 function StatusBadge({ status }) {
@@ -126,13 +158,13 @@ export default function DomainCard({
     : null;
 
   const priceText =
-    item.registrationPriceInr != null ? formatDomainPrice(item.registrationPriceInr) : null;
+    item.displayPriceInr != null ? formatDomainPrice(item.displayPriceInr) : null;
   const priceYearSuffix = item.isPremium
     ? t('domainCardFirstYearSuffix', { defaultValue: ' (1st Year)' })
     : t('domainCardYearSuffix', { defaultValue: '/yr' });
   const priceTitle = priceText ? `${priceText}${priceYearSuffix}` : undefined;
   const renewalText =
-    item.renewalPriceInr != null ? formatDomainPrice(item.renewalPriceInr) : null;
+    item.renewalDisplayPriceInr != null ? formatDomainPrice(item.renewalDisplayPriceInr) : null;
 
   // [RENEWAL_PRICE_DEBUG] Log the value actually rendered for premium domains.
   if (item.isPremium) {
@@ -194,6 +226,7 @@ export default function DomainCard({
             >
               {priceText}
               <span className="text-xs font-medium text-gray-400 ml-1.5">{priceYearSuffix}</span>
+              <GstIncludedCaption show={item.gstIncluded} />
             </p>
           ) : (
             <p className="text-sm font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>
@@ -289,6 +322,7 @@ export default function DomainCard({
           >
             {priceText}
             <span className="text-[11px] font-medium text-gray-400 ml-1">{priceYearSuffix}</span>
+            <GstIncludedCaption show={item.gstIncluded} />
           </p>
         ) : (
           <p className="text-xs font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>

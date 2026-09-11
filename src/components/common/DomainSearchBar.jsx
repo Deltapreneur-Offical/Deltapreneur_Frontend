@@ -135,7 +135,9 @@ function TldPriceMarquee() {
         .getPrices()
         .then(({ data }) => {
           const payload = data?.data ?? data;
-          return tldPricesFromByTldMap(payload?.registration?.byTld);
+          return tldPricesFromByTldMap(
+            payload?.registration?.byTldInclusive || payload?.registration?.byTld,
+          );
         })
         .catch(() => []);
 
@@ -145,7 +147,7 @@ function TldPriceMarquee() {
           const byTld = {};
           fetchedItems.forEach((it) => {
             const tld = normalizeTldKey(it?.tld);
-            const price = Number(it?.registrationPrice ?? it?.unitPrice ?? it?.price);
+            const price = Number(it?.totalInr ?? it?.registrationPrice ?? it?.unitPrice);
             if (tld && Number.isFinite(price) && price > 0) byTld[tld] = price;
           });
           return tldPricesFromByTldMap(byTld);
@@ -679,6 +681,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       available: item.available,
       unitPrice: item.registrationPrice ?? null,
       renewalPrice: item.renewalPrice ?? null,
+      renewalTotalInr: item.renewalTotalInr ?? null,
+      totalInr: item.totalInr ?? null,
+      gstInr: item.gstInr ?? null,
+      gstRate: item.gstRate ?? null,
+      gstEnabled: item.gstEnabled ?? null,
       price: item.registrationPrice ?? null,
       priceCurrency: item.currency || 'INR',
       minPeriodYears: item.minPeriodYears || 1,
@@ -702,10 +709,15 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       ext,
       status: onPublicMarketplace ? 'marketplace' : (data.status === 'marketplace' ? 'taken' : data.status),
       available: data.status === 'available',
-      // Never fall back to `price` (GST-inclusive total) for the /yr unit display.
+      // Never fall back to `price` (GST-inclusive total) for the /yr cart unit.
       price: data.unitPrice ?? null,
       unitPrice: data.unitPrice ?? null,
+      totalInr: data.totalInr ?? null,
+      gstInr: data.gstInr ?? null,
+      gstRate: data.gstRate ?? null,
+      gstEnabled: data.gstEnabled ?? null,
       renewalPrice: data.renewalPrice ?? data.renewalPriceInr ?? null,
+      renewalTotalInr: data.renewalTotalInr ?? null,
       priceCurrency: data.priceCurrency ?? null,
       minPeriodYears: data.minPeriodYears ?? 1,
       isPremium,

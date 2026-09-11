@@ -189,7 +189,7 @@ export default function MyTechnologiesTab() {
                 {/* Actions Grid */}
                 <div className="grid grid-cols-2 gap-2 pt-2">
                   <button
-                    onClick={() => setSelectedCredentials(sub.credentials)}
+                    onClick={() => setSelectedCredentials(sub.credentials || {})}
                     className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-600 hover:bg-indigo-100"
                   >
                     <Key className="h-3.5 w-3.5" />
@@ -230,36 +230,74 @@ export default function MyTechnologiesTab() {
         </div>
       )}
 
-      {/* Credentials Modal */}
+      {/* Credentials Modal — never shows passwords/tokens; backend already strips secrets */}
       {selectedCredentials && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Service Credentials</h3>
-            <p className="text-xs text-gray-500 mb-4">White-labelled access details for your Deltapreneur service.</p>
+            <p className="text-xs text-gray-500 mb-4">
+              Public access details only. Passwords and provider tokens are never shown here.
+            </p>
 
             <div className="bg-gray-50 rounded-2xl p-4 space-y-3 text-xs font-mono text-gray-800 border border-gray-100">
-              <div>
-                <span className="text-gray-500 font-sans block text-[10px] uppercase font-bold">Access URL:</span>
-                <a
-                  href={selectedCredentials.access_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-indigo-600 underline break-all flex items-center gap-1 mt-0.5 font-bold"
-                >
-                  {selectedCredentials.access_url}
-                  <ExternalLink className="h-3 w-3 shrink-0" />
-                </a>
-              </div>
-              <div>
-                <span className="text-gray-500 font-sans block text-[10px] uppercase font-bold">Username:</span>
-                <span>{selectedCredentials.username}</span>
-              </div>
-              {selectedCredentials.access_token && (
-                <div>
-                  <span className="text-gray-500 font-sans block text-[10px] uppercase font-bold">API Token:</span>
-                  <span className="break-all">{selectedCredentials.access_token}</span>
-                </div>
-              )}
+              {(() => {
+                const blocked = new Set([
+                  'password',
+                  'access_token',
+                  'token',
+                  'api_token',
+                  'api_key',
+                  'secret',
+                  'client_secret',
+                  'refresh_token',
+                  'managepath',
+                  'managelabel',
+                ]);
+                const entries = Object.entries(selectedCredentials || {}).filter(([key, value]) => {
+                  const lowered = String(key).toLowerCase();
+                  if (blocked.has(lowered) || lowered.includes('password') || lowered.includes('token')) {
+                    return false;
+                  }
+                  if (value == null || value === '') return false;
+                  if (typeof value === 'string' && value.toLowerCase().includes('resellportal')) {
+                    return false;
+                  }
+                  return true;
+                });
+                if (entries.length === 0) {
+                  return (
+                    <p className="font-sans text-xs text-gray-600">
+                      Access information is not available in the customer portal. Please contact Deltapreneur support if you need help accessing this service.
+                    </p>
+                  );
+                }
+                return entries.map(([key, value]) => {
+                  const isUrl =
+                    typeof value === 'string' &&
+                    /^https?:\/\//i.test(value) &&
+                    ['access_url', 'url', 'login_url'].includes(String(key).toLowerCase());
+                  return (
+                    <div key={key}>
+                      <span className="text-gray-500 font-sans block text-[10px] uppercase font-bold">
+                        {String(key).replaceAll('_', ' ')}:
+                      </span>
+                      {isUrl ? (
+                        <a
+                          href={value}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-indigo-600 underline break-all flex items-center gap-1 mt-0.5 font-bold"
+                        >
+                          {value}
+                          <ExternalLink className="h-3 w-3 shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="break-all">{String(value)}</span>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
             </div>
 
             <button

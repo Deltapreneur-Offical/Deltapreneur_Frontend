@@ -18,6 +18,11 @@ import {
   Edit3,
   RotateCw,
   Search,
+  Copy,
+  Eye,
+  EyeOff,
+  Mail,
+  KeyRound,
 } from 'lucide-react';
 
 export default function AdminPremiumTechTab() {
@@ -53,6 +58,11 @@ export default function AdminPremiumTechTab() {
   const [overrideAnnually, setOverrideAnnually] = useState('');
   const [savingOverride, setSavingOverride] = useState(false);
   const [retryingId, setRetryingId] = useState(null);
+  const [subscriptionSearch, setSubscriptionSearch] = useState('');
+  const [accessDetails, setAccessDetails] = useState(null);
+  const [accessLoadingId, setAccessLoadingId] = useState(null);
+  const [resendingId, setResendingId] = useState(null);
+  const [revealedFields, setRevealedFields] = useState({});
 
   const loadAdminData = async () => {
     try {
@@ -82,7 +92,9 @@ export default function AdminPremiumTechTab() {
         setRenewals(renRes.value?.data || renRes.value || []);
       }
       if (failedRes.status === 'fulfilled') {
-        setFailedItems(failedRes.value?.data || failedRes.value || []);
+        const raw = failedRes.value?.data;
+        const items = Array.isArray(raw) ? raw : Array.isArray(raw?.data) ? raw.data : [];
+        setFailedItems(items);
       }
       if (statusRes.status === 'fulfilled') {
         setServiceStatus(statusRes.value?.data || statusRes.value || null);
@@ -159,8 +171,21 @@ export default function AdminPremiumTechTab() {
   const handleRetryProvisioning = async (itemId) => {
     try {
       setRetryingId(itemId);
-      await technologyServicesAPI.retryProvisioning(itemId);
-      alert('Provisioning retry executed successfully!');
+      const res = await technologyServicesAPI.retryProvisioning(itemId);
+      const body = res?.data?.data ?? res?.data ?? res;
+      const status = String(body?.status || '').toUpperCase();
+      const outcome = String(body?.outcome || '');
+      if (status === 'ACTIVE' || outcome === 'activated' || outcome === 'adopted') {
+        alert('Provisioning retry executed successfully!');
+      } else if (body?.error && !body?.payment_status) {
+        alert(body.error || 'Failed to retry provisioning.');
+      } else {
+        alert(
+          body?.last_provider_error
+            ? `Retry ran but activation is still pending: ${body.last_provider_error}`
+            : 'Retry ran but activation is still pending. The purchase remains in Failed Provisioning.'
+        );
+      }
       loadAdminData();
     } catch {
       alert('Failed to retry provisioning.');
@@ -168,6 +193,64 @@ export default function AdminPremiumTechTab() {
       setRetryingId(null);
     }
   };
+
+  const copyValue = async (value) => {
+    const text = String(value || '').trim();
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      /* clipboard may be unavailable in some browsers */
+    }
+  };
+
+  const handleViewAccessDetails = async (subscriptionId) => {
+    try {
+      setAccessLoadingId(subscriptionId);
+      setRevealedFields({});
+      const res = await technologyServicesAPI.getAdminSubscriptionAccessDetails(subscriptionId);
+      setAccessDetails(res?.data || res || null);
+    } catch {
+      alert('Unable to load access details.');
+    } finally {
+      setAccessLoadingId(null);
+    }
+  };
+
+  const handleResendAccessEmail = async (subscriptionId) => {
+    try {
+      setResendingId(subscriptionId);
+      const res = await technologyServicesAPI.resendAccessEmail(subscriptionId);
+      const body = res?.data || res;
+      if (body?.success) {
+        alert('Access email resent to the customer.');
+        loadAdminData();
+      } else {
+        alert(body?.error || body?.detail || 'Unable to resend access email.');
+      }
+    } catch (err) {
+      const detail = err?.response?.data?.detail || err?.response?.data?.error;
+      alert(typeof detail === 'string' ? detail : 'Unable to resend access email.');
+    } finally {
+      setResendingId(null);
+    }
+  };
+
+  const accessEmailLabel = (sub) => {
+    const status = String(sub?.access_email_status || '').toUpperCase();
+    if (status === 'SENT' || sub?.access_email_sent) return 'SENT';
+    if (status === 'FAILED') return 'FAILED';
+    return 'PENDING';
+  };
+
+  const emailQuery = subscriptionSearch.trim().toLowerCase();
+  const visibleSubscriptions = emailQuery
+    ? subscriptions.filter((sub) => {
+        const email = String(sub.customer_email || '').toLowerCase();
+        const name = String(sub.customer_name || '').toLowerCase();
+        return email.includes(emailQuery) || name.includes(emailQuery);
+      })
+    : subscriptions;
 
   if (loading) {
     return (
@@ -449,37 +532,154 @@ export default function AdminPremiumTechTab() {
       {/* 6. Tab Content: Subscriptions & Orders */}
       {activeTab === 'subscriptions' && (
         <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-          {subscriptions.length === 0 ? (
+          <div className="p-4 border-b border-gray-100 space-y-3">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 justify-between">
+              <div>
+                <h4 className="font-extrabold text-sm text-gray-900">Customer purchases</h4>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  After successful service activation, Deltapreneur automatically sends the customer's
+                  service access credentials to their registered email. Admins can use View Access Details
+                  if a customer needs assistance or loses their access information.
+                </p>
+              </div>
+              <div className="relative w-full md:w-80">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <input
+                  type="search"
+                  value={subscriptionSearch}
+                  onChange={(e) => setSubscriptionSearch(e.target.value)}
+                  placeholder="Search customer email"
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-xs font-medium text-gray-800 focus:border-indigo-500 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+          {visibleSubscriptions.length === 0 ? (
             <div className="py-12 text-center text-xs text-gray-500">No customer subscriptions or orders recorded yet.</div>
           ) : (
-            <table className="w-full text-left text-xs text-gray-700">
+            <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-gray-700 min-w-[1100px]">
               <thead className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider">
                 <tr>
-                  <th className="p-4">User</th>
+                  <th className="p-4">Customer</th>
                   <th className="p-4">Service</th>
-                  <th className="p-4">Plan & Cycle</th>
-                  <th className="p-4">Amount</th>
+                  <th className="p-4">Plan</th>
+                  <th className="p-4">Purchased</th>
                   <th className="p-4">Status</th>
-                  <th className="p-4">Provider Order ID</th>
+                  <th className="p-4">Provider IDs</th>
+                  <th className="p-4">Access</th>
+                  <th className="p-4">Access Email</th>
+                  <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 font-medium">
-                {subscriptions.map((sub) => (
+                {visibleSubscriptions.map((sub) => (
                   <tr key={sub.id} className="hover:bg-gray-50/50">
-                    <td className="p-4 font-mono text-gray-900">{sub.user_id}</td>
-                    <td className="p-4 font-bold text-gray-900">{sub.service_name}</td>
-                    <td className="p-4 capitalize">{sub.plan_code} ({sub.billing_cycle})</td>
-                    <td className="p-4 font-bold text-gray-900">${sub.price} {sub.currency}</td>
                     <td className="p-4">
-                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                        {sub.status}
-                      </span>
+                      <div className="font-bold text-gray-900">{sub.customer_name || 'Unknown customer'}</div>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="font-mono text-[11px] text-gray-600">{sub.customer_email || 'Email unavailable'}</span>
+                        {sub.customer_email ? (
+                          <button
+                            type="button"
+                            title="Copy customer email"
+                            onClick={() => copyValue(sub.customer_email)}
+                            className="text-gray-400 hover:text-indigo-600"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        ) : null}
+                      </div>
                     </td>
-                    <td className="p-4 font-mono text-gray-500">{sub.provider_subscription_id || 'N/A'}</td>
+                    <td className="p-4">
+                      <div className="font-bold text-gray-900">{sub.service_name}</div>
+                      <div className="text-[10px] text-gray-400 font-mono">{sub.service_slug}</div>
+                    </td>
+                    <td className="p-4 capitalize">
+                      {sub.plan_code} ({sub.billing_cycle})
+                    </td>
+                    <td className="p-4 font-mono text-gray-600">
+                      {sub.created_at ? new Date(sub.created_at).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td className="p-4">
+                      <div className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 inline-block">
+                        {sub.status}
+                      </div>
+                      <div className="text-[10px] text-gray-500 mt-1">Payment: {sub.payment_status || 'n/a'}</div>
+                      <div className="text-[10px] text-gray-500">Provisioning: {sub.provisioning_status || sub.status}</div>
+                    </td>
+                    <td className="p-4 font-mono text-gray-600 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <span>Service: {sub.provider_subscription_id || 'N/A'}</span>
+                        {sub.provider_subscription_id ? (
+                          <button
+                            type="button"
+                            title="Copy provider service ID"
+                            onClick={() => copyValue(sub.provider_subscription_id)}
+                            className="text-gray-400 hover:text-indigo-600"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>Order: {sub.provider_order_id || 'N/A'}</span>
+                        {sub.provider_order_id ? (
+                          <button
+                            type="button"
+                            title="Copy provider order ID"
+                            onClick={() => copyValue(sub.provider_order_id)}
+                            className="text-gray-400 hover:text-indigo-600"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      {sub.has_access_information ? (
+                        <span className="text-emerald-700 font-bold">Available</span>
+                      ) : (
+                        <span className="text-gray-400">Not available</span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      {(() => {
+                        const emailStatus = accessEmailLabel(sub);
+                        if (emailStatus === 'SENT') {
+                          return <span className="text-emerald-700 font-bold">✓ Sent</span>;
+                        }
+                        if (emailStatus === 'FAILED') {
+                          return <span className="text-amber-800 font-bold">⚠ Failed</span>;
+                        }
+                        return <span className="text-gray-600 font-bold">⏳ Pending</span>;
+                      })()}
+                    </td>
+                    <td className="p-4 text-right space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => handleViewAccessDetails(sub.id)}
+                        disabled={accessLoadingId === sub.id}
+                        className="inline-flex items-center gap-1 rounded-xl bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100"
+                      >
+                        <KeyRound className="h-3.5 w-3.5" />
+                        {accessLoadingId === sub.id ? 'Loading...' : 'View Access Details'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleResendAccessEmail(sub.id)}
+                        disabled={resendingId === sub.id}
+                        className="ml-2 inline-flex items-center gap-1 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100"
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                        {resendingId === sub.id ? 'Sending...' : 'Resend Access Email'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       )}
@@ -550,6 +750,12 @@ export default function AdminPremiumTechTab() {
                       <span className="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700 uppercase">{item.status}</span>
                     </div>
                     <p className="text-xs text-gray-600 mt-1">User: <span className="font-mono">{item.user_email}</span> | Plan: <span className="capitalize">{item.plan_code}</span> ({item.billing_cycle})</p>
+                    <p className="text-[11px] text-gray-600 mt-1">
+                      Payment: {item.payment_status || 'CAPTURED'}
+                      {' · '}Provisioning: {item.provisioning_status || item.status}
+                      {' · '}Attempts: {item.retry_count ?? item.provision_attempts ?? 0}/{item.max_retries ?? 5}
+                      {' · '}{item.retry_eligible === false ? 'Needs review' : 'Retryable'}
+                    </p>
                     <p className="text-[11px] text-red-600 mt-1 font-mono">Reason: {item.error_reason}</p>
                   </div>
                   <button
@@ -680,6 +886,70 @@ export default function AdminPremiumTechTab() {
                 {savingOverride ? 'Saving...' : 'Save Override'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {accessDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div>
+                <h3 className="font-extrabold text-base text-gray-900">Access details</h3>
+                <p className="text-[11px] text-gray-500">{accessDetails.service_name} · {accessDetails.customer_email}</p>
+              </div>
+              <button type="button" onClick={() => setAccessDetails(null)} className="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+            <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
+              Copy only what you need, then email the customer manually from Deltapreneur. This screen does not send credentials.
+            </p>
+            {accessDetails.customer_email ? (
+              <a
+                href={`mailto:${encodeURIComponent(accessDetails.customer_email)}`}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700"
+              >
+                <Mail className="h-3.5 w-3.5" />
+                Open email to customer
+              </a>
+            ) : null}
+            {!accessDetails.access_available ? (
+              <p className="text-sm font-semibold text-gray-700">Access information not available</p>
+            ) : (
+              <div className="space-y-3">
+                {(accessDetails.fields || []).map((field) => {
+                  const revealed = Boolean(revealedFields[field.key]);
+                  const displayValue = field.sensitive && !revealed ? '••••••••' : field.value;
+                  return (
+                    <div key={field.key} className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500">{field.label}</div>
+                      <div className="mt-1 flex items-start justify-between gap-2">
+                        <span className="font-mono text-xs text-gray-900 break-all">{displayValue}</span>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {field.sensitive ? (
+                            <button
+                              type="button"
+                              onClick={() => setRevealedFields((prev) => ({ ...prev, [field.key]: !prev[field.key] }))}
+                              className="text-gray-500 hover:text-indigo-600"
+                              title={revealed ? 'Hide' : 'Reveal'}
+                            >
+                              {revealed ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                            </button>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => copyValue(field.value)}
+                            className="text-gray-500 hover:text-indigo-600"
+                            title="Copy"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}

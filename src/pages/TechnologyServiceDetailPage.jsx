@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '../components/layout/AppLayout';
 import { technologyServicesAPI } from '../api/technologyServicesApi';
@@ -54,9 +54,16 @@ const ICON_MAP = {
   Box,
 };
 
+function extractTechnologyServiceSlug(pathname = '') {
+  const match = String(pathname || '').match(/^\/technolog(?:y|ies)\/(?:services\/)?([^/?#]+)\/?$/i);
+  return match?.[1] || '';
+}
+
 export default function TechnologyServiceDetailPage() {
   const params = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { addItem } = useCart();
   const { formatPrice, convertToInr } = useCurrency();
@@ -65,8 +72,7 @@ export default function TechnologyServiceDetailPage() {
   const formatTechPrice = (usdAmount) =>
     formatPrice(convertToInr(Number(usdAmount) || 0, 'USD'));
 
-  // Extract slug from route params or current URL path
-  const slug = params.slug || window.location.pathname.split('/').pop();
+  const slug = params.slug || extractTechnologyServiceSlug(location.pathname);
 
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -86,14 +92,12 @@ export default function TechnologyServiceDetailPage() {
 
   useEffect(() => {
     let isMounted = true;
-    const targetSlug = slug || window.location.pathname.split('/').pop();
-    const apiUrl = `/api/v1/technology-services/${targetSlug}`;
-
-    console.log(`[TechnologyServiceDetailPage] Calling API: ${apiUrl} (slug: ${targetSlug})`);
+    const targetSlug = slug;
 
     // Safety timeout (5 seconds) to prevent infinite loading spinner under any network state
     const timeoutId = setTimeout(() => {
       if (isMounted) {
+        const apiUrl = `/api/v1/technology-services/${targetSlug}`;
         console.warn(`[TechnologyServiceDetailPage] Safety timeout (5s) reached for API: ${apiUrl}`);
         setError(t('techDetailTimeout', { defaultValue: 'Request timed out while loading technology service details.' }));
         setLoading(false);
@@ -114,6 +118,9 @@ export default function TechnologyServiceDetailPage() {
           clearTimeout(timeoutId);
           return;
         }
+
+        const apiUrl = `/api/v1/technology-services/${targetSlug}`;
+        console.log(`[TechnologyServiceDetailPage] Calling API: ${apiUrl} (slug: ${targetSlug})`);
 
         const res = await technologyServicesAPI.getServiceBySlug(targetSlug);
         console.log(`[TechnologyServiceDetailPage] Response for ${apiUrl} -> Status: ${res.status || 200}`, res.data || res);
@@ -141,6 +148,7 @@ export default function TechnologyServiceDetailPage() {
           }
         }
       } catch (err) {
+        const apiUrl = `/api/v1/technology-services/${targetSlug}`;
         console.error(`[TechnologyServiceDetailPage] Error calling API ${apiUrl}:`, err);
         if (isMounted) {
           setError(err?.response?.data?.detail || t('techDetailNotFound', { defaultValue: 'Technology service not found.' }));
@@ -315,10 +323,10 @@ export default function TechnologyServiceDetailPage() {
                       Your white-labelled service is live and fully provisioned.
                     </p>
                     <button
-                      onClick={() => navigate('/dashboard?tab=my-technologies')}
+                      onClick={() => navigate('/technology/dashboard')}
                       className="w-full rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 px-5 py-3 text-sm font-bold text-white shadow-lg hover:from-orange-700 hover:to-amber-700 transition-all transform hover:-translate-y-0.5"
                     >
-                      Manage Subscription
+                      View in My Technologies
                     </button>
                   </div>
                 ) : (
@@ -629,14 +637,12 @@ export default function TechnologyServiceDetailPage() {
 
             <div className="bg-gray-50 rounded-2xl p-4 my-6 text-left space-y-2 border border-gray-100 text-xs text-gray-600">
               <div><strong>Status:</strong> <span className="text-emerald-600 font-bold">ACTIVE</span></div>
-              <div><strong>Workspace URL:</strong> <a href={purchasedSuccess.credentials?.access_url} target="_blank" rel="noreferrer" className="text-orange-700 underline font-mono break-all">{purchasedSuccess.credentials?.access_url}</a></div>
-              <div><strong>Username:</strong> <span className="font-mono text-gray-800">{purchasedSuccess.credentials?.username}</span></div>
             </div>
 
             <button
               onClick={() => {
                 setPurchasedSuccess(null);
-                navigate('/dashboard?tab=my-technologies');
+                navigate('/technology/dashboard');
               }}
               className="w-full rounded-xl bg-orange-700 py-3 text-sm font-bold text-white shadow-md hover:bg-orange-800"
             >

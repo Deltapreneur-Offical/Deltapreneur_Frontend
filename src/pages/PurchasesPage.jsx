@@ -570,6 +570,15 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
   const sw = purchase.software || {};
   const helpPaid = purchase.coBrotherHelpPaid;
   const confirmed = purchase.completionStatus === 'CONFIRMED';
+  const isTechnologyService = Boolean(
+    purchase.isTechnologyService || purchase.activationStatus || purchase.provisioningStatus
+  );
+  const activationStatus = String(purchase.activationStatus || '').toUpperCase();
+  const activationLabel = purchase.activationStatusLabel
+    || (activationStatus === 'ACTIVE' ? 'Active'
+      : activationStatus === 'PENDING_ACTIVATION' ? 'Pending Activation'
+      : activationStatus === 'ACTIVATION_ISSUE' ? 'Activation Issue'
+      : null);
   const HELP_FEE_INR = 1000;
 
   const planLabel = purchase.selectedPlan ? {
@@ -617,11 +626,25 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
                 {planLabel}
               </span>
             )}
-            {confirmed && (
+            {isTechnologyService && activationLabel ? (
+              <span className={`text-[0.65rem] font-bold px-2 py-0.5 rounded-md tracking-wider ${
+                activationStatus === 'ACTIVE'
+                  ? 'text-green-700 bg-green-50 border border-green-200'
+                  : activationStatus === 'ACTIVATION_ISSUE'
+                    ? 'text-red-700 bg-red-50 border border-red-200'
+                    : 'text-amber-800 bg-amber-50 border border-amber-200'
+              }`}>
+                {activationStatus === 'ACTIVE'
+                  ? '✓ Active'
+                  : activationStatus === 'PENDING_ACTIVATION'
+                    ? `⏳ ${activationLabel}`
+                    : activationLabel}
+              </span>
+            ) : confirmed ? (
               <span className="text-[0.65rem] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-md tracking-wider">
                 ✓ Confirmed
               </span>
-            )}
+            ) : null}
             {isExpired && (
               <span className="text-[0.65rem] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md tracking-wider animate-pulse">
                 EXPIRED
@@ -639,10 +662,31 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
             )}
           </div>
           <div className="text-[0.8rem] text-gray-500 font-medium">
-            {sw.category?.replace(/_/g, ' ')} <span className="mx-1.5 text-gray-300">•</span> Purchased{' '}
+            {sw.category?.replace(/_/g, ' ')}
+            {purchase.selectedPlan ? (
+              <>
+                <span className="mx-1.5 text-gray-300">•</span>
+                {String(purchase.selectedPlan).replace(/_/g, ' ')}
+              </>
+            ) : null}
+            <span className="mx-1.5 text-gray-300">•</span> Purchased{' '}
             {purchaseDate.toLocaleDateString('en-IN', {
               day: 'numeric', month: 'short', year: 'numeric',
             })}
+            {isTechnologyService && activationLabel && (
+              <>
+                <span className="mx-1.5 text-gray-300">•</span>
+                <span className={
+                  activationStatus === 'ACTIVE'
+                    ? 'text-green-700 font-semibold'
+                    : activationStatus === 'ACTIVATION_ISSUE'
+                      ? 'text-red-700 font-semibold'
+                      : 'text-amber-700 font-semibold'
+                }>
+                  {activationLabel}
+                </span>
+              </>
+            )}
             {formattedExpiry && <><span className="mx-1.5 text-gray-300">•</span> <span className={isExpired ? 'text-red-600 font-semibold' : isExpiringSoon ? 'text-amber-600 font-semibold' : 'text-gray-500'}>Expires: {formattedExpiry}</span></>}
           </div>
         </div>
@@ -650,7 +694,11 @@ function TechnologyPurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
         <div className="flex items-center gap-5 flex-shrink-0">
           <div className="text-right">
             <div className="font-display text-[1.2rem] font-bold text-purple-700">
-              {formatPrice(purchase.grossAmountInr || sw.price || 0)}
+              {formatPrice(
+                isTechnologyService
+                  ? (purchase.subtotalExGst ?? sw.price ?? 0)
+                  : (purchase.grossAmountInr || sw.price || 0)
+              )}
             </div>
           </div>
           <span className={`text-gray-400 text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>▼</span>

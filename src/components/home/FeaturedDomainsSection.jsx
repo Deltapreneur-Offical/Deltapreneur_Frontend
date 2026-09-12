@@ -17,7 +17,7 @@ import '../../styles/domain-listing-cards.css';
 
 /**
  * Homepage "Domains" — marketplace listings the admin toggled on in
- * Homepage Features. Showcase premiums stay in Delta Domains above.
+ * Homepage Features. Showcase premiums stay in Delta Domains below.
  */
 export default function FeaturedDomainsSection() {
   const { t } = useTranslation();

@@ -833,7 +833,7 @@ export default function AppLayout({ children }) {
       {/* Main column: header + page content */}
       <div className="app-layout-main-column flex min-h-full min-w-0 flex-1 flex-col">
         {/* Top Header */}
-        <header className={`app-layout-header sticky top-0 z-30 shrink-0 border-b border-gray-200 bg-white/95 px-3 py-3 sm:px-4 sm:py-4 lg:px-8 flex items-center justify-between gap-2 overflow-visible backdrop-blur-md${headerScrolled ? ' is-scrolled' : ''}`}>
+        <header className={`app-layout-header sticky top-0 z-40 shrink-0 border-b border-gray-200 bg-white/95 px-3 py-3 sm:px-4 sm:py-4 lg:px-8 flex items-center justify-between gap-2 overflow-visible backdrop-blur-md${headerScrolled ? ' is-scrolled' : ''}`}>
           <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden sm:gap-3">
             <button
               onClick={() => setMobileOpen(true)}

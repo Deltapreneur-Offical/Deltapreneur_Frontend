@@ -39,8 +39,8 @@ export default function ExploreSection() {
 
   return (
     <>
-      <DomainsSection />
       <FeaturedDomainsSection />
+      <DomainsSection />
 
       <LazySection title={t('homeVentureRegister', { defaultValue: 'Ventures' })} to="/ventures">
         <VenturesSection />

@@ -1413,6 +1413,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       ref={desktopSearchFrameRef}
       className="brand-lightning-host brand-lightning-host--ring brand-search-frame relative w-full rounded-full"
       onClick={onSearchFrameInteract}
+      onMouseEnter={onSearchFrameInteract}
       onFocusCapture={onSearchFrameInteract}
     >
       <span className="brand-lightning-tail" aria-hidden="true" />
@@ -1438,6 +1439,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       ref={mobileSearchFrameRef}
       className={`brand-lightning-host brand-lightning-host--ring brand-search-frame relative w-full rounded-full ${embedded ? '' : 'mx-auto max-w-[760px]'}`}
       onClick={onSearchFrameInteract}
+      onMouseEnter={onSearchFrameInteract}
       onFocusCapture={onSearchFrameInteract}
     >
       <span className="brand-lightning-tail" aria-hidden="true" />
@@ -1822,6 +1824,16 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           box-shadow: 0 0 0 1px rgba(252, 106, 9, 0.14);
           background: #ffffff;
           overflow: hidden;
+          transition: border-color 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .brand-search-frame:hover .brand-search-shell,
+        .brand-search-shell:hover,
+        .brand-search-shell:focus-within {
+          border-color: #fc6a09;
+          box-shadow:
+            0 0 0 3px rgba(252, 106, 9, 0.22),
+            0 10px 28px -10px rgba(249, 115, 22, 0.45);
         }
 
         .brand-search-divider {

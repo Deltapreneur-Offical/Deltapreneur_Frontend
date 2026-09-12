@@ -2808,7 +2808,8 @@
 .home-preview-card-shell:hover,
 .home-auto-scroll-row__item:focus-within,
 .home-preview-row__item:focus-within {
-  z-index: 30 !important;
+  /* Sibling lift only — homepage nav is z-1001; dashboard nav is z-40 */
+  z-index: 5 !important;
 }
 
 .home-auto-scroll-row__track:not(.home-auto-scroll-row__track--static) {

@@ -5504,6 +5504,10 @@ input[type="checkbox"] {
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  /* Keep listing-card hover z-index inside the page, never above the sticky header */
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
 }
 
 [data-app-layout-scroll] > .home-footer-theme {

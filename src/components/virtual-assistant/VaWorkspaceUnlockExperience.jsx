@@ -55,7 +55,7 @@ const panelVariants = {
 };
 
 /**
- * Story-driven VA workspace unlock cinematic (4 acts).
+ * Story-driven DeltaOperator workspace unlock cinematic (4 acts).
  * Does not change unlock eligibility — parent handles navigation + markSeen.
  */
 export default function VaWorkspaceUnlockExperience({
@@ -197,7 +197,7 @@ export default function VaWorkspaceUnlockExperience({
               </h1>
               <p className="va-unlock-subtitle">
                 {t('vaUnlockApprovedSubtitle', {
-                  defaultValue: 'Your Virtual Assistant application has been accepted.',
+                  defaultValue: 'Your DeltaOperator application has been accepted.',
                 })}
               </p>
               {referenceNumber ? (
@@ -221,7 +221,7 @@ export default function VaWorkspaceUnlockExperience({
               </h1>
               <p className="va-unlock-subtitle">
                 {t('vaUnlockUnlockedSubtitle', {
-                  defaultValue: 'Your VA Workspace is ready.',
+                  defaultValue: 'Your DeltaOperator Workspace is ready.',
                 })}
               </p>
             </motion.div>
@@ -241,7 +241,7 @@ export default function VaWorkspaceUnlockExperience({
               </h1>
               <p className="va-unlock-subtitle">
                 {t('vaUnlockEnterSubtitle', {
-                  defaultValue: 'Step into your Virtual Assistant workspace and begin your next chapter.',
+                  defaultValue: 'Step into your DeltaOperator workspace and begin your next chapter.',
                 })}
               </p>
               <div className="va-unlock-actions">

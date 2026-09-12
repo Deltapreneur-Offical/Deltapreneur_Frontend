@@ -191,7 +191,7 @@ function VirtualAssistantWorkspacePage() {
         console.error('Failed to load settings', s.reason);
       }
     } catch (e) {
-      console.error('Failed to load VA workspace', e);
+      console.error('Failed to load DeltaOperator workspace', e);
     } finally {
       setLoading(false);
     }
@@ -288,7 +288,7 @@ function VirtualAssistantWorkspacePage() {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {t('vaWorkspaceTitle', { defaultValue: 'Virtual Assistant Workspace' })}
+              {t('vaWorkspaceTitle', { defaultValue: 'DeltaOperator Workspace' })}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
               {t('vaWorkspaceSubtitle', { defaultValue: 'Manage your roles, assignments, clients and availability.' })}
@@ -339,14 +339,14 @@ function VirtualAssistantWorkspacePage() {
                 <div className="flex items-center gap-3 rounded-xl bg-red-50 px-4 py-3">
                   <XCircle className="text-red-600" size={22} />
                   <span className="text-sm font-medium text-red-800">
-                    {t('vaWorkspaceLocked', { defaultValue: 'Your Virtual Assistant Workspace is locked. At least one role must be approved to access it.' })}
+                    {t('vaWorkspaceLocked', { defaultValue: 'Your DeltaOperator Workspace is locked. At least one role must be approved to access it.' })}
                   </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 rounded-xl bg-green-50 px-4 py-3">
                   <CheckCircle2 className="text-green-600" size={22} />
                   <span className="text-sm font-medium text-green-800">
-                    {t('vaWorkspaceUnlocked', { defaultValue: 'Your Virtual Assistant Workspace is unlocked. At least one role has been approved.' })}
+                    {t('vaWorkspaceUnlocked', { defaultValue: 'Your DeltaOperator Workspace is unlocked. At least one role has been approved.' })}
                   </span>
                 </div>
               )}

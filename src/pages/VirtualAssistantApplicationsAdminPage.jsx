@@ -214,13 +214,13 @@ function VirtualAssistantApplicationsAdminPage({ embedded = false }) {
           <button
             onClick={() => navigate('/admin?tab=operations&section=virtual-assistants&vaSubTab=applications')}
             className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-500 hover:text-gray-800"
-            title="Back to Virtual Assistants"
+            title="Back to DeltaOperators"
           >
             <ChevronLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Virtual Assistant Applications</h1>
-            <p className="text-sm text-gray-400 mt-0.5">Review and manage submitted VA applications</p>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">DeltaOperator Applications</h1>
+            <p className="text-sm text-gray-400 mt-0.5">Review and manage submitted DeltaOperator applications</p>
           </div>
         </div>
       </div>
@@ -459,7 +459,7 @@ function VirtualAssistantApplicationsAdminPage({ embedded = false }) {
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Application</h3>
             <p className="text-sm text-gray-500 mb-1">
-              Are you sure you want to permanently delete this Virtual Assistant application?
+              Are you sure you want to permanently delete this DeltaOperator application?
             </p>
             <p className="text-sm text-red-500 font-medium mb-5">This action cannot be undone.</p>
             {deleteError && (

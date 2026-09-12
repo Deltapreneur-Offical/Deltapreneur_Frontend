@@ -138,15 +138,15 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
       submitData.append('resume_url', formData.resumeUrl.trim());
 
       const response = await adminAPI.directAddVirtualAssistant(submitData);
-      setSuccess('Virtual Assistant profile created successfully.');
+      setSuccess('DeltaOperator profile created successfully.');
       if (onSuccess) {
         onSuccess();
       } else {
         setTimeout(() => navigate(vaAdminModulePath('applications')), 1200);
       }
     } catch (error) {
-      console.error('Direct Add VA error:', error);
-      const detail = readApiError(error, 'Failed to create Virtual Assistant profile.');
+      console.error('Direct Add DeltaOperator error:', error);
+      const detail = readApiError(error, 'Failed to create DeltaOperator profile.');
       setErrors({ submit: detail });
     } finally {
       setLoading(false);
@@ -169,8 +169,8 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
       <div className={embedded ? 'w-full' : 'max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8'}>
         {!embedded && (
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Direct Add Virtual Assistant</h1>
-          <p className="mt-2 text-gray-600">Create a Virtual Assistant profile manually without a public application.</p>
+          <h1 className="text-3xl font-bold text-gray-900">Direct Add DeltaOperator</h1>
+          <p className="mt-2 text-gray-600">Create a DeltaOperator profile manually without a public application.</p>
         </div>
         )}
 
@@ -241,7 +241,7 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
                 customRole={formData.customRole}
                 error={errors.roles}
                 customError={errors.customRole}
-                label="Virtual Assistant Role"
+                label="DeltaOperator Role"
                 labelClassName="block text-sm font-semibold text-gray-700 mb-2"
                 errorClassName="text-xs text-red-500 mt-1 block"
                 inputClassName={inputClass('roles')}
@@ -363,7 +363,7 @@ const VirtualAssistantDirectAddAdminPage = ({ embedded = false, onCancel, onSucc
                 <input type="radio" name="publishOption" checked={formData.publishImmediately} onChange={() => setFormData(prev => ({ ...prev, publishImmediately: true }))} className="h-4 w-4 text-purple-600" />
                 <div>
                   <span className="text-sm font-semibold text-gray-900">Publish Immediately</span>
-                  <p className="text-xs text-gray-500">Make this profile publicly visible in the Virtual Assistant Marketplace.</p>
+                  <p className="text-xs text-gray-500">Make this profile publicly visible in the DeltaOperator Marketplace.</p>
                 </div>
               </label>
               <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer flex-1">

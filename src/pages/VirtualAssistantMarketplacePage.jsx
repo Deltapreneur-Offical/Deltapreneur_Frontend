@@ -71,7 +71,7 @@ const VirtualAssistantMarketplacePage = () => {
       setTotalPages(body.meta?.total_pages || 1);
     } catch (e) {
       console.error('Failed to load marketplace', e);
-      setError('Failed to load Virtual Assistants. Please try again.');
+      setError('Failed to load DeltaOperators. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -105,8 +105,8 @@ const VirtualAssistantMarketplacePage = () => {
       <TopNavbar />
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Virtual Assistant Marketplace</h1>
-          <p className="mt-2 text-gray-600">Browse published Virtual Assistant profiles.</p>
+          <h1 className="text-3xl font-bold text-gray-900">DeltaOperator Marketplace</h1>
+          <p className="mt-2 text-gray-600">Browse published DeltaOperator profiles.</p>
         </div>
 
         <FilterBar
@@ -130,13 +130,13 @@ const VirtualAssistantMarketplacePage = () => {
         />
 
         {loading ? (
-          <div className="text-center py-20 text-gray-500">Loading Virtual Assistants...</div>
+          <div className="text-center py-20 text-gray-500">Loading DeltaOperators...</div>
         ) : error ? (
           <div className="text-center py-20 text-red-600">{error}</div>
         ) : profiles.length === 0 ? (
           <div className="text-center py-20 text-gray-500">
             <Filter size={48} className="mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium">No Virtual Assistants found.</p>
+            <p className="text-lg font-medium">No DeltaOperators found.</p>
             <p className="text-sm mt-1">Try adjusting your filters or search criteria.</p>
           </div>
         ) : (
@@ -158,7 +158,7 @@ const VirtualAssistantMarketplacePage = () => {
                       fallbackIconClassName="text-purple-600"
                     />
                     <h3 className="font-semibold text-gray-900 text-base">{profile.fullName}</h3>
-                    <p className="text-xs text-gray-500 mt-1">{profile.roles ? profile.roles.split(',')[0] : 'Virtual Assistant'}</p>
+                    <p className="text-xs text-gray-500 mt-1">{profile.roles ? profile.roles.split(',')[0] : 'DeltaOperator'}</p>
                     <div className="flex flex-wrap justify-center gap-1.5 mt-3">
                       {(profile.skills || '').split(',').slice(0, 3).map((skill, idx) => (
                         <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700">

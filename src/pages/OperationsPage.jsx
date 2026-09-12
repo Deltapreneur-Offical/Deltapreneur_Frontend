@@ -366,7 +366,7 @@ export default function OperationsPage() {
     : isAssistance
     ? t('operationsFeaturedVaAvailable', {
         count: featuredVaCount,
-        defaultValue: '{{count}} Featured Virtual Assistants',
+        defaultValue: '{{count}} Featured DeltaOperators',
       })
     : isFiltered
     ? t('operationsRolesShowing', { count: filtered.length, total: services.length, defaultValue: '{{count}} of {{total}} Roles' })
@@ -439,7 +439,7 @@ export default function OperationsPage() {
                   ? t('operationsSectionOffices', { defaultValue: 'Delta Registrar Offices' })
                   : isCompliance
                   ? t('operationsComplianceFindHeading', { defaultValue: 'Find Delta Registrar' })
-                  : t('operationsFeaturedVaHeading', { defaultValue: 'Featured Virtual Assistants' })}
+                  : t('operationsFeaturedVaHeading', { defaultValue: 'Featured DeltaOperators' })}
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
                 {isOffices
@@ -447,7 +447,7 @@ export default function OperationsPage() {
                   : isCompliance
                   ? t('operationsComplianceFindSubtitle', { defaultValue: 'Expert registration and Delta registrar support for your venture.' })
                   : t('operationsFeaturedVaSubtitle', {
-                      defaultValue: 'Published virtual assistants selected for the homepage and operations showcase.',
+                      defaultValue: 'Published DeltaOperators selected for the homepage and operations showcase.',
                     })}
               </p>
             </div>

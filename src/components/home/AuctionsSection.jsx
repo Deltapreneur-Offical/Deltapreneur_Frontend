@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -16,7 +16,7 @@ import {
   resolveHomeAuctionLikeTarget,
   resolveHomeAuctionPath,
   resolveHomeAuctionPricingType,
-  resolveHomeAuctionViews,
+  hasHomeAuctionViewCount,
 } from '../../utils/homepageAuctions';
 import { unwrapApiData } from '../../utils/apiResponse';
 import { useLikes } from '../../hooks/useLikes';
@@ -88,7 +88,7 @@ function mergeListingMeta(auction, listing) {
 
 async function fetchHomeAuctionListingMeta(auction) {
   const category = auction.category || 'domain';
-  const needsViews = resolveHomeAuctionViews(auction) <= 0;
+  const needsViews = !hasHomeAuctionViewCount(auction);
   const needsPricing = !resolveHomeAuctionPricingType(auction);
 
   if (!needsViews && !needsPricing) return auction;
@@ -130,12 +130,15 @@ export default function AuctionsSection() {
     software: [],
   });
   const [loading, setLoading] = useState(true);
+  const loadInFlightRef = useRef(false);
 
   const loadAuctions = useCallback(async ({ showLoading = false } = {}) => {
+    if (loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     try {
       if (showLoading) setLoading(true);
       const [domainsRes, communityRes, softwareRes] = await Promise.all([
-        auctionAPI.getActive().catch(() => ({ data: [] })),
+        auctionAPI.getActive({ page: 1, page_size: 24 }).catch(() => ({ data: [] })),
         communityAuctionAPI.getActive().catch(() => ({ data: [] })),
         softwareAuctionAPI.getActive().catch(() => ({ data: [] })),
       ]);
@@ -148,6 +151,7 @@ export default function AuctionsSection() {
     } catch {
       setAuctions({ domains: [], community: [], software: [] });
     } finally {
+      loadInFlightRef.current = false;
       if (showLoading) setLoading(false);
     }
   }, []);

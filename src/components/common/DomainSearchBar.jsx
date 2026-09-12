@@ -11,7 +11,7 @@ import { listingBuyerPayable } from '../../utils/marketplaceListingPrice';
 import { filterPublicMarketplaceListings, isPublicMarketplaceListing } from '../../utils/listingVisibility';
 import useAIDomains from '../../hooks/useAIDomains';
 import { useCurrency } from '../../context/CurrencyContext';
-import { fetchAvailableTldsPage, fetchAvailableTldsChunk, fetchAvailableTlds, DOMAIN_SEARCH_CHUNK_SIZE } from '../../utils/availableTlds';
+import { fetchAvailableTldsPage, fetchAvailableTldsChunk, DOMAIN_SEARCH_CHUNK_SIZE } from '../../utils/availableTlds';
 import { preferredTldRank, normalizeDomainLabel, normalizeDomainExtension, normalizeSearchFqdn } from '../../utils/domainSearch';
 import { DomainCardGrid } from '../domain/DomainCard';
 import RegistryPremiumSegment from '../domain/RegistryPremiumSegment';
@@ -131,7 +131,7 @@ function TldPriceMarquee() {
         setIsLoading(true);
       }
 
-      const fromStorefront = domainStorefrontAPI
+      domainStorefrontAPI
         .getPrices()
         .then(({ data }) => {
           const payload = data?.data ?? data;
@@ -139,32 +139,14 @@ function TldPriceMarquee() {
             payload?.registration?.byTldInclusive || payload?.registration?.byTld,
           );
         })
-        .catch(() => []);
-
-      const fromSearchTlds = fetchAvailableTlds('domain', { force: true })
-        .then((fetchedItems) => {
-          if (!Array.isArray(fetchedItems) || fetchedItems.length === 0) return [];
-          const byTld = {};
-          fetchedItems.forEach((it) => {
-            const tld = normalizeTldKey(it?.tld);
-            const price = Number(it?.totalInr ?? it?.registrationPrice ?? it?.unitPrice);
-            if (tld && Number.isFinite(price) && price > 0) byTld[tld] = price;
-          });
-          return tldPricesFromByTldMap(byTld);
+        .then((items) => {
+          if (isCancelled || requestSequence !== refreshSequence) return;
+          if (items.length) applyItems(items);
+          else if (!isCancelled) setIsLoading(false);
         })
-        .catch(() => []);
-
-      fromSearchTlds.then((items) => {
-        if (isCancelled || requestSequence !== refreshSequence || !items.length) return;
-        setTldPrices((prev) => (prev.length > 0 ? prev : items));
-        setIsLoading(false);
-      });
-
-      fromStorefront.then((items) => {
-        if (isCancelled || requestSequence !== refreshSequence) return;
-        if (items.length) applyItems(items);
-        else if (!isCancelled) setIsLoading(false);
-      });
+        .catch(() => {
+          if (!isCancelled && requestSequence === refreshSequence) setIsLoading(false);
+        });
     };
 
     const handleCommissionUpdate = () => refreshPrices({ discardDisplayed: true });
@@ -887,23 +869,16 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     void (async () => {
       const collected = [];
       try {
-        let chunkIndex = 0;
         let chunkTotal = null;
-        let moreChunks = true;
+        let lastMoreAvailable = false;
 
-        while (moreChunks) {
-          if (requestIdRef.current !== currentRequestId) return;
-
+        const applyChunk = (chunkIndex, payload) => {
           const {
             items,
             moreAvailable,
             chunkTotal: totalFromApi,
             moreChunks: moreFromApi,
-          } = await fetchAvailableTldsChunk(label, chunkIndex, {
-            chunkSize: DOMAIN_SEARCH_CHUNK_SIZE,
-          });
-
-          if (requestIdRef.current !== currentRequestId) return;
+          } = payload;
 
           if (Number.isInteger(totalFromApi) && totalFromApi > 0) {
             chunkTotal = totalFromApi;
@@ -911,13 +886,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             chunkTotal = chunkIndex + 1;
           }
 
-          const mapped = items.map((item) => mapTldItem(item, label));
+          const mapped = (items || []).map((item) => mapTldItem(item, label));
           for (const item of mapped) {
             if (!collected.some((c) => c.domain === item.domain)) {
               collected.push(item);
             }
           }
-          // Reveal only cards that finished in this (or prior) wave.
           mergeMappedIntoResults(collected);
 
           const doneWaves = chunkIndex + 1;
@@ -926,23 +900,36 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           if (finishedAll) {
             setTldProgress(100);
             setTldSkeletonCount(0);
-            moreChunks = false;
           } else {
-            // Cap mid-flight below 100 so we never sit at 99 waiting on a phantom last step.
             const pct = Math.round((doneWaves / totalWaves) * 100);
             setTldProgress(Math.max(1, Math.min(95, pct)));
             const secondaryCount = collected.filter((it) => it.domain !== fqdn).length;
             setTldSkeletonCount(Math.max(3, 6 - Math.min(secondaryCount, 6)));
-            moreChunks = true;
           }
 
-          chunkIndex += 1;
-
-          // Storefront-style load-more remains available after first-page waves.
-          setTldHasMore(moreAvailable === true);
+          lastMoreAvailable = moreAvailable === true;
+          setTldHasMore(lastMoreAvailable);
           setTldPage(2);
+          return { finishedAll, totalWaves };
+        };
 
-          if (!moreChunks) break;
+        const fetchChunk = (chunkIndex) => fetchAvailableTldsChunk(label, chunkIndex, {
+          chunkSize: DOMAIN_SEARCH_CHUNK_SIZE,
+        });
+
+        const firstPayload = await fetchChunk(0);
+        if (requestIdRef.current !== currentRequestId) return;
+        const first = applyChunk(0, firstPayload);
+        if (!first.finishedAll) {
+          const remaining = [];
+          for (let idx = 1; idx < first.totalWaves; idx += 1) remaining.push(idx);
+          for (let i = 0; i < remaining.length; i += 2) {
+            if (requestIdRef.current !== currentRequestId) return;
+            const pair = remaining.slice(i, i + 2);
+            const payloads = await Promise.all(pair.map((idx) => fetchChunk(idx)));
+            if (requestIdRef.current !== currentRequestId) return;
+            pair.forEach((idx, offset) => applyChunk(idx, payloads[offset] || { items: [] }));
+          }
         }
 
         const exactSettled = await checkPromise;

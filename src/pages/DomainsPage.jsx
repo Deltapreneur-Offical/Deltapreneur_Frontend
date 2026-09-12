@@ -2538,6 +2538,15 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
 
   useEffect(() => {
     if (hasFetched.current) return;
+    const alreadyDetailed = Boolean(
+      domain?.contactInfo || domain?.contact_info || domain?.agreement,
+    );
+    if (alreadyDetailed) {
+      hasFetched.current = true;
+      setDetail(domain);
+      setLoading(false);
+      return;
+    }
     hasFetched.current = true;
     domainAPI.get(domain.id)
       .then(({ data }) => {

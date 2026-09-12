@@ -58,6 +58,8 @@ function CreatorAvatar({ imageUrl, name, profile }) {
           src={normalizedUrl}
           alt={name || 'Deltapreneur'}
           className="creator-profile-card__avatar"
+          loading="lazy"
+          decoding="async"
           onError={() => setFailedUrl(normalizedUrl)}
         />
       ) : (

@@ -90,4 +90,32 @@ describe('fetchHomepageSectionPreview', () => {
     expect(rows.map((row) => row.domainName)).toEqual(['listed.com']);
     expect(fetchListPage).toHaveBeenCalledTimes(2);
   });
+
+  it('stops featured paging at maxPages even when more marketplace rows exist', async () => {
+    const showcasePage = Array.from({ length: 48 }, (_, i) => ({
+      id: `showcase-${i}`,
+      source: 'openprovider_showcase',
+      showcaseId: `${i}`,
+      featured: true,
+      verified: true,
+      status: true,
+      domainName: `prem${i}.com`,
+    }));
+    fetchListPage.mockResolvedValueOnce({ items: showcasePage, total: 96 });
+
+    const rows = await fetchHomepageSectionPreview(
+      vi.fn(),
+      'domain',
+      48,
+      {
+        featuredQuery: {},
+        fillCatalog: false,
+        maxPages: 1,
+        filterFn: (item) => !isOpenProviderShowcaseRow(item),
+      },
+    );
+
+    expect(rows).toEqual([]);
+    expect(fetchListPage).toHaveBeenCalledTimes(1);
+  });
 });

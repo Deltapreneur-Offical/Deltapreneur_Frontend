@@ -168,9 +168,8 @@ async function fetchPublicCatalogPreview(
   requestFn,
   type,
   limit,
-  { filterFn } = {},
+  { filterFn, maxPages = 8 } = {},
 ) {
-  const maxPages = 8;
   const merged = [];
 
   for (let page = 1; page <= maxPages; page += 1) {
@@ -217,15 +216,14 @@ export async function fetchHomepageSectionPreview(
   limit = HOMEPAGE_PREVIEW_LIMIT,
   options = {},
 ) {
-  const { filterFn, featuredQuery, fillCatalog = true } = options;
+  const { filterFn, featuredQuery, fillCatalog = true, maxPages = 8 } = options;
 
   if (!featuredQuery) {
-    return fetchPublicCatalogPreview(requestFn, type, limit, { filterFn });
+    return fetchPublicCatalogPreview(requestFn, type, limit, { filterFn, maxPages });
   }
 
   try {
     const featuredMerged = [];
-    const maxPages = 8;
     for (let page = 1; page <= maxPages; page += 1) {
       const { items, total } = await fetchListPage(requestFn, {
         page,
@@ -260,13 +258,13 @@ export async function fetchHomepageSectionPreview(
     });
     if (!fillCatalog) return featuredRows;
 
-    const catalog = await fetchPublicCatalogPreview(requestFn, type, limit, { filterFn });
+    const catalog = await fetchPublicCatalogPreview(requestFn, type, limit, { filterFn, maxPages });
     const seen = new Set(featuredRows.map((row) => row?.id).filter((id) => id != null));
     const extra = catalog.filter((row) => row?.id != null && !seen.has(row.id));
     return [...featuredRows, ...extra].slice(0, limit);
   } catch {
     if (!fillCatalog) return [];
-    return fetchPublicCatalogPreview(requestFn, type, limit, { filterFn });
+    return fetchPublicCatalogPreview(requestFn, type, limit, { filterFn, maxPages });
   }
 }
 
@@ -285,5 +283,6 @@ export async function fetchHomepageVenturePreview(
     filterFn,
     featuredQuery: { mode: listingMode },
     fillCatalog,
+    maxPages: 2,
   });
 }

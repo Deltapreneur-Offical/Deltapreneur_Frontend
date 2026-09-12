@@ -37,8 +37,9 @@ export default function FeaturedDomainsSection() {
           'domain',
           undefined,
           {
-            featuredQuery: {},
+            featuredQuery: { include_showcase: false },
             fillCatalog: false,
+            maxPages: 2,
             filterFn: (item) => !isOpenProviderShowcaseRow(item),
           },
         );

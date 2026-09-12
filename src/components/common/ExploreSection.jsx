@@ -1,6 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import LazyWhenVisible from './LazyWhenVisible';
 import DomainsSection from '../home/DomainsSection';
 import FeaturedDomainsSection from '../home/FeaturedDomainsSection';
 import { PUBLIC_OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
@@ -15,7 +14,18 @@ const HomeRegistrationsSection = lazy(() => import('../home/HomeRegistrationsSec
 const CommunitySection = lazy(() => import('../home/CommunitySection'));
 const FeedbackSection = lazy(() => import('../home/FeedbackSection'));
 
-function LazySection({ title, to, variant = 'browse', compact = false, children }) {
+const PREFETCH_SECTIONS = [
+  () => import('../home/VenturesSection'),
+  () => import('../home/CoVenturesSection'),
+  () => import('../home/AuctionsSection'),
+  () => import('../home/TechnologySection'),
+  () => import('../home/HomeOperationsCarouselSection'),
+  () => import('../home/HomeRegistrationsSection'),
+  () => import('../home/CommunitySection'),
+  () => import('../home/FeedbackSection'),
+];
+
+function IndependentSection({ title, to, variant = 'browse', compact = false, children }) {
   const fallback = (
     <HomeSectionCardSkeleton
       title={title}
@@ -26,70 +36,72 @@ function LazySection({ title, to, variant = 'browse', compact = false, children 
   );
 
   return (
-    <LazyWhenVisible fallback={fallback}>
-      <Suspense fallback={fallback}>
-        {children}
-      </Suspense>
-    </LazyWhenVisible>
+    <Suspense fallback={fallback}>
+      {children}
+    </Suspense>
   );
 }
 
 export default function ExploreSection() {
   const { t } = useTranslation();
 
+  useEffect(() => {
+    PREFETCH_SECTIONS.forEach((load) => {
+      void load();
+    });
+  }, []);
+
   return (
     <>
       <FeaturedDomainsSection />
       <DomainsSection />
 
-      <LazySection title={t('homeVentureRegister', { defaultValue: 'Ventures' })} to="/ventures">
+      <IndependentSection title={t('homeVentureRegister', { defaultValue: 'Ventures' })} to="/ventures">
         <VenturesSection />
-      </LazySection>
+      </IndependentSection>
 
-      <LazySection
+      <IndependentSection
         title={t('homeCoVenturesRegister', { defaultValue: 'Delta Ventures' })}
         to="/ventures?mode=co-venture"
         compact
       >
         <CoVenturesSection />
-      </LazySection>
+      </IndependentSection>
 
-      <LazySection title={t('homeRegistryAuctions', { defaultValue: 'Auctions' })} to="/auctions" variant="auction">
+      <IndependentSection title={t('homeRegistryAuctions', { defaultValue: 'Auctions' })} to="/auctions" variant="auction">
         <AuctionsSection />
-      </LazySection>
+      </IndependentSection>
 
-      <LazySection title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology">
+      <IndependentSection title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology">
         <TechnologySection />
-      </LazySection>
+      </IndependentSection>
 
       {PUBLIC_OPERATIONS_SECTIONS.map((section) => (
-        <LazySection
+        <IndependentSection
           key={section.id}
           title={section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel })}
           to={operationsPathForSection(section.id)}
           compact
         >
           <HomeOperationsCarouselSection sectionId={section.id} />
-        </LazySection>
+        </IndependentSection>
       ))}
 
-      <LazySection
+      <IndependentSection
         title={t('homeRegistrationsTitle', { defaultValue: 'Delta Registrations' })}
         to="/registrations"
         compact
       >
         <HomeRegistrationsSection />
-      </LazySection>
+      </IndependentSection>
 
-      <LazySection title="Deltapreneur" to="/community" compact>
+      <IndependentSection title="Deltapreneur" to="/community" compact>
         <CommunitySection />
-      </LazySection>
+      </IndependentSection>
 
-      <LazyWhenVisible>
-        <Suspense fallback={null}>
-          <FeedbackSection />
-        </Suspense>
-      </LazyWhenVisible>
+      <Suspense fallback={null}>
+        <FeedbackSection />
+      </Suspense>
     </>
   );
 }

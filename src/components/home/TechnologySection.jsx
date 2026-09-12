@@ -8,6 +8,7 @@ import { asArray } from '../../utils/asArray';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
+import HomePreviewCardSkeleton from './HomePreviewCardSkeleton';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomeCardsNavRow from './HomeCardsNavRow';
@@ -22,39 +23,46 @@ export default function TechnologySection() {
   const navigate = useNavigate();
   const [previewSoftwares, setPreviewSoftwares] = useState([]);
   const [featuredServices, setFeaturedServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [softwareLoading, setSoftwareLoading] = useState(true);
+  const [servicesLoading, setServicesLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [rows, servRes] = await Promise.allSettled([
-          fetchHomepageSectionPreview(
-            (params) => cocreationAPI.getAll(params),
-            'software',
-            undefined,
-            { featuredQuery: {}, fillCatalog: false },
-          ),
-          technologyServicesAPI.getServices(),
-        ]);
+    let cancelled = false;
 
-        if (rows.status === 'fulfilled') {
-          setPreviewSoftwares(rows.value || []);
-        }
-        if (servRes.status === 'fulfilled') {
-          const services = servRes.value?.data || servRes.value || [];
-          setFeaturedServices(
-            asArray(services).slice().sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured))),
-          );
-        }
-      } catch {
-        setPreviewSoftwares([]);
-        setFeaturedServices([]);
-      } finally {
-        setLoading(false);
-      }
+    fetchHomepageSectionPreview(
+      (params) => cocreationAPI.getAll(params),
+      'software',
+      undefined,
+      { featuredQuery: {}, fillCatalog: false, maxPages: 2 },
+    )
+      .then((rows) => {
+        if (!cancelled) setPreviewSoftwares(rows || []);
+      })
+      .catch(() => {
+        if (!cancelled) setPreviewSoftwares([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSoftwareLoading(false);
+      });
+
+    technologyServicesAPI.getServices()
+      .then((servRes) => {
+        if (cancelled) return;
+        const services = servRes?.data?.data || servRes?.data || [];
+        setFeaturedServices(
+          asArray(services).slice().sort((a, b) => Number(Boolean(b.featured ?? b.is_featured)) - Number(Boolean(a.featured ?? a.is_featured))),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setFeaturedServices([]);
+      })
+      .finally(() => {
+        if (!cancelled) setServicesLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
     };
-    fetchData();
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', previewSoftwares);
@@ -75,7 +83,7 @@ export default function TechnologySection() {
     </HomePreviewCardShell>
   );
 
-  if (loading) {
+  if (softwareLoading && servicesLoading) {
     return <HomeSectionCardSkeleton title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology" />;
   }
 
@@ -84,7 +92,21 @@ export default function TechnologySection() {
       <div className="w-full min-w-0 space-y-8">
 
         {/* 1. Marketplace Technology Listings */}
-        {previewSoftwares.length > 0 && (
+        {softwareLoading ? (
+          <div>
+            <HomeSectionHeader title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology" accent="technology" />
+            <HomeCardsNavRow
+              accent="technology"
+              ariaLabel={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}
+            >
+              {Array.from({ length: 4 }).map((_, i) => (
+                <HomePreviewRowItem key={`software-skel-${i}`}>
+                  <HomePreviewCardSkeleton variant="browse" />
+                </HomePreviewRowItem>
+              ))}
+            </HomeCardsNavRow>
+          </div>
+        ) : previewSoftwares.length > 0 ? (
           <div>
             <HomeSectionHeader title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology" accent="technology" />
             <HomeCardsNavRow
@@ -98,7 +120,7 @@ export default function TechnologySection() {
               ))}
             </HomeCardsNavRow>
           </div>
-        )}
+        ) : null}
 
         {/* 2. Featured Technology Services Catalogue */}
         <div>
@@ -122,11 +144,17 @@ export default function TechnologySection() {
           </div>
 
           <HomeCardsNavRow accent="technology" ariaLabel="Technology Register">
-            {featuredServices.map((service) => (
-              <HomePreviewRowItem key={service.id || service.slug}>
-                <TechnologyServiceCard service={service} compact homeLayout />
-              </HomePreviewRowItem>
-            ))}
+            {servicesLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                <HomePreviewRowItem key={`service-skel-${i}`}>
+                  <HomePreviewCardSkeleton variant="browse" />
+                </HomePreviewRowItem>
+              ))
+              : featuredServices.map((service) => (
+                <HomePreviewRowItem key={service.id || service.slug}>
+                  <TechnologyServiceCard service={service} compact homeLayout />
+                </HomePreviewRowItem>
+              ))}
           </HomeCardsNavRow>
         </div>
 

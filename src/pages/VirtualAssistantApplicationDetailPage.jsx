@@ -508,7 +508,7 @@ function VirtualAssistantApplicationDetailPage() {
           <ArrowLeft size={18} />
         </button>
         <div className="va-detail-topbar__copy">
-          <p className="va-detail-kicker">Virtual Assistant Profile</p>
+          <p className="va-detail-kicker">DeltaOperator Profile</p>
           <h1 className="va-detail-title">{application.fullName || 'Applicant Profile'}</h1>
           <p className="va-detail-subtitle">
             <code>{formatVaReferenceNumber(application.referenceNumber)}</code>

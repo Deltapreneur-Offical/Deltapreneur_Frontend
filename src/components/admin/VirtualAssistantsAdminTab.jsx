@@ -482,7 +482,7 @@ const VirtualAssistantsAdminTab = ({ data, loading, onRefresh }) => {
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Application</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Are you sure you want to permanently delete this Virtual Assistant application?
+              Are you sure you want to permanently delete this DeltaOperator application?
             </p>
             <p className="text-sm text-gray-500 mb-6">
               This action cannot be undone.

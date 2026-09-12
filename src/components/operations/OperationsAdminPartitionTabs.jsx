@@ -35,7 +35,6 @@ export default function OperationsAdminPartitionTabs({
       defaultHint: section.defaultHint,
       theme: section.theme,
       count: section.serviceType ? catalogCounts[section.id] : undefined,
-      disabled: section.id === 'virtual-assistants',
     })),
     {
       ...REQUESTS_PARTITION,
@@ -79,7 +78,6 @@ export default function OperationsAdminPartitionTabs({
                 <span className="operations-section-tab-copy">
                   <span className="operations-section-tab-label">
                     {t(tab.labelKey, { defaultValue: tab.defaultLabel })}
-                    {tab.disabled && <span className="ml-2 text-xs text-red-500">(Disabled - Hidden)</span>}
                   </span>
                   <span className="operations-section-tab-hint">
                     {t(tab.hintKey, { defaultValue: tab.defaultHint })}

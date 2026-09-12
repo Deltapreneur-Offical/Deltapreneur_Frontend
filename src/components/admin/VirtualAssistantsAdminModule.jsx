@@ -10,21 +10,21 @@ const SUB_TABS = [
   {
     id: 'applications',
     label: 'Applications',
-    hint: 'Review and manage VA applications',
+    hint: 'Review and manage DeltaOperator applications',
     icon: ClipboardList,
     theme: 'assistance',
   },
   {
     id: 'published',
     label: 'Published Profiles',
-    hint: 'View and manage published Virtual Assistants',
+    hint: 'View and manage published DeltaOperators',
     icon: Globe,
     theme: 'requests',
   },
   {
     id: 'direct-add',
-    label: 'Direct Add VA',
-    hint: 'Manually create a Virtual Assistant profile',
+    label: 'Direct Add DeltaOperator',
+    hint: 'Manually create a DeltaOperator profile',
     icon: User,
     theme: 'compliance',
   },
@@ -53,7 +53,7 @@ export default function VirtualAssistantsAdminModule() {
           </span>
           <div>
             <h3 className="operations-admin-section-title">
-              {t('adminTabVirtualAssistants', { defaultValue: 'Virtual Assistants' })}
+              {t('adminTabVirtualAssistants', { defaultValue: 'DeltaOperator' })}
             </h3>
             <p className="operations-admin-section-subtitle">
               {t('adminOperationsVaModuleSubtitle', {
@@ -66,7 +66,7 @@ export default function VirtualAssistantsAdminModule() {
 
       <div className="operations-section-tabs-wrap mb-6">
         <p className="operations-section-tabs-eyebrow">
-          {t('adminTabVirtualAssistants', { defaultValue: 'Virtual Assistants' })}
+          {t('adminTabVirtualAssistants', { defaultValue: 'DeltaOperator' })}
         </p>
         <div className="operations-section-tabs operations-section-tabs--admin" role="tablist">
           {SUB_TABS.map((tab) => {

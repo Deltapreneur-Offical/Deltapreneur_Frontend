@@ -27,7 +27,7 @@ const VirtualAssistantSuccessPage = () => {
                 Application Submitted Successfully!
               </h1>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                Thank you for applying to become a Virtual Assistant at Deltapreneur. We have received your application and our team will review it shortly.
+                Thank you for applying to become a DeltaOperator at Deltapreneur. We have received your application and our team will review it shortly.
               </p>
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
                 <p className="text-sm font-semibold text-gray-700 mb-1">Your Application Reference Number</p>
@@ -77,7 +77,7 @@ const VirtualAssistantSuccessPage = () => {
               Application Submitted Successfully!
             </h1>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Thank you for applying to become a Virtual Assistant at Deltapreneur. We have received your application and our team will review it shortly.
+              Thank you for applying to become a DeltaOperator at Deltapreneur. We have received your application and our team will review it shortly.
             </p>
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
               <p className="text-sm font-semibold text-gray-700 mb-1">Your Application Reference Number</p>

@@ -85,10 +85,16 @@ export default function TechnologyServiceDetailPage() {
   const [mySubscription, setMySubscription] = useState(null);
 
   // Provisioning input required for specific provider-powered services:
-  // Business Phone needs an area code; Web Hosting needs a primary domain.
+  // Some provider-powered services need customer/provider inputs before payment.
   const [areaCode, setAreaCode] = useState('');
   const [primaryDomain, setPrimaryDomain] = useState('');
+  const [providerInputs, setProviderInputs] = useState({});
   const [inputError, setInputError] = useState(null);
+
+  const setProviderField = (key, value) => {
+    setProviderInputs((current) => ({ ...current, [key]: value }));
+    setInputError(null);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -192,9 +198,50 @@ export default function TechnologyServiceDetailPage() {
       Object.assign(metadata, service.provider_specific_params);
     }
 
-    // Collect the provisioning input required for Business Phone / Web Hosting
-    // before adding to cart, so the paid purchase is never stuck awaiting input.
     const slug = String(service.slug || '').toLowerCase();
+    const requireValue = (key, message) => {
+      const value = String(providerInputs[key] || '').trim();
+      if (!value) {
+        setInputError(message);
+        return '';
+      }
+      return value;
+    };
+
+    if (slug === 'ai-business-suite') {
+      const rawTools = requireValue('aiTools', 'Please enter at least one ResellPortal AI tool code.');
+      if (!rawTools) return;
+      metadata.aiTools = rawTools.split(',').map((item) => item.trim()).filter(Boolean);
+    }
+    if (slug === 'cloud-storage') {
+      const storagePlan = requireValue('storagePlan', 'Please select a cloud storage plan.');
+      if (!storagePlan) return;
+      metadata.storagePlan = storagePlan;
+    }
+    if (slug === 'document-signer') {
+      const companyName = requireValue('companyName', 'Please enter the company name for Document Signer.');
+      if (!companyName) return;
+      metadata.companyName = companyName;
+    }
+    if (slug === 'email-marketing') {
+      const allowedPlans = new Set(['starter', 'growth', 'pro', 'business']);
+      if (!allowedPlans.has(planCode)) {
+        setInputError('This Email Marketing plan is not mapped to a ResellPortal sending plan yet. Please choose Starter or Pro.');
+        return;
+      }
+      metadata.sendingPlan = planCode;
+    }
+    if (slug === 'invoice-ai' || slug === 'appointment-booking') {
+      const subdomain = requireValue('subdomain', 'Please enter a subdomain for this service.');
+      if (!subdomain) return;
+      metadata.subdomain = subdomain.toLowerCase();
+      if (providerInputs.businessName) metadata.businessName = String(providerInputs.businessName).trim();
+      if (providerInputs.logoUrl) metadata.logoUrl = String(providerInputs.logoUrl).trim();
+      if (providerInputs.primaryColor) metadata.primaryColor = String(providerInputs.primaryColor).trim();
+      if (slug === 'appointment-booking' && providerInputs.secondaryColor) {
+        metadata.secondaryColor = String(providerInputs.secondaryColor).trim();
+      }
+    }
     if (slug === 'business-phone') {
       const code = String(areaCode || '').trim();
       if (!code) {
@@ -210,6 +257,35 @@ export default function TechnologyServiceDetailPage() {
         return;
       }
       metadata.primaryDomain = domain;
+    }
+    if (slug === 'smm-growth') {
+      const serviceId = requireValue('serviceId', 'Please enter the ResellPortal SMM service ID.');
+      const link = requireValue('link', 'Please enter the social media link to promote.');
+      const quantity = Number(providerInputs.quantity || 0);
+      if (!serviceId || !link) return;
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        setInputError('Please enter a valid SMM quantity.');
+        return;
+      }
+      metadata.serviceId = serviceId;
+      metadata.link = link;
+      metadata.quantity = quantity;
+    }
+    if (slug === 'esim') {
+      const packageCode = requireValue('packageCode', 'Please enter the ResellPortal eSIM package code.');
+      if (!packageCode) return;
+      metadata.packageCode = packageCode;
+    }
+    if (slug === 'wordpress-plugin-pack') {
+      const pluginName = requireValue('pluginName', 'Please enter the plugin name.');
+      const author = requireValue('author', 'Please enter the plugin author.');
+      const description = requireValue('description', 'Please enter the plugin description.');
+      const logoUrl = requireValue('logoUrl', 'Please enter the plugin logo URL.');
+      if (!pluginName || !author || !description || !logoUrl) return;
+      metadata.pluginName = pluginName;
+      metadata.author = author;
+      metadata.description = description;
+      metadata.logoUrl = logoUrl;
     }
 
     try {
@@ -524,13 +600,85 @@ export default function TechnologyServiceDetailPage() {
       {/* Checkout Modal */}
       {purchasingPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative border border-gray-100">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl relative border border-gray-100">
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               Confirm Subscription
             </h3>
             <p className="text-sm text-gray-600 mb-4">
               You are subscribing to <strong className="text-gray-900">{service.name}</strong> on the <strong className="text-orange-700">{purchasingPlan.name}</strong> plan.
             </p>
+
+            {String(service.slug || '').toLowerCase() === 'ai-business-suite' && (
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
+                  AI Tool Codes <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={providerInputs.aiTools || ''}
+                  onChange={(e) => setProviderField('aiTools', e.target.value)}
+                  placeholder="e.g. content-marketing-suite"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+            )}
+
+            {String(service.slug || '').toLowerCase() === 'cloud-storage' && (
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
+                  Storage Plan <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={providerInputs.storagePlan || ''}
+                  onChange={(e) => setProviderField('storagePlan', e.target.value)}
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                >
+                  <option value="">Select storage plan</option>
+                  {['50gb', '100gb', '200gb', '500gb', '1tb', '2tb'].map((option) => (
+                    <option key={option} value={option}>{option.toUpperCase()}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {String(service.slug || '').toLowerCase() === 'document-signer' && (
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
+                  Company Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={providerInputs.companyName || ''}
+                  onChange={(e) => setProviderField('companyName', e.target.value)}
+                  placeholder="e.g. Acme Private Limited"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+            )}
+
+            {['invoice-ai', 'appointment-booking'].includes(String(service.slug || '').toLowerCase()) && (
+              <div className="mb-4 space-y-3">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-800 mb-1">
+                    Subdomain <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={providerInputs.subdomain || ''}
+                    onChange={(e) => setProviderField('subdomain', e.target.value)}
+                    placeholder="e.g. mybusiness"
+                    className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={providerInputs.businessName || ''}
+                  onChange={(e) => setProviderField('businessName', e.target.value)}
+                  placeholder="Business name"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+            )}
 
             {String(service.slug || '').toLowerCase() === 'business-phone' && (
               <div className="mb-4">
@@ -571,6 +719,81 @@ export default function TechnologyServiceDetailPage() {
                 <p className="text-xs text-gray-500 mt-1">
                   This domain will be used to create your hosting account (e.g. example.com → cpanel username 'example').
                 </p>
+              </div>
+            )}
+
+            {String(service.slug || '').toLowerCase() === 'smm-growth' && (
+              <div className="mb-4 space-y-3">
+                <input
+                  type="text"
+                  value={providerInputs.serviceId || ''}
+                  onChange={(e) => setProviderField('serviceId', e.target.value)}
+                  placeholder="SMM service ID"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+                <input
+                  type="url"
+                  value={providerInputs.link || ''}
+                  onChange={(e) => setProviderField('link', e.target.value)}
+                  placeholder="Social link"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+                <input
+                  type="number"
+                  min="1"
+                  value={providerInputs.quantity || ''}
+                  onChange={(e) => setProviderField('quantity', e.target.value)}
+                  placeholder="Quantity"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+            )}
+
+            {String(service.slug || '').toLowerCase() === 'esim' && (
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
+                  eSIM Package Code <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={providerInputs.packageCode || ''}
+                  onChange={(e) => setProviderField('packageCode', e.target.value)}
+                  placeholder="e.g. global-5gb"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+            )}
+
+            {String(service.slug || '').toLowerCase() === 'wordpress-plugin-pack' && (
+              <div className="mb-4 space-y-3">
+                <input
+                  type="text"
+                  value={providerInputs.pluginName || ''}
+                  onChange={(e) => setProviderField('pluginName', e.target.value)}
+                  placeholder="Plugin name"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+                <input
+                  type="text"
+                  value={providerInputs.author || ''}
+                  onChange={(e) => setProviderField('author', e.target.value)}
+                  placeholder="Author"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+                <input
+                  type="text"
+                  value={providerInputs.description || ''}
+                  onChange={(e) => setProviderField('description', e.target.value)}
+                  placeholder="Description"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
+                <input
+                  type="url"
+                  value={providerInputs.logoUrl || ''}
+                  onChange={(e) => setProviderField('logoUrl', e.target.value)}
+                  placeholder="Logo URL"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                />
               </div>
             )}
 

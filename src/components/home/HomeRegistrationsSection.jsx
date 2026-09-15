@@ -11,8 +11,11 @@ import {
   Shield, ShoppingBag, Truck, Users, UtensilsCrossed, Wheat, Zap,
 } from 'lucide-react';
 import { registrationsPathForCategory, REGISTRATIONS_PAGE_PATH } from '../../utils/operationsSections';
-import { HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
-import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
+import {
+  REGISTRATIONS_HOME_PREVIEW_LIMIT,
+  REGISTRATIONS_HOME_VISIBLE,
+  useHomepageCardReveal,
+} from '../../utils/homepageCardReveal';
 import { usePublicHubRegistrarCategories } from '../../context/CategoryContext';
 import useCurrency from '../../context/CurrencyContext';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
@@ -61,9 +64,12 @@ export default function HomeRegistrationsSection() {
         || (cat.description || '').toLowerCase().includes(query)
         || (cat.highlights || []).some((p) => p.toLowerCase().includes(query))
       ));
-    return matched.slice(0, HOMEPAGE_PREVIEW_LIMIT);
+    return matched.slice(0, REGISTRATIONS_HOME_PREVIEW_LIMIT);
   }, [categoryFilter, allCategories]);
-  const { visible: visibleCategories, hasMore: categoriesHasMore, revealMore: revealMoreCategories } = useHomepageCardReveal(filteredCategories);
+  const { visible: visibleCategories, hasMore: categoriesHasMore, revealMore: revealMoreCategories } = useHomepageCardReveal(
+    filteredCategories,
+    { pageSize: REGISTRATIONS_HOME_VISIBLE, previewLimit: REGISTRATIONS_HOME_PREVIEW_LIMIT },
+  );
 
   const getPreviewRow = useCallback(() => (
     rowWrapRef.current?.querySelector('.home-preview-row') || null
@@ -427,7 +433,7 @@ export default function HomeRegistrationsSection() {
         {waitingForCategories ? (
           <div className="reg-cards-row-wrap" aria-busy="true" aria-label="Loading categories">
             <HomePreviewRow className="reg-cards-preview-row">
-              {[0, 1, 2, 3].map((key) => (
+              {[0, 1, 2, 3, 4].map((key) => (
                 <HomePreviewRowItem key={key}>
                   <div className="reg-mini-card-wrapper">
                     <div className="reg-mini-card reg-mini-card--skeleton" />

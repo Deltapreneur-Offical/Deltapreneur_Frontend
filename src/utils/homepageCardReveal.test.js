@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { HOMEPAGE_PREVIEW_LIMIT } from './homepageListings';
-import { initialHomepageReveal, nextHomepageReveal } from './homepageCardReveal';
+import {
+  REGISTRATIONS_HOME_PREVIEW_LIMIT,
+  REGISTRATIONS_HOME_VISIBLE,
+  initialHomepageReveal,
+  nextHomepageReveal,
+} from './homepageCardReveal';
 
 describe('homepageCardReveal', () => {
   it('shows all items when there are 4 or fewer', () => {
@@ -19,5 +24,14 @@ describe('homepageCardReveal', () => {
     expect(nextHomepageReveal(4, 6)).toBe(6);
     expect(nextHomepageReveal(8, 8)).toBe(8);
     expect(nextHomepageReveal(4, 50)).toBe(HOMEPAGE_PREVIEW_LIMIT);
+  });
+
+  it('uses 5 then 5 up to 10 for Delta Registrations only', () => {
+    expect(initialHomepageReveal(4, REGISTRATIONS_HOME_VISIBLE, REGISTRATIONS_HOME_PREVIEW_LIMIT)).toBe(4);
+    expect(initialHomepageReveal(10, REGISTRATIONS_HOME_VISIBLE, REGISTRATIONS_HOME_PREVIEW_LIMIT)).toBe(5);
+    expect(nextHomepageReveal(5, 10, REGISTRATIONS_HOME_VISIBLE, REGISTRATIONS_HOME_PREVIEW_LIMIT)).toBe(10);
+    expect(nextHomepageReveal(5, 50, REGISTRATIONS_HOME_VISIBLE, REGISTRATIONS_HOME_PREVIEW_LIMIT)).toBe(
+      REGISTRATIONS_HOME_PREVIEW_LIMIT,
+    );
   });
 });

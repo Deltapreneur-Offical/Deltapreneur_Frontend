@@ -205,7 +205,13 @@ export default function SharedDomainPage() {
   const isAvailable = availability.status === 'available';
   const isPremium = Boolean(availability.is_premium);
   const priceInr = availability.price_inr;
-  const renewalInr = availability.renewal_price_inr;
+  const displayInr = availability.total_inr ?? priceInr;
+  const renewalInr = availability.renewal_total_inr ?? availability.renewal_price_inr;
+  const gstIncluded = (
+    availability.total_inr != null
+    && priceInr != null
+    && Number(availability.total_inr) > Number(priceInr) + 0.001
+  );
   const minPeriodYears = Math.max(1, Number(availability.min_period_years || 1));
   const cartProps =
     isAvailable && priceInr != null && data?.domain
@@ -339,14 +345,19 @@ export default function SharedDomainPage() {
 
                       {/* Price */}
                       <div className="mt-6 border-t border-gray-100 pt-6">
-                        {isAvailable && priceInr != null ? (
+                        {isAvailable && displayInr != null ? (
                           <>
                             <p className="text-4xl font-extrabold text-gray-950 leading-none">
-                              {formatDomainPrice(priceInr)}
+                              {formatDomainPrice(displayInr)}
                               <span className="ml-1.5 text-base font-medium text-gray-400">
                                 {isPremium ? ' (1st Year)' : '/yr'}
                               </span>
                             </p>
+                            {gstIncluded ? (
+                              <p className="mt-1 text-xs font-semibold text-gray-400">
+                                GST included
+                              </p>
+                            ) : null}
                             {renewalInr != null ? (
                               <p className="mt-2 text-sm text-gray-500">
                                 Renews at {formatDomainPrice(renewalInr)}/yr

@@ -82,6 +82,28 @@ export function resolveHomeAuctionViews(auction) {
   return 0;
 }
 
+export function hasHomeAuctionViewCount(auction) {
+  if (!auction || typeof auction !== 'object') return false;
+  const domain = auction.domain || {};
+  const community = auction.community || {};
+  const software = auction.software || {};
+  const candidates = [
+    auction.views,
+    auction.view_count,
+    auction.viewCount,
+    domain.views,
+    domain.view_count,
+    domain.viewCount,
+    community.views,
+    community.view_count,
+    community.viewCount,
+    software.views,
+    software.view_count,
+    software.viewCount,
+  ];
+  return candidates.some((value) => value != null && value !== '');
+}
+
 function formatPricingTypeLabel(value) {
   const key = String(value || '').trim().toUpperCase().replace(/\s+/g, '_');
   if (!key) return '';

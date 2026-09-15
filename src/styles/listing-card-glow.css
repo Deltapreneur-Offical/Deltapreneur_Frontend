@@ -61,7 +61,8 @@
 .technology-listing-card-shell:hover,
 .domain-listing-card-shell:hover,
 .home-feature-card-shell:hover {
-  z-index: 30 !important;
+  /* Above sibling cards only — must stay below the dashboard navbar (z-40) */
+  z-index: 5 !important;
 }
 
 .listing-card-glow-shell::before,

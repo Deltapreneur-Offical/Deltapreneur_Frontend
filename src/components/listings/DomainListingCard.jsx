@@ -509,11 +509,40 @@ export default function DomainListingCard({
         {/* Bottom: pencil | Put Auction (auction label gets remaining width) */}
         <div className="mt-auto pt-3">
           {isOwner ? (
+            (() => {
+              const hasOwnerEdit = Boolean(onEdit);
+              const hasAuctionCta = Boolean(onPutForAuction) || isLiveAuction || isWinnerPhase;
+              const showDelete = Boolean(onDelete) && !browseMode;
+
+              // Homepage / browse cards have no edit or auction actions — one centred
+              // owner label instead of two identical "Your listing" pills.
+              if (!hasOwnerEdit && !hasAuctionCta) {
+                return (
+                  <div className="flex w-full min-w-0 items-center justify-center gap-2">
+                    <span className={`${OWNER_ACTION_BTN_MUTED} px-4`}>
+                      {t('listingCardYourListing', { defaultValue: 'Your listing' })}
+                    </span>
+                    {showDelete ? (
+                      <button
+                        type="button"
+                        className="domain-search-card__delete-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 transition-colors"
+                        onClick={(e) => { stop(e); onDelete(); }}
+                        aria-label={t('delete', { defaultValue: 'Delete' })}
+                        title={t('delete', { defaultValue: 'Delete' })}
+                      >
+                        <Trash2 size={15} strokeWidth={2} />
+                      </button>
+                    ) : null}
+                  </div>
+                );
+              }
+
+              return (
             <div className="flex w-full min-w-0 items-center gap-2">
             <ListingOwnerActionPair
               className="min-w-0 flex-1"
               left={
-                onEdit ? (
+                hasOwnerEdit ? (
                   <button
                     type="button"
                     className={OWNER_ACTION_BTN_EDIT}
@@ -573,7 +602,7 @@ export default function DomainListingCard({
                 )
               }
             />
-            {onDelete && !browseMode ? (
+            {showDelete ? (
               <button
                 type="button"
                 className="domain-search-card__delete-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 transition-colors"
@@ -585,6 +614,8 @@ export default function DomainListingCard({
               </button>
             ) : null}
             </div>
+              );
+            })()
           ) : isAuction && auctionLive ? (
             <button
               type="button"

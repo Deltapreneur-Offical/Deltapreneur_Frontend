@@ -1,4 +1,4 @@
-export const TLD_MARQUEE_CACHE_KEY = 'cb-tld-marquee-registration-prices-v2';
+export const TLD_MARQUEE_CACHE_KEY = 'cb-tld-marquee-registration-prices-v3';
 export const TLD_MARQUEE_REFRESH_EVENT = 'domain-commission:updated';
 export const TLD_MARQUEE_INVALIDATED_AT_KEY = 'domain-commission:invalidated-at';
 

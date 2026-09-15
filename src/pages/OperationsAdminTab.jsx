@@ -546,7 +546,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
           </h2>
           <p className="operations-admin-subtitle">
             {t('adminOperationsSubtitle', {
-              defaultValue: 'Manage Virtual Assistants, business solutions, and customer requests.',
+              defaultValue: 'Manage DeltaOperators, business solutions, and customer requests.',
             })}
           </p>
         </div>

@@ -1864,6 +1864,8 @@
   color: #94a3b8;
   max-width: 100%;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   padding-left: 0.15rem;
   line-height: 1;
 }
@@ -2145,6 +2147,92 @@
 /* Size columns from the grid's own width so split panels never get 3 skinny cards. */
 .domains-page-wrap .domain-listing-grid.domain-listing-grid--standard {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr)) !important;
+}
+
+/* ─── Venture / Co-Venture marketplace page (/ventures?mode=venture|co-venture)
+   Laptop / Windows-scaled viewports (1280–1440, 1366×768, 1920@125–150%) used to
+   force 4 Tailwind xl columns. Cards then overflowed: cover titles clipped,
+   “OWNERSHIP LIQUIDATION” spilled into the next card. Size columns from a
+   minimum card width so every screen wraps instead of crushing. */
+.venture-listing-grid--page {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.venture-listing-grid--page.listing-card-glow-grid {
+  padding-inline: 0;
+}
+
+.venture-listing-grid--page > .listing-card-glow-shell {
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.5rem 0.4rem;
+}
+
+.venture-listing-grid--page .venture-listing-card,
+.venture-listing-grid--page .listing-card-glow-shell > .venture-listing-card {
+  container-type: inline-size;
+  container-name: venture-card;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.venture-listing-grid--page .domain-listing-card__cover,
+.venture-listing-grid--page .venture-listing-card__cover-fallback,
+.venture-listing-grid--page .venture-listing-card__cover-content,
+.venture-listing-grid--page .venture-listing-card__cover-title-marquee,
+.venture-listing-grid--page .domain-listing-card__body,
+.venture-listing-grid--page .venture-listing-card__price-block,
+.venture-listing-grid--page .domain-listing-card__price-box,
+.venture-listing-grid--page .domain-listing-card__actions,
+.venture-listing-grid--page .venture-listing-card__pitch-cta {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.venture-listing-grid--page .domain-listing-card__price-box {
+  width: 100%;
+}
+
+@media (max-width: 639px) {
+  .venture-listing-grid--page {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+/* Phone landscape / tablet: 2. Laptop 1280–1440: 3. Wide desktop: up to 4.
+   auto-fill + 22rem min keeps Windows 125–150% scale from crushing cards. */
+@media (min-width: 640px) {
+  .venture-listing-grid--page {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)) !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1599px) {
+  .venture-listing-grid--page {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 1600px) {
+  .venture-listing-grid--page {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@container venture-card (max-width: 20rem) {
+  .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
+    font-size: 1.5rem;
+    letter-spacing: 0.3px;
+  }
+
+  .venture-listing-card .domain-listing-card__price-value {
+    font-size: 1rem !important;
+  }
 }
 
 

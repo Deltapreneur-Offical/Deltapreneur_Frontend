@@ -269,17 +269,17 @@ function VirtualAssistantJourneyPage() {
             <Briefcase size={28} />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {t('vaJourneyNoApplication', { defaultValue: 'No Virtual Assistant Application Yet' })}
+            {t('vaJourneyNoApplication', { defaultValue: 'No DeltaOperator Application Yet' })}
           </h1>
           <p className="mt-2 text-gray-600">
-            {t('vaJourneyNoApplicationDesc', { defaultValue: "You haven't submitted a Virtual Assistant application. Start your journey below." })}
+            {t('vaJourneyNoApplicationDesc', { defaultValue: "You haven't submitted a DeltaOperator application. Start your journey below." })}
           </p>
           <Link
             to="/virtual-assistant"
             className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
           >
             <Send size={16} />
-            {t('vaJourneyApplyCta', { defaultValue: 'Apply as a Virtual Assistant' })}
+            {t('vaJourneyApplyCta', { defaultValue: 'Apply as a DeltaOperator' })}
           </Link>
         </div>
       </AppLayout>
@@ -301,10 +301,10 @@ function VirtualAssistantJourneyPage() {
       <div className="va-journey-page mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
         <header className="va-journey-page__header">
           <h1 className="va-journey-page__title">
-            {t('vaJourneyTitle', { defaultValue: 'My Virtual Assistant Journey' })}
+            {t('vaJourneyTitle', { defaultValue: 'My DeltaOperator Journey' })}
           </h1>
           <p className="va-journey-page__subtitle">
-            {t('vaJourneySubtitle', { defaultValue: 'Track the progress of your Virtual Assistant application.' })}
+            {t('vaJourneySubtitle', { defaultValue: 'Track the progress of your DeltaOperator application.' })}
           </p>
         </header>
 
@@ -349,10 +349,10 @@ function VirtualAssistantJourneyPage() {
                 workspaceUnlocked ? (
                   <span className="va-journey-timeline__success-text">
                     <CheckCircle2 size={14} strokeWidth={2.5} aria-hidden />
-                    {t('vaJourneyUnlockedDesc', { defaultValue: "Congratulations! At least one of your Virtual Assistant roles has been approved. Open your workspace to begin." })}
+                    {t('vaJourneyUnlockedDesc', { defaultValue: "Congratulations! At least one of your DeltaOperator roles has been approved. Open your workspace to begin." })}
                   </span>
                 ) : (
-                  t('vaJourneyLockedDesc', { defaultValue: 'Your Virtual Assistant Workspace will be unlocked once at least one selected role is approved.' })
+                  t('vaJourneyLockedDesc', { defaultValue: 'Your DeltaOperator Workspace will be unlocked once at least one selected role is approved.' })
                 )
               }
             >
@@ -362,7 +362,7 @@ function VirtualAssistantJourneyPage() {
                   onClick={openWorkspace}
                   className="va-journey-timeline__action"
                 >
-                  {t('vaJourneyOpenWorkspace', { defaultValue: 'Open VA Workspace' })}
+                  {t('vaJourneyOpenWorkspace', { defaultValue: 'Open DeltaOperator Workspace' })}
                   <ArrowRight size={14} strokeWidth={2.5} />
                 </button>
               )}

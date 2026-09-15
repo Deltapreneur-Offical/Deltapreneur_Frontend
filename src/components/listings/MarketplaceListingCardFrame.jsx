@@ -46,6 +46,8 @@ export default function MarketplaceListingCardFrame({
             src={image}
             alt={imageAlt}
             className="absolute top-0 right-0 w-full h-full object-cover opacity-[0.06] group-hover:opacity-[0.1] transition-opacity duration-300"
+            loading="lazy"
+            decoding="async"
           />
         ) : null}
         <div className="listing-card-header__identity relative z-10 w-full min-w-0">
@@ -54,6 +56,8 @@ export default function MarketplaceListingCardFrame({
               src={image}
               alt={imageAlt}
               className="listing-card-header__avatar object-cover"
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <div className="listing-card-header__avatar listing-card-header__avatar--fallback">

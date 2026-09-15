@@ -33,8 +33,10 @@ export default function ShowcaseDomainCard({ item, shareContext = null, stackPre
         available: true,
         isPremium: true,
         registryTier: 'premium',
-        registrationPriceInr: item.priceInr ?? item.askingPrice,
+        registrationPriceInr: item.priceInr ?? item.createPriceInr ?? item.askingPrice,
+        totalInr: item.payableInr ?? item.totalInr,
         renewalPriceInr: item.renewalPriceInr,
+        renewalTotalInr: item.renewalTotalInr,
         premiumProvider: item.premiumProvider,
         // NOTE: managedAcquisition is intentionally NOT passed to the shared
         // card so the Showcase card never renders the Managed Acquisition

@@ -15,6 +15,7 @@ import {
   resolveHomeAuctionPricingTypeLabel,
   resolveHomeAuctionTitle,
   resolveHomeAuctionViews,
+  hasHomeAuctionViewCount,
 } from './homepageAuctions';
 
 describe('homepageAuctions', () => {
@@ -79,6 +80,12 @@ describe('homepageAuctions', () => {
     expect(resolveHomeAuctionViews({ domain: { views: 42 } })).toBe(42);
     expect(resolveHomeAuctionViews({ community: { view_count: 3 } })).toBe(3);
     expect(resolveHomeAuctionViews({})).toBe(0);
+  });
+
+  it('detects when homepage auction already has a view count', () => {
+    expect(hasHomeAuctionViewCount({ domain: { views: 0 } })).toBe(true);
+    expect(hasHomeAuctionViewCount({ views: 12 })).toBe(true);
+    expect(hasHomeAuctionViewCount({ domain: { fullDomain: 'a.com' } })).toBe(false);
   });
 
   it('normalizes bid counts and pricing type from API payloads', () => {

@@ -133,7 +133,7 @@ const VirtualAssistantPublishedProfilesPage = ({ embedded = false }) => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Virtual Assistant</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">DeltaOperator</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Roles</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Public Price</th>

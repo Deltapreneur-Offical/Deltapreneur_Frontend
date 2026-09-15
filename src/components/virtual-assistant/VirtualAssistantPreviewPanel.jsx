@@ -136,7 +136,7 @@ export default function VirtualAssistantPreviewPanel({
 
   const name = cleanText(profile?.fullName) || t('listingCardAnonymous', { defaultValue: 'Anonymous' });
   const approvedRoles = getApprovedRoles(profile);
-  const primaryRole = approvedRoles[0] || 'Virtual Assistant';
+  const primaryRole = approvedRoles[0] || 'DeltaOperator';
   const location = cleanText(profile?.location);
   const about = cleanText(profile?.bio);
   const languagesKnown = parseList(profile?.languagesKnown).join(', ');
@@ -162,7 +162,7 @@ export default function VirtualAssistantPreviewPanel({
   const handleHire = () => {
     // Prefer Gmail compose in a new tab — mailto: fails in Chrome Network when no
     // desktop mail client is configured (common on Windows / localhost).
-    const subject = `Hire Virtual Assistant: ${name}`;
+    const subject = `Hire DeltaOperator: ${name}`;
     const profilePath = getVirtualAssistantDetailPath(profile?.id, { intent: 'hire' });
     const profileUrl = `${PRODUCTION_APP_URL.replace(/\/$/, '')}${profilePath}`;
     const body =
@@ -183,8 +183,8 @@ export default function VirtualAssistantPreviewPanel({
 
   const shareBase = PRODUCTION_APP_URL.replace(/\/$/, '');
   const shareUrl = `${shareBase}/operations/${profile?.id || ''}${user?.id ? `?ref=${user.id}` : ''}`;
-  const shareSubject = `Check out this virtual assistant on Deltapreneur: ${name}`;
-  const shareBody = `Check out this virtual assistant on Deltapreneur!\n\n${name}\n${linkedInUrl ? `LinkedIn: ${linkedInUrl}` : ''}\n\nView profile:\n${shareUrl}`;
+  const shareSubject = `Check out this DeltaOperator on Deltapreneur: ${name}`;
+  const shareBody = `Check out this DeltaOperator on Deltapreneur!\n\n${name}\n${linkedInUrl ? `LinkedIn: ${linkedInUrl}` : ''}\n\nView profile:\n${shareUrl}`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareSubject)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
@@ -379,7 +379,7 @@ export default function VirtualAssistantPreviewPanel({
             hireIntent ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-purple-600 hover:bg-purple-700'
           }`}
         >
-          <span>{hireIntent ? 'Hire Virtual Assistant' : 'Contact'}</span>
+          <span>{hireIntent ? 'Hire DeltaOperator' : 'Contact'}</span>
           <ArrowRight size={16} className="shrink-0" />
         </button>
 

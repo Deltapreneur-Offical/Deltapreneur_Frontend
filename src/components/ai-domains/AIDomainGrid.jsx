@@ -10,7 +10,7 @@ function mapAiResultToCards(item) {
   const style = item.style || item.brand_category || null;
   const name = item.name;
 
-  const cardFor = (domain, tld, available, status, price) => {
+  const cardFor = (domain, tld, available, status, unitPrice, totalInr) => {
     if (!domain) return;
     const isAvailable = available === true;
     cards.push({
@@ -19,13 +19,14 @@ function mapAiResultToCards(item) {
       tld,
       status: isAvailable ? 'available' : (status === 'unknown' || status === 'checking' ? 'error' : (status || 'taken')),
       available: isAvailable,
-      registrationPrice: price,
+      registrationPrice: unitPrice,
+      totalInr,
       style,
     });
   };
 
-  cardFor(item.domain_com, 'com', item.com_available, item.com_status, item.com_price_inr);
-  cardFor(item.domain_in, 'in', item.in_available, item.in_status, item.in_price_inr);
+  cardFor(item.domain_com, 'com', item.com_available, item.com_status, item.com_price_inr, item.com_total_inr);
+  cardFor(item.domain_in, 'in', item.in_available, item.in_status, item.in_price_inr, item.in_total_inr);
   return cards;
 }
 

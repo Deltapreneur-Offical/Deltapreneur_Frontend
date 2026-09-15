@@ -13,7 +13,7 @@ import '../../styles/domain-listing-cards.css';
 
 /**
  * Homepage "Delta Domains" — OpenProvider Showcase premium cards only.
- * Marketplace featured listings live in FeaturedDomainsSection below this row.
+ * Marketplace listings sit in FeaturedDomainsSection above this row.
  */
 export default function DomainsSection() {
   const { t } = useTranslation();

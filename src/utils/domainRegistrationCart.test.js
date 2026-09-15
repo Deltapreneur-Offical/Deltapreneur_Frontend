@@ -41,4 +41,27 @@ describe('domainRegistrationCartProps (showcase routing)', () => {
     });
     expect(props.metadata.tld).toBe('ai');
   });
+
+  it('never posts GST-inclusive totals as metadata.price', () => {
+    const props = domainRegistrationCartProps({
+      domain: 'example.in',
+      registrationPriceInr: 575,
+      unitPrice: 575,
+      totalInr: 678.5,
+      payableInr: 678.5,
+      price: 678.5,
+    });
+    expect(props.metadata.price).toBe(575);
+    expect(props.metadata.pricePerYear).toBe(575);
+  });
+
+  it('ignores GST-only aliases when the ex-GST unit is missing', () => {
+    const props = domainRegistrationCartProps({
+      domain: 'example.in',
+      totalInr: 678.5,
+      payableInr: 678.5,
+      price: 678.5,
+    });
+    expect(props.metadata.price).toBe(0);
+  });
 });

@@ -7,7 +7,7 @@ import {
 } from '../../constants/virtualAssistantRoles';
 
 /**
- * Searchable VA role picker with "Other (Specify Your Role)" + custom input.
+ * Searchable DeltaOperator role picker with "Other (Specify Your Role)" + custom input.
  * Trigger stays visible; dropdown + search open below it.
  */
 export default function VaRolePicker({
@@ -17,7 +17,7 @@ export default function VaRolePicker({
   onCustomRoleChange,
   error = null,
   customError = null,
-  label = 'Select Virtual Assistant Role',
+  label = 'Select DeltaOperator Role',
   required = true,
   inputClassName = '',
   labelClassName = 'va-app-label',

@@ -37,19 +37,51 @@ export default function PurchasesPage() {
   const [swPurchases, setSwPurchases] = useState([]);
   const [venturePurchases, setVenturePurchases] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [helpModal, setHelpModal] = useState(null);
   const [helpSuccess, setHelpSuccess] = useState(null);
   const [domainTransfers, setDomainTransfers] = useState([]);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    Promise.all([
-      domainAPI.getMyPurchases().catch(() => ({ data: [] })),
-      domainStorefrontAPI.listOrders().catch(() => ({ data: [] })),
-      technologyAPI.getMyPurchases().catch(() => ({ data: [] })),
-      domainTransferAPI.listBuyer().catch(() => ({ data: { items: [] } })),
-      ventureDealAPI.getMy().catch(() => ({ data: [] })),
-    ]).then(([d, reg, s, transfers, ventureDeals]) => {
+    setLoadError(null);
+
+    const loadPurchases = async () => {
+      // Limit concurrency so local Supabase session-pooler slots are not exhausted
+      // by five simultaneous DB sessions (previously surfaced as 500/503 → empty UI).
+      const loaders = [
+        ['domains', () => domainAPI.getMyPurchases()],
+        ['registrations', () => domainStorefrontAPI.listOrders()],
+        ['technology', () => technologyAPI.getMyPurchases()],
+        ['transfers', () => domainTransferAPI.listBuyer()],
+        ['ventures', () => ventureDealAPI.getMy()],
+      ];
+      const settled = [];
+      const concurrency = 2;
+      for (let i = 0; i < loaders.length; i += concurrency) {
+        const chunk = loaders.slice(i, i + concurrency);
+        const chunkResults = await Promise.allSettled(chunk.map(([, fn]) => fn()));
+        settled.push(...chunkResults.map((result, idx) => ({
+          key: chunk[idx][0],
+          result,
+        })));
+      }
+      if (cancelled) return;
+
+      const failures = settled.filter((row) => row.result.status === 'rejected');
+      const byKey = Object.fromEntries(settled.map((row) => [row.key, row.result]));
+
+      const valueOrEmpty = (key, empty) => (
+        byKey[key]?.status === 'fulfilled' ? byKey[key].value : empty
+      );
+
+      const d = valueOrEmpty('domains', { data: [] });
+      const reg = valueOrEmpty('registrations', { data: [] });
+      const s = valueOrEmpty('technology', { data: [] });
+      const transfers = valueOrEmpty('transfers', { data: { items: [] } });
+      const ventureDeals = valueOrEmpty('ventures', { data: [] });
+
       setDomains(extractDomainList(d.data));
       const regList = Array.isArray(reg.data) ? reg.data : reg.data?.data ?? [];
       setRegistrations(regList);
@@ -59,7 +91,33 @@ export default function PurchasesPage() {
       setVenturePurchases(
         deals.filter((deal) => isVentureDealBuyer(deal, user))
       );
-    }).finally(() => setLoading(false));
+
+      if (failures.length === settled.length) {
+        setLoadError(
+          t('purchasesLoadFailed', {
+            defaultValue: 'Unable to load purchases right now. Please try again.',
+          }),
+        );
+      } else if (failures.length > 0) {
+        setLoadError(
+          t('purchasesLoadPartial', {
+            defaultValue: 'Some purchase categories could not be loaded. Showing what is available.',
+          }),
+        );
+      } else {
+        setLoadError(null);
+      }
+    };
+
+    loadPurchases().finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // `t` is intentionally omitted — i18n helpers are not stable referentially.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const completedDomains = asArray(domains).filter(d =>
@@ -228,9 +286,29 @@ export default function PurchasesPage() {
           </div>
         </div>
 
+        {loadError && displayItems.length > 0 ? (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            {loadError}
+          </div>
+        ) : null}
+
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+          </div>
+        ) : loadError && displayItems.length === 0 ? (
+          <div className="text-center py-20">
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+              {t('purchasesUnavailable', { defaultValue: 'Purchases unavailable' })}
+            </h3>
+            <p className="text-gray-600 mb-6">{loadError}</p>
+            <button
+              type="button"
+              className="btn-glow btn-glow-sm"
+              onClick={() => window.location.reload()}
+            >
+              {t('tryAgain', { defaultValue: 'Try again' })}
+            </button>
           </div>
         ) : displayItems.length === 0 ? (
           <div className="text-center py-20">

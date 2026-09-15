@@ -1,12 +1,7 @@
-export function SkeletonBone({ className = '' }) {
+export function SkeletonBone({ className = '', animated = true }) {
   return (
     <div
-      className={`animate-shimmer bg-gray-200 ${className}`.trim()}
-      style={{
-        backgroundImage:
-          'linear-gradient(90deg, rgb(229 231 235) 0%, rgb(243 244 246) 50%, rgb(229 231 235) 100%)',
-        backgroundSize: '200% 100%',
-      }}
+      className={`${animated ? 'animate-shimmer' : ''} bg-gray-200 ${className}`.trim()}
     />
   );
 }

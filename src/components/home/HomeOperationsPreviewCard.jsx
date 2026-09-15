@@ -8,7 +8,7 @@ import { OPERATIONS_CATEGORY_LABELS, getHubRegistrarCategoryLabel } from '../../
 import { formatOperationsPrice, isComplianceService } from '../../utils/operationsPricing';
 import LikeButton from '../common/LikeButton';
 import cobrotherViewMark from '../../assets/Cobrother_Profile.png';
-import { useIsCarouselClone } from './HomeAutoScrollRow';
+import { useIsCarouselClone } from './carouselCloneContext';
 import TruncatedItemsTooltip from '../common/TruncatedItemsTooltip';
 import PriceSectionIcon from '../common/PriceSectionIcon';
 

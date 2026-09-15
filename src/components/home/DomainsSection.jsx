@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { domainAPI } from '../../api/services';
 import { asArray } from '../../utils/asArray';
 import { normalizeDomainRecord } from '../../utils/domainApiAdapter';
-import { isOpenProviderShowcaseRow } from '../../utils/homepageListings';
+import { HOMEPAGE_PREVIEW_LIMIT, isOpenProviderShowcaseRow } from '../../utils/homepageListings';
+import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import HomeCardsNavRow from './HomeCardsNavRow';
 import { HomePreviewRowItem } from './HomePreviewRow';
 import ShowcaseDomainCard from '../listings/ShowcaseDomainCard';
@@ -20,19 +21,23 @@ export default function DomainsSection() {
   const [previewDomains, setPreviewDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasFetchedDomains, setHasFetchedDomains] = useState(false);
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewDomains);
 
   useEffect(() => {
     const fetchDomains = async () => {
       try {
         setLoading(true);
-        const { data } = await domainAPI.getShowcaseDomains();
+        const { data } = await domainAPI.getShowcaseDomains({
+          page_size: HOMEPAGE_PREVIEW_LIMIT,
+        });
         if (!data?.enabled) {
           setPreviewDomains([]);
           return;
         }
         const rows = asArray(data)
           .map(normalizeDomainRecord)
-          .filter(isOpenProviderShowcaseRow);
+          .filter(isOpenProviderShowcaseRow)
+          .slice(0, HOMEPAGE_PREVIEW_LIMIT);
         setPreviewDomains(rows);
       } catch {
         setPreviewDomains([]);
@@ -64,13 +69,15 @@ export default function DomainsSection() {
           showViewAll={previewDomains.length > 0}
         />
         {previewDomains.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>
+          <p className="home-section-empty text-center text-gray-500">{t('noDomains')}</p>
         ) : (
           <HomeCardsNavRow
             accent="domain"
             ariaLabel={t('homeDomainRegister', { defaultValue: 'Delta Domains' })}
+            hasMore={hasMore}
+            onRevealMore={revealMore}
           >
-            {previewDomains.map((domain) => (
+            {visible.map((domain) => (
               <HomePreviewRowItem key={domain.id || domain.domainName}>
                 <ShowcaseDomainCard
                   item={domain}

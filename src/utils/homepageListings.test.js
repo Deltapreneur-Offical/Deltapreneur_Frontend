@@ -55,7 +55,7 @@ describe('pickHomepagePreviewListings', () => {
     expect(picked.slice(0, 2).every((row) => row.featured)).toBe(true);
   });
 
-  it('defaults to 16 homepage preview cards', () => {
+  it('defaults to 8 homepage preview cards', () => {
     const marketplace = Array.from({ length: 24 }, (_, i) => ({
       id: `m${i}`,
       featured: true,
@@ -64,6 +64,6 @@ describe('pickHomepagePreviewListings', () => {
       domainName: `listed${i}.com`,
     }));
 
-    expect(pickHomepagePreviewListings(marketplace, 'domain')).toHaveLength(16);
+    expect(pickHomepagePreviewListings(marketplace, 'domain')).toHaveLength(8);
   });
 });

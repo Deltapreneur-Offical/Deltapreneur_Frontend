@@ -1444,15 +1444,8 @@
 .reg-mini-card--skeleton {
   min-height: 16.5rem;
   pointer-events: none;
-  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
-  background-size: 200% 100%;
-  animation: reg-mini-card-skeleton 1.2s ease-in-out infinite;
+  background: #f1f5f9;
   border: 1px solid #e2e8f0;
-}
-
-@keyframes reg-mini-card-skeleton {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
 }
 
 .reg-mini-card__icon {
@@ -1706,11 +1699,15 @@
   border-radius: inherit;
   pointer-events: none;
   box-shadow: 0 0 0 0 rgba(255, 153, 51, 0.5);
-  animation: reg-cards-nav-pulse 2s ease-out infinite;
+  animation: none;
+  opacity: 0;
 }
 
-.reg-cards-nav::after {
-  animation-delay: 1s;
+.reg-cards-nav:hover:not(:disabled)::before,
+.reg-cards-nav:focus-visible:not(:disabled)::before,
+.reg-cards-nav:active:not(:disabled)::before {
+  animation: reg-cards-nav-pulse 0.7s ease-out 1;
+  opacity: 1;
 }
 
 @keyframes reg-cards-nav-pulse {
@@ -1758,3 +1755,10 @@
     width: 15rem !important;
   }
 }
+
+@media (hover: hover) and (pointer: fine) {
+  .reg-cards-preview-row .reg-mini-card {
+    transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, border-color 0.12s ease-out;
+  }
+}
+

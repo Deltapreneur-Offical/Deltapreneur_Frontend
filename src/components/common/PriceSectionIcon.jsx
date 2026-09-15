@@ -6,6 +6,9 @@ export default function PriceSectionIcon({ className = '' }) {
     <img
       src={priceSectionV}
       alt=""
+      width={53}
+      height={62}
+      decoding="async"
       className={['price-section-v-icon', className].filter(Boolean).join(' ')}
       draggable="false"
       aria-hidden="true"

@@ -39,7 +39,7 @@ export default function TopNavbar({
           aria-label="Deltapreneur home"
           tabIndex={isScrolled || showCompactLogo ? 0 : -1}
         >
-          <BrandNavLogo className="home-top-nav-scroll-logo__mark" />
+          <BrandNavLogo className="home-top-nav-scroll-logo__mark" priority />
         </button>
 
         <div className="home-top-nav-actions">

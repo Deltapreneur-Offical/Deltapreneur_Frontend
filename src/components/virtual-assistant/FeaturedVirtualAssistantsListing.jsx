@@ -5,10 +5,8 @@ import { virtualAssistantAPI } from '../../api/services';
 import { asArray } from '../../utils/asArray';
 import { unwrapApiList } from '../../utils/apiResponse';
 import { navigateToVirtualAssistantDetail } from '../../utils/listingNavigation';
-import {
-  mapVirtualAssistantToCreatorCard,
-  normalizeHomepageListing,
-} from '../../utils/homepagePreview';
+import { mapVirtualAssistantToCreatorCard, normalizeHomepageListing } from '../../utils/homepagePreview';
+import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import { useLikes } from '../../hooks/useLikes';
 import CommunityListingCard from '../listings/CommunityListingCard';
 import HomePreviewCardShell from '../home/HomePreviewCardShell';
@@ -116,6 +114,7 @@ export default function FeaturedVirtualAssistantsListing({
   onViewProfile,
   onHireProfile,
   loadingFallback = null,
+  revealInPages = false,
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -126,6 +125,8 @@ export default function FeaturedVirtualAssistantsListing({
   const cards = externalCards ?? internal.cards;
   const loading = externalLoading ?? internal.loading;
   const count = cards.length;
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(cards);
+  const rendered = revealInPages ? visible : cards;
   // Dedicated like bucket — do not reuse COMMUNITY (Creators) likes.
   const { toggle: toggleLike, get: getLike } = useLikes('VIRTUAL_ASSISTANT', cards);
 
@@ -174,8 +175,10 @@ export default function FeaturedVirtualAssistantsListing({
       accent="assistance"
       className="home-va-auto-scroll-row"
       ariaLabel={ariaLabel || 'Featured Virtual Assistants'}
+      hasMore={revealInPages && hasMore}
+      onRevealMore={revealInPages ? revealMore : undefined}
     >
-      {cards.map((profile, index) => (
+      {rendered.map((profile, index) => (
         <HomePreviewRowItem key={cardKey(profile, index)}>
           {renderCard(profile)}
         </HomePreviewRowItem>

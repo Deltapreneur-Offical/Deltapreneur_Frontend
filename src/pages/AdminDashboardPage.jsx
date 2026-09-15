@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useContext, useMemo, useRef, createContext } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -205,9 +206,9 @@ const ADMIN_TOAST_TONE = {
 
 function AdminToastStack({ toasts, onDismiss }) {
   if (!toasts.length) return null;
-  return (
+  return createPortal(
     <div
-      className="fixed right-4 top-4 z-[1100] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-2"
+      className="pointer-events-none fixed right-4 top-4 z-[11000] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-2"
       role="region"
       aria-label="Notifications"
     >
@@ -218,7 +219,7 @@ function AdminToastStack({ toasts, onDismiss }) {
           <div
             key={toast.id}
             role={toast.type === 'error' ? 'alert' : 'status'}
-            className={`flex items-start gap-3 rounded-xl border ${tone.border} bg-white p-3 text-sm shadow-lg ring-1 ring-black/5`}
+            className={`pointer-events-auto flex items-start gap-3 rounded-xl border ${tone.border} bg-white p-3 text-sm shadow-lg ring-1 ring-black/5`}
           >
             <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone.iconColor}`} aria-hidden />
             <p className={`min-w-0 flex-1 leading-5 ${tone.text}`}>{toast.message}</p>
@@ -233,7 +234,8 @@ function AdminToastStack({ toasts, onDismiss }) {
           </div>
         );
       })}
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -970,13 +972,13 @@ export default function AdminDashboardPage() {
               <FranchiseApplicationsAdminTab toast={toast} />
             ) : tab === 'homepage-features' ? (
               <div className="admin-homepage-features-grid">
-                <HomepageFeatureSelector type="domain" />
-                <HomepageFeatureSelector type="venture" />
-                <HomepageFeatureSelector type="coventure" />
-                <HomepageFeatureSelector type="software" />
-                <HomepageFeatureSelector type="community" />
-                <HomepageFeatureSelector type="virtual-assistant" />
-                <HomepageFeatureSelector type="auction" />
+                <HomepageFeatureSelector type="domain" toast={toast} />
+                <HomepageFeatureSelector type="venture" toast={toast} />
+                <HomepageFeatureSelector type="coventure" toast={toast} />
+                <HomepageFeatureSelector type="software" toast={toast} />
+                <HomepageFeatureSelector type="community" toast={toast} />
+                <HomepageFeatureSelector type="virtual-assistant" toast={toast} />
+                <HomepageFeatureSelector type="auction" toast={toast} />
               </div>
             ) : tab === 'domain-transfers' ? (
               <DomainTransferAdminTab />

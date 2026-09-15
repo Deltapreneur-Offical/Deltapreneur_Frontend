@@ -177,7 +177,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               onClick={handleLogoClick}
               aria-label="Deltapreneur home"
             >
-              <BrandNavLogo />
+              <BrandNavLogo priority />
             </button>
 
             <div className="home-nav-desktop-menu">

@@ -1,96 +1,4 @@
-/* Homepage services / features section — header + periodic border beam */
-
-.home-features-section-header {
-  text-align: center;
-  max-width: 36rem;
-  margin: 0 auto 2.5rem;
-  padding: 0 0.5rem;
-}
-
-@media (min-width: 768px) {
-  .home-features-section-header {
-    margin-bottom: 3rem;
-  }
-}
-
-.home-features-section-eyebrow {
-  font-family: var(--font-body);
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #9ca3af;
-  margin-bottom: 0.875rem;
-}
-
-.home-features-section-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.875rem, 4.5vw, 2.5rem);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: #0f172a;
-  margin-bottom: 0.875rem;
-}
-
-.home-features-section-subtitle {
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  line-height: 1.6;
-  color: #6b7280;
-  max-width: 28rem;
-  margin: 0 auto;
-}
-
-@media (min-width: 768px) {
-  .home-features-section-subtitle {
-    font-size: 1rem;
-  }
-}
-
-/* Matching static border on both service cards; beam only on hover */
-.home-feature-card-border {
-  position: relative;
-  padding: 2px;
-  overflow: hidden;
-  isolation: isolate;
-  border-radius: 1rem;
-  backface-visibility: hidden;
-  border: 2px solid #e5e7eb;
-  background: #ffffff;
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 4px 12px rgba(15, 23, 42, 0.06);
-  transition:
-    border-color 0.28s ease,
-    box-shadow 0.28s ease;
-}
-
-.home-feature-card-border:hover {
-  border-color: #cbd5e1;
-  box-shadow:
-    0 4px 8px rgba(15, 23, 42, 0.05),
-    0 14px 28px rgba(15, 23, 42, 0.1);
-}
-
-.home-feature-card-border:hover .home-feature-card,
-.home-feature-card-border .home-feature-card:hover {
-  transform: none !important;
-  box-shadow: none !important;
-  border-color: transparent !important;
-}
-
-.home-feature-card-border .home-feature-card {
-  position: relative;
-  z-index: 1;
-  border: none !important;
-  box-shadow: none !important;
-  background: #ffffff !important;
-}
-
-.home-feature-card-shell::before {
-  display: none !important;
-}
+/* Homepage card hover beam — spinner lives on HomePreviewCardShell */
 
 .home-feature-card-beam-spinner {
   position: absolute;
@@ -115,13 +23,11 @@
   animation: none;
 }
 
-.home-feature-card-border:hover .home-feature-card-beam-spinner,
 .home-preview-card-border:hover .home-feature-card-beam-spinner {
   opacity: 1;
   animation: home-feature-beam-spin-card1 18s linear infinite;
 }
 
-/* Card 1 sweeps first, then ~3s pause, then card 2 sweeps — never both at once */
 @keyframes home-feature-beam-spin-card1 {
   0%,
   29%,
@@ -141,30 +47,6 @@
   }
 
   28% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
-@keyframes home-feature-beam-spin-card2 {
-  0%,
-  51%,
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-
-  52% {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-
-  78% {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-
-  79% {
     opacity: 0;
     transform: translate(-50%, -50%) rotate(360deg);
   }

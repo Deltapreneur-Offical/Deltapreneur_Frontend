@@ -589,3 +589,37 @@
     animation: none;
   }
 }
+
+/* ─── Admin textarea ─── */
+/* Unscoped: admin confirmation modals render in a portal outside .admin-page,
+   so they miss the app-shell light-surface override and fall back to the dark
+   global textarea theme. */
+.admin-textarea {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 0.6rem;
+  color: #111827;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: vertical;
+  /* Bounded so dragging the resize handle can't grow the modal past the
+     viewport and clip its header. */
+  min-height: 5.5rem;
+  max-height: 40vh;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.admin-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.admin-textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.admin-textarea:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}

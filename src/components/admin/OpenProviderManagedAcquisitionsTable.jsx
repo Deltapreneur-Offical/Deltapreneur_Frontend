@@ -237,7 +237,7 @@ export default function OpenProviderManagedAcquisitionsTable({ rows, onRefresh }
               Message to buyer (email + in-app notification):
             </p>
             <textarea
-              className="w-full rounded-xl border border-gray-200 p-3 text-sm min-h-[100px]"
+              className="w-full rounded-xl border border-gray-200 bg-white p-3 text-sm text-gray-900 placeholder:text-gray-400 min-h-[100px] max-h-[40vh]"
               value={modal.adminNotes}
               onChange={(e) => setModal((m) => ({ ...m, adminNotes: e.target.value }))}
               disabled={loading}

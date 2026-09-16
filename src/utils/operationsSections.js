@@ -31,6 +31,7 @@ export const OPERATIONS_SECTIONS = [
     defaultHint: 'Registration, filings & Delta registrar services',
     serviceType: 'compliance',
     theme: 'compliance',
+    homeHidden: true,
   },
 ];
 
@@ -61,6 +62,9 @@ const SECTION_ALIASES = {
 };
 
 export const PUBLIC_OPERATIONS_SECTIONS = OPERATIONS_SECTIONS.filter((section) => !section.publicHidden);
+
+/** Homepage operations rows — exclude sections that should not mount, fetch, or render. */
+export const HOMEPAGE_OPERATIONS_SECTIONS = PUBLIC_OPERATIONS_SECTIONS.filter((section) => !section.homeHidden);
 
 export function resolveOperationsSection(sectionId) {
   const normalized = SECTION_ALIASES[sectionId] || sectionId;

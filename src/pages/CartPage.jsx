@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Trash2, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -587,22 +588,35 @@ export default function CartPage() {
     navigate('/purchases');
   };
 
-  return (
-    <AppLayout>
-      <Confetti show={showConfetti} />
-      <PaymentProcessingOverlay open={checkoutPhase === 'verifying'} />
+  const cartOverlayOpen = Boolean(confirmPremiumOpen || premiumConfirmSuccess || paymentSuccess);
+
+  useEffect(() => {
+    if (!cartOverlayOpen) return undefined;
+    const html = document.documentElement;
+    const previousBody = document.body.style.overflow;
+    const previousHtml = html.style.overflow;
+    document.body.style.overflow = 'hidden';
+    html.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousBody;
+      html.style.overflow = previousHtml;
+    };
+  }, [cartOverlayOpen]);
+
+  const cartOverlays = (
+    <>
       {confirmPremiumOpen && (
         <div
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/55 backdrop-blur-sm px-4 py-8 sm:px-6 sm:py-12 md:py-16"
+          className="fixed inset-0 z-[11000] flex items-center justify-center overflow-y-auto overscroll-contain bg-slate-950/55 backdrop-blur-sm p-4 sm:p-6"
           onClick={(e) => {
             if (e.target === e.currentTarget && !checkoutLoading) setConfirmPremiumOpen(false);
           }}
           role="dialog"
           aria-modal="true"
         >
-          <div className="relative flex w-full max-w-[520px] max-h-[min(100%,calc(100dvh-4rem))] sm:max-h-[min(100%,calc(100dvh-6rem))] md:max-h-[min(100%,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.3)]">
-            <div className="absolute inset-x-0 top-0 z-10 h-1.5 shrink-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-700" />
-            <div className="overflow-y-auto overscroll-contain px-4 pt-6 pb-5 sm:px-8 sm:pt-7 sm:pb-6">
+          <div className="relative my-auto flex w-full max-w-[520px] max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.3)]">
+            <div className="absolute inset-x-0 top-0 z-20 h-1.5 shrink-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-700" />
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-6 pb-4 sm:px-8 sm:pt-7">
               <div className="mb-3 inline-flex max-w-full items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-800 sm:text-[11px]">
                 <span className="truncate">{t('cartManagedPriorityBadge', { defaultValue: 'Deltapreneur Priority Managed Acquisition' })}</span>
               </div>
@@ -655,7 +669,9 @@ export default function CartPage() {
                 <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">{t('cartManagedSecureTransfer', { defaultValue: 'Encrypted secure transfer' })}</span>
               </div>
 
-              <div className="mt-5 flex flex-col-reverse gap-2.5 sm:mt-6 sm:flex-row sm:items-stretch">
+            </div>
+            <div className="shrink-0 border-t border-slate-100 bg-white px-4 py-3 sm:px-8 sm:py-4">
+              <div className="flex flex-col-reverse gap-2.5 sm:flex-row sm:items-stretch">
                 <button
                   type="button"
                   className="w-full shrink-0 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 ease-out hover:border-slate-300 hover:bg-slate-50 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none sm:w-auto"
@@ -679,7 +695,7 @@ export default function CartPage() {
       )}
       {premiumConfirmSuccess && (
         <div
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/55 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[11000] flex items-center justify-center bg-slate-950/55 backdrop-blur-sm p-4"
           onClick={(e) => e.target === e.currentTarget && setPremiumConfirmSuccess(null)}
           role="dialog"
           aria-modal="true"
@@ -712,7 +728,7 @@ export default function CartPage() {
       )}
       {paymentSuccess && (
         <div
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={(e) => e.target === e.currentTarget && closePaymentSuccess()}
           role="dialog"
           aria-modal="true"
@@ -765,6 +781,14 @@ export default function CartPage() {
           </motion.div>
         </div>
       )}
+    </>
+  );
+
+  return (
+    <AppLayout>
+      <Confetti show={showConfetti} />
+      <PaymentProcessingOverlay open={checkoutPhase === 'verifying'} />
+      {typeof document !== 'undefined' ? createPortal(cartOverlays, document.body) : null}
       <div className="cart-page-shell max-w-6xl mx-auto px-4 pt-5 sm:pt-6 pb-12 sm:pb-14 lg:pb-16">
         <div className="relative mb-8 overflow-hidden rounded-2xl border border-gray-200/60 bg-gradient-to-br from-white via-slate-50/80 to-indigo-50/40 px-4 py-4 sm:px-6 sm:py-6">
           <div className="relative z-10 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">

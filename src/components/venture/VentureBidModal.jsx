@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { venturePitchAPI } from '../../api/services';
 import { resolveSellerAskSummary, formatVentureAskingPrice } from '../../utils/ventureListingHelpers';
+import AppOverlay from '../common/AppOverlay';
 
 export default function VentureBidModal({ venture, onClose, onSubmitted }) {
   const { formatPrice } = useCurrency();
@@ -66,11 +67,12 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
   };
 
   return (
+    <AppOverlay>
     <div
-      className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn"
+      className="fixed inset-0 z-[11000] flex items-end sm:items-center justify-center overflow-y-auto overscroll-contain bg-black/60 backdrop-blur-md p-4 animate-fadeIn"
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
     >
-      <div className="relative w-full max-w-[560px] flex flex-col min-h-0 bg-white border border-gray-200 rounded-t-[24px] sm:rounded-[24px] shadow-2xl overflow-hidden animate-slideUp">
+      <div className="relative my-auto w-full max-w-[560px] max-h-[calc(100dvh-2rem)] flex flex-col min-h-0 bg-white border border-gray-200 rounded-[24px] shadow-2xl overflow-hidden animate-slideUp">
         {/* Subtle Header Gradient Background */}
         <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-br from-indigo-50/80 to-blue-50/40 pointer-events-none" />
         
@@ -219,5 +221,6 @@ export default function VentureBidModal({ venture, onClose, onSubmitted }) {
         </div>
       </div>
     </div>
+    </AppOverlay>
   );
 }

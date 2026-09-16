@@ -9,6 +9,8 @@ import AppLayout from '../components/layout/AppLayout';
 import ListingBackLink from '../components/common/ListingBackLink';
 import VentureForm from '../components/venture/VentureForm';
 import Confetti from '../components/common/Confetti';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 /** 403 is authorization, not expiry. 401 must not clear a token the interceptor kept. */
 export function shouldClearSessionOnVentureApiError(status, currentAccessToken) {
@@ -78,7 +80,8 @@ export default function NewVenturePage() {
       <Confetti show={showConfetti} />
 
       {showConfetti && (
-        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/30 backdrop-blur-sm pointer-events-none animate-fadeIn">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/30 backdrop-blur-sm pointer-events-none animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl px-10 py-8 text-center max-w-sm mx-4 animate-slideUp">
             <div className="text-5xl mb-3">{createdListingMode === 'CO_VENTURE' ? '🤝' : '🚀'}</div>
             <h2 className="font-display text-2xl font-extrabold text-gray-900 mb-1">
@@ -89,6 +92,7 @@ export default function NewVenturePage() {
             </p>
           </div>
         </div>
+</AppOverlay>
       )}
 
       <div className="max-w-full w-full">

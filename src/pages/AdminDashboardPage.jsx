@@ -73,6 +73,8 @@ import { formatEquityPercent } from '../constants/ventureLabels';
 import { isDomainEnquiryPlaceholder } from '../utils/domainEnquiryPlaceholder';
 import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 
 function formatAdminRequestType(type, t) {
@@ -1529,8 +1531,9 @@ function VentureAdminRow({
       )}
 
       {submissionsOpen && (
-        <div
-          className="fixed inset-0 z-[1050] bg-black/30"
+        <AppOverlay>
+<div
+          className="fixed inset-0 z-[11000] bg-black/30"
           onClick={() => setSubmissionsOpen(false)}
           role="presentation"
         >
@@ -1613,6 +1616,7 @@ function VentureAdminRow({
             </div>
           </aside>
         </div>
+</AppOverlay>
       )}
     </div>
   );
@@ -2979,7 +2983,8 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[460px] bg-[#fdfcff] border border-gray-200 rounded-[20px] shadow-[0_24px_50px_rgba(0,0,0,0.1)] p-8 overflow-hidden">
         <div className="absolute -top-32 -left-32 w-72 h-72 bg-purple-100/50 rounded-full blur-3xl pointer-events-none" />
         
@@ -2989,7 +2994,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
         
         <div className="relative z-10 mb-6">
           <div className="inline-flex items-center px-3 py-1.5 bg-purple-50 border border-purple-200 text-purple-600 text-[10px] font-bold tracking-wider uppercase rounded-lg mb-4">
-            {t('adminForwardModalBadge', 'Forward to Deltapreneur')}
+            {t('adminForwardModalBadge', 'Forward To Delta Operators')}
           </div>
           <h2 className="text-3xl font-bold text-[#0B152A] mb-2">{t('adminAssignHubRegistrar')}</h2>
           <p className="text-[15px] text-gray-500">
@@ -3070,6 +3075,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -3090,7 +3096,8 @@ function TakeDownModal({ target, onConfirm, onClose }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-card" style={{ maxWidth: 440 }}>
         <div className="modal-glow" />
         <button className="modal-close" onClick={onClose}>✕</button>
@@ -3128,6 +3135,7 @@ function TakeDownModal({ target, onConfirm, onClose }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 

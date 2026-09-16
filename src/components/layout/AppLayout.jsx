@@ -14,7 +14,7 @@ import api from '../../api/axios';
 import TechnologyIcon from '../../assets/CoCreation.png';
 import BrandNavLogo from '../common/BrandNavLogo';
 import DomainsIcon from '../../assets/CoBranding.png';
-import CreatorIcon from '../../assets/Cobrother_Profile.png';
+import CreatorIcon from '../../assets/Deltapreneurs_icon.png';
 import CartButton from '../common/CartButton';
 import CurrencyDropdown from '../common/CurrencyDropdown';
 import LanguageDropdown from '../common/LanguageDropdown';
@@ -29,6 +29,8 @@ import { PendingVerificationDot } from '../domains/DomainVerificationPendingBann
 import ConfirmationModal from '../common/ConfirmationModal';
 import TopNavbar from '../common/TopNavbar';
 import HomeNavbar from '../common/HomeNavbar';
+import AppOverlay from '../common/AppOverlay';
+
 
 const sidebarItems = [
   { icon: Home, labelKey: 'dashboard', to: '/dashboard', isImage: false },
@@ -1058,8 +1060,9 @@ export default function AppLayout({ children }) {
 
       {/* Logout Confirmation Dialog */}
       {showLogoutConfirm && (
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        <AppOverlay>
+<div
+          className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="app-logout-confirm-title"
@@ -1087,6 +1090,7 @@ export default function AppLayout({ children }) {
             </div>
           </div>
         </div>
+</AppOverlay>
       )}
 
       <ConfirmationModal
@@ -1106,7 +1110,8 @@ export default function AppLayout({ children }) {
       />
       {/* Referral Reward Congratulations Overlay */}
       {referralPopup && (
-        <div className="fixed inset-0 z-[10005] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+        <AppOverlay>
+<div className="fixed inset-0 z-[10005] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-emerald-400 via-indigo-500 to-emerald-400" />
             <div className="text-6xl mb-4 animate-bounce">🎉</div>
@@ -1122,6 +1127,7 @@ export default function AppLayout({ children }) {
             </button>
           </div>
         </div>
+</AppOverlay>
       )}
     </div>
   );

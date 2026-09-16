@@ -7,6 +7,8 @@ import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const STATUS_KEYS = {
   PAYMENT_PENDING:   'feeRequestsStatusPaymentRequired',
@@ -167,7 +169,8 @@ function FeePaymentModal({ request, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[440px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-slideUp">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors duration-200 hover:text-gray-700" onClick={onClose}>✕</button>
@@ -212,5 +215,6 @@ function FeePaymentModal({ request, onClose, onSuccess }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }

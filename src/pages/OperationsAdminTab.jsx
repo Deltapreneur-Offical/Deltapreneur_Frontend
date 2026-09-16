@@ -12,6 +12,8 @@ import { getRequestStatusLabel } from '../utils/operationsRequestLabels';
 import { getHubRegistrarCategoryLabel } from '../utils/operationsCategories';
 import { asArray } from '../utils/asArray';
 import { readApiError } from '../utils/apiError';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const REQUEST_STATUS_STYLES = {
   PENDING: 'operations-admin-request-status--pending',
@@ -966,7 +968,8 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
               </div>
 
               {showCategoryForm && (
-                <div key={categoryFormKey} ref={categoryFormRef} className="operations-admin-modal-overlay" onClick={() => !categorySubmitting && resetCategoryForm()}>
+                <AppOverlay>
+<div key={categoryFormKey} ref={categoryFormRef} className="operations-admin-modal-overlay" onClick={() => !categorySubmitting && resetCategoryForm()}>
                   <div className="operations-admin-modal" onClick={(e) => e.stopPropagation()}>
                     <h3>{editingCategory ? 'Edit Main Category' : 'Add New Main Category'}</h3>
                     <form onSubmit={handleCategorySubmit} className="operations-admin-modal-form">
@@ -980,6 +983,7 @@ export default function OperationsAdminTab({ services = [], onRefresh }) {
                     </form>
                   </div>
                 </div>
+</AppOverlay>
               )}
 
               <div className="p-1">

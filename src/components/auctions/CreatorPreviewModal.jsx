@@ -298,7 +298,7 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-[11000] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn"
       onClick={(e) => {
         e.stopPropagation();
         if (e.target === e.currentTarget) close();

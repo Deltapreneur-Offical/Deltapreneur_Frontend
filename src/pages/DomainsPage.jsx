@@ -65,6 +65,8 @@ import DomainVerificationPendingBanner, { PendingVerificationDot } from '../comp
 import { isDomainPendingVerification } from '../utils/domainVerification';
 import { useDomainPendingVerification } from '../hooks/useDomainPendingVerification';
 import { notifyDomainVerificationChanged } from '../utils/domainVerificationEvents';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
@@ -429,7 +431,8 @@ export default function DomainsPage() {
       `}</style>
       <Confetti show={showConfetti} />
       {showConfetti && (
-        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/30 backdrop-blur-sm pointer-events-none animate-fadeIn">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/30 backdrop-blur-sm pointer-events-none animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl px-10 py-8 text-center max-w-sm mx-4 animate-slideUp">
             <div className="text-5xl mb-3">🌐</div>
             <h2 className="font-display text-2xl font-extrabold text-gray-900 mb-1">{t('domainsPageListedSuccessTitle')}</h2>
@@ -448,6 +451,7 @@ export default function DomainsPage() {
             </button>
           </div>
         </div>
+</AppOverlay>
       )}
       <div>
         {(showForm || editTarget) ? (
@@ -1621,8 +1625,9 @@ export function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
   const labelCls = 'text-sm font-medium text-gray-700';
 
   return (
-    <div
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    <AppOverlay>
+<div
+      className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
@@ -1717,6 +1722,7 @@ export function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
         </form>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -2408,7 +2414,8 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[520px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8 overflow-x-hidden">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
@@ -2542,6 +2549,7 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -2550,7 +2558,8 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
 function PurchaseSuccessModal({ domain, onClose }) {
   const { t } = useTranslation();
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[440px] text-center bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <div className="text-5xl mb-4">🎉</div>
@@ -2565,6 +2574,7 @@ function PurchaseSuccessModal({ domain, onClose }) {
         <button className="btn-glow w-full" onClick={onClose}>{t('domainVerifyDone')}</button>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -2628,7 +2638,8 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
 
   return (
-    <div
+    <AppOverlay>
+<div
       className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn"
       onClick={e => e.target === e.currentTarget && onClose?.()}
     >
@@ -2866,6 +2877,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Cookie, Shield, BarChart3, Megaphone, X } from 'lucide-react';
 import { useCookieConsent } from '../../context/CookieConsentContext';
+import AppOverlay from './AppOverlay';
 
 export default function CookiePreferencesModal() {
   const { t } = useTranslation();
@@ -24,8 +25,9 @@ export default function CookiePreferencesModal() {
   if (!preferencesOpen) return null;
 
   return (
+    <AppOverlay>
     <div
-      className="fixed inset-0 z-[10001] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[11000] flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="cookie-preferences-title"
@@ -104,6 +106,7 @@ export default function CookiePreferencesModal() {
         </div>
       </div>
     </div>
+    </AppOverlay>
   );
 }
 

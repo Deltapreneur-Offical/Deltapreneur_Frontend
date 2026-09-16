@@ -19,6 +19,8 @@ import {
 import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 import MyTechnologiesTab from '../components/profile/MyTechnologiesTab';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 export default function CoCreationDashboardPage() {
   const { formatPrice } = useCurrency();
@@ -246,7 +248,8 @@ export default function CoCreationDashboardPage() {
 
       {/* GitHub link reveal modal */}
       {githubModal && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setGithubModal(null)}>
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setGithubModal(null)}>
           <div className="relative w-full max-w-[440px] text-center bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8"
                onClick={e => e.stopPropagation()}>
             <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
@@ -272,6 +275,7 @@ export default function CoCreationDashboardPage() {
             </button>
           </div>
         </div>
+</AppOverlay>
       )}
     </AppLayout>
   );

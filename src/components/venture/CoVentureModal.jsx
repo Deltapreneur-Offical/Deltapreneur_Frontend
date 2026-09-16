@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatEquityOfferedPct } from '../../constants/ventureLabels';
 import { coVentureAPI } from '../../api/services';
+import AppOverlay from '../common/AppOverlay';
 
 const STATUS_KEYS = {
   PENDING:  { textKey: 'coVentureStatusPending',  descKey: 'coVentureStatusPendingDesc',  color: '#c8a96e', bg: 'rgba(200,169,110,0.1)',  border: 'rgba(200,169,110,0.3)',  icon: '⏳' },
@@ -110,11 +111,12 @@ export default function CoVentureModal({ venture, onClose, onApplied }) {
   const typeLabel = equityLabel || '';
 
   return (
+    <AppOverlay>
     <div
-      className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn"
+      className="fixed inset-0 z-[11000] flex items-end sm:items-center justify-center overflow-y-auto overscroll-contain bg-black/60 backdrop-blur-md p-4 animate-fadeIn"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="relative w-full max-w-[580px] h-[92dvh] sm:h-auto sm:max-h-[90vh] flex flex-col min-h-0 bg-white border border-gray-200 rounded-t-[24px] sm:rounded-[24px] shadow-2xl overflow-hidden animate-slideUp">
+      <div className="relative my-auto w-full max-w-[580px] max-h-[calc(100dvh-2rem)] flex flex-col min-h-0 bg-white border border-gray-200 rounded-[24px] shadow-2xl overflow-hidden animate-slideUp">
         <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-br from-teal-50/80 to-green-50/40 pointer-events-none" />
         
         <button
@@ -228,6 +230,7 @@ export default function CoVentureModal({ venture, onClose, onApplied }) {
         )}
       </div>
     </div>
+    </AppOverlay>
   );
 }
 

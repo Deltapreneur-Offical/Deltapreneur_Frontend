@@ -1406,8 +1406,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
           setError('Payment failed. Please try again.');
           setLoading(false);
         },
-        onDismiss: async () => {
-          await technologyAPI.handleFailure(item.id);
+        onDismiss: () => {
           setLoading(false);
         },
       });

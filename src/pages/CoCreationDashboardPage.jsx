@@ -518,7 +518,7 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
               <div className="text-[0.75rem] font-bold text-gray-700 uppercase tracking-wider mb-3">Purchased Resources</div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {sw.githubLink && (
+                {sw.githubLink && sw.technologyType !== 'HARDWARE' && (
                   <div className="px-4 py-3.5 bg-white border border-gray-200 rounded-xl flex items-center justify-between shadow-sm hover:border-green-300 transition-colors">
                     <div className="flex items-center gap-2">
                       <span className="text-green-500 text-lg">🔓</span>

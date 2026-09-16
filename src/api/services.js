@@ -284,6 +284,7 @@ export const technologyAPI = {
   createOrder:     (id, data, redeemPoints = false) => api.post(`/api/v1/technology/${id}/purchase/create-order`, data, { params: { redeem_points: redeemPoints } }),
   verifyPayment:   (id, data) => api.post(`/api/v1/technology/${id}/purchase/verify`, data),
   handleFailure:   (id)       => api.post(`/api/v1/technology/${id}/purchase/failure`),
+  cancelPurchase:  (purchaseId) => api.post(`/api/v1/technology/purchase/${purchaseId}/cancel`),
   confirmPurchase: (purchaseId) => api.post(`/api/v1/technology/purchase/${purchaseId}/confirm`),
   getAnalytics:    (id)       => api.get(`/api/v1/technology/${id}/analytics`),
   payCoBrotherHelp:    (purchaseId, data = {}) =>
@@ -389,6 +390,7 @@ export const adminAPI = {
   requestDomainVerificationInfo: (id, message) => api.post(`/api/v1/admin/domains/${id}/verification/request-info`, { message }),
   markTechnologyVerified: (id)  => api.post(`/api/v1/admin/softwares/${id}/mark-verified`),
   markTechnologyUnverified: (id) => api.post(`/api/v1/admin/softwares/${id}/mark-unverified`),
+  markTechnologyRejected: (id) => api.post(`/api/v1/admin/softwares/${id}/mark-rejected`),
   domainVerifyInit:     (id, m) => api.post(`/api/v1/admin/domains/${id}/verification/init`, { method: m }),
   domainVerifyCheck:    (id, t) => api.post(`/api/v1/admin/domains/${id}/verification/check`, t ? { token: t } : {}),
   toggleDomainHomepage:   (id)  => api.post(`/api/v1/admin/domain/${id}/toggle-homepage`),
@@ -418,6 +420,7 @@ export const adminAPI = {
   getTechnologyTransferDetail: (id) => api.get(`/api/v1/admin/technology-transfers/${id}`),
   approveTechnologyPayout: (id) => api.post(`/api/v1/admin/technology-transfers/${id}/approve-payout`),
   releaseTechnologyPayout: (id, data) => api.post(`/api/v1/admin/technology-transfers/${id}/release-payout`, data),
+  processTechnologyRefund: (id) => api.post(`/api/v1/admin/technology-transfers/${id}/process-refund`),
   permanentDeleteDomains: (ids) => api.post('/api/v1/admin/domains/permanent-delete', { ids }),
   getVirtualAssistants: (params = {}) => api.get('/api/v1/admin/virtual-assistant/applications', { params }),
   getVirtualAssistantCounts: () => api.get('/api/v1/admin/virtual-assistant/applications/counts'),

@@ -38,6 +38,7 @@ function AuctionPreviewCard({ auction, onView, likeState, onLike }) {
         onView={onView}
         likeState={likeState}
         onLike={onLike}
+        homepageAuctionContentOnly
       />
     </HomePreviewCardShell>
   );
@@ -316,7 +317,7 @@ export default function AuctionsSection() {
   }
 
   return (
-    <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
+    <section className="home-auctions-section bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader
           title={t('homeRegistryAuctions', { defaultValue: 'Auctions' })}

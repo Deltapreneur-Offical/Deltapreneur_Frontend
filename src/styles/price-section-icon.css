@@ -140,15 +140,15 @@
   outline: none;
 }
 
-/* Homepage Delta Ventures only: lime → mint card theme. */
+/* Homepage Delta Ventures: thin investment pill matching equity/play teal */
 body.home-page-body .home-preview-row .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
 body.home-page-body .home-auto-scroll-row .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
 body.home-page-body .home-preview-row .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box,
 body.home-page-body .home-auto-scroll-row .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box {
-  border: 2.5px solid transparent !important;
+  border: 1px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
+    linear-gradient(#14B8A6, #14B8A6) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow: none !important;
@@ -157,11 +157,11 @@ body.home-page-body .home-auto-scroll-row .home-preview-card-border--coventure:h
 body.home-page-body .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta,
 body.home-page-body .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:hover,
 body.home-page-body .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible {
-  color: #1ED891 !important;
+  color: #14B8A6 !important;
 }
 
 body.home-page-body .home-preview-card-border--coventure .venture-listing-card--coventure .price-section-v-icon {
-  filter: brightness(0) saturate(100%) invert(67%) sepia(50%) saturate(520%) hue-rotate(95deg) brightness(98%) contrast(91%) !important;
+  filter: brightness(0) saturate(100%) invert(57%) sepia(54%) saturate(681%) hue-rotate(130deg) brightness(92%) contrast(90%) !important;
 }
 
 /* Homepage / dashboard: slightly brighter orange play arrow on hover — never darker red/brown */
@@ -195,5 +195,5 @@ body.home-page-body .home-auto-scroll-row__item:hover .home-preview-card-border-
 .venture-listing-card--coventure:hover .price-section-v-icon,
 .venture-listing-card--coventure .domain-listing-card__price-cta:hover .price-section-v-icon,
 .venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible .price-section-v-icon {
-  filter: brightness(0) saturate(100%) invert(67%) sepia(50%) saturate(520%) hue-rotate(95deg) brightness(105%) contrast(91%) !important;
+  filter: brightness(0) saturate(100%) invert(57%) sepia(54%) saturate(681%) hue-rotate(130deg) brightness(98%) contrast(92%) !important;
 }

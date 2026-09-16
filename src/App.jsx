@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import lightFavicon from './assets/Deltapreneur_favicon_48.png';
 import darkFavicon from './assets/Deltapreneur_favicon_48.png';
 import { applyThemeFavicon } from './utils/applyThemeFavicon';
-import SiteGradientBorder from './components/common/SiteGradientBorder';
 import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
 import PageLoader from './components/common/PageLoader';
@@ -184,7 +183,6 @@ export default function App() {
         <AuthProvider>
           <CartProvider>
           <RoutePreloader />
-          <SiteGradientBorder />
           <CookieConsentBanner />
           <WhatsAppFloatingButton />
           <AppErrorBoundary>

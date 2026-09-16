@@ -113,8 +113,6 @@ export default function DomainListingCard({
   const [coords, setCoords] = useState({ top: 0, left: 0 });
   const [ownerMenuOpen, setOwnerMenuOpen] = useState(false);
   const ownerMenuRef = useRef(null);
-  const ownerMenuPortalRef = useRef(null);
-  const [ownerMenuCoords, setOwnerMenuCoords] = useState({ top: 0, left: 0 });
 
   const auctionPhase = listingAuctionPhase(domain);
   const isLiveAuction = auctionPhase === 'live';
@@ -138,26 +136,19 @@ export default function DomainListingCard({
   useEffect(() => {
     const handleClick = (e) => {
       if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false);
-      const outsideOwnerTrigger = ownerMenuRef.current && !ownerMenuRef.current.contains(e.target);
-      const outsideOwnerMenu = !ownerMenuPortalRef.current?.contains(e.target);
-      if (outsideOwnerTrigger && outsideOwnerMenu) setOwnerMenuOpen(false);
-    };
-    const handleClose = () => {
-      setShareOpen(false);
-      setOwnerMenuOpen(false);
+      if (ownerMenuRef.current && !ownerMenuRef.current.contains(e.target)) setOwnerMenuOpen(false);
     };
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') handleClose();
+      if (e.key === 'Escape') {
+        setShareOpen(false);
+        setOwnerMenuOpen(false);
+      }
     };
     document.addEventListener('pointerdown', handleClick);
     document.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('scroll', handleClose, { passive: true });
-    window.addEventListener('resize', handleClose);
     return () => {
       document.removeEventListener('pointerdown', handleClick);
       document.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('scroll', handleClose);
-      window.removeEventListener('resize', handleClose);
     };
   }, []);
 
@@ -220,16 +211,6 @@ export default function DomainListingCard({
 
   const toggleOwnerMenu = (e) => {
     stop(e);
-    if (!ownerMenuOpen && ownerMenuRef.current) {
-      const rect = ownerMenuRef.current.getBoundingClientRect();
-      const menuWidth = 176;
-      const menuHeight = 104;
-      const left = Math.max(8, Math.min(rect.left, window.innerWidth - menuWidth - 8));
-      const top = rect.bottom + menuHeight + 8 > window.innerHeight
-        ? rect.top - menuHeight - 6
-        : rect.bottom + 6;
-      setOwnerMenuCoords({ top, left });
-    }
     setOwnerMenuOpen((open) => !open);
   };
 
@@ -274,12 +255,10 @@ export default function DomainListingCard({
             >
               <MoreVertical size={16} strokeWidth={2} />
             </button>
-            {ownerMenuOpen && createPortal(
+            {ownerMenuOpen ? (
               <div
-                ref={ownerMenuPortalRef}
                 role="menu"
-                className="fixed z-[9999] w-44 overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.16)]"
-                style={{ top: ownerMenuCoords.top, left: ownerMenuCoords.left }}
+                className="domain-listing-owner-menu absolute left-0 bottom-full z-20 mb-1.5 w-44 overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.16)]"
                 onClick={stop}
                 onMouseDown={stop}
               >
@@ -313,9 +292,8 @@ export default function DomainListingCard({
                   </span>
                   {t('remove')}
                 </button>
-              </div>,
-              document.body
-            )}
+              </div>
+            ) : null}
           </div>
           <div className="flex min-w-0 flex-1 items-center">
             {!isAuction && onPutForAuction && (
@@ -433,12 +411,10 @@ export default function DomainListingCard({
         >
           <EditIcon size={15} />
         </button>
-        {ownerMenuOpen && createPortal(
+        {ownerMenuOpen ? (
           <div
-            ref={ownerMenuPortalRef}
             role="menu"
-            className="fixed z-[9999] w-36 overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.16)]"
-            style={{ top: ownerMenuCoords.top, left: ownerMenuCoords.left }}
+            className="domain-listing-owner-menu absolute left-0 bottom-full z-20 mb-1.5 w-36 overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.16)]"
             onClick={stop}
             onMouseDown={stop}
           >
@@ -468,15 +444,14 @@ export default function DomainListingCard({
               <Trash2 size={14} />
               {t('delete', { defaultValue: 'Delete' })}
             </button>
-          </div>,
-          document.body
-        )}
+          </div>
+        ) : null}
       </div>
     );
 
     return (
       <div
-        className="domain-search-card domain-search-card--listing relative flex h-full min-w-0 w-full flex-col overflow-hidden border rounded-2xl p-4 sm:p-5 hover:-translate-y-0.5 transition-all duration-200 border-sky-200 ring-1 ring-sky-100 bg-gradient-to-br from-sky-50/40 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.2),0_8px_24px_rgba(2,132,199,0.08),0_0_20px_rgba(56,189,248,0.12)] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.3),0_10px_28px_rgba(2,132,199,0.12),0_0_28px_rgba(56,189,248,0.18)]"
+        className={`domain-search-card domain-search-card--listing relative flex h-full min-w-0 w-full flex-col border rounded-2xl p-4 sm:p-5 hover:-translate-y-0.5 transition-all duration-200 border-sky-200 ring-1 ring-sky-100 bg-gradient-to-br from-sky-50/40 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.2),0_8px_24px_rgba(2,132,199,0.08),0_0_20px_rgba(56,189,248,0.12)] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.3),0_10px_28px_rgba(2,132,199,0.12),0_0_28px_rgba(56,189,248,0.18)]${ownerMenuOpen ? ' is-owner-menu-open overflow-visible' : ' overflow-hidden'}`}
         onClick={interactive ? handleCardClick : undefined}
         role={interactive ? 'button' : undefined}
         tabIndex={interactive ? 0 : undefined}

@@ -1137,6 +1137,16 @@ export default function DomainsPage() {
                     padding: 0.65rem 0.85rem 0.4rem !important;
                     overflow: hidden !important;
                   }
+                  .domains-sync-layout .domain-search-card.is-owner-menu-open {
+                    overflow: visible !important;
+                    z-index: 21;
+                  }
+                  .domains-sync-layout__item:has(.is-owner-menu-open),
+                  .domains-sync-layout .listing-card-glow-shell:has(.is-owner-menu-open) {
+                    overflow: visible !important;
+                    z-index: 21;
+                    position: relative;
+                  }
                   .domains-sync-layout .domain-search-card > .pr-9 {
                     flex: 0 0 auto !important;
                     min-width: 0 !important;

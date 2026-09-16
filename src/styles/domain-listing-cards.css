@@ -2252,6 +2252,18 @@ body.app-layout-body .venture-listing-grid--page .venture-listing-card--coventur
   }
 }
 
+/* Keep the Edit/Delete panel on the card; do not clip it when open. */
+.domain-search-card.is-owner-menu-open {
+  overflow: visible;
+}
+
+.listing-card-glow-shell:has(.is-owner-menu-open),
+.domains-sync-layout__item:has(.is-owner-menu-open) {
+  overflow: visible;
+  position: relative;
+  z-index: 21;
+}
+
 
 
 

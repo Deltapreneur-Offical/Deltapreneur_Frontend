@@ -8,7 +8,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
-import CreatorIcon from '../assets/Cobrother_Profile.png';
+import CreatorIcon from '../assets/Deltapreneurs_icon.png';
 import { useCreatorFollows } from '../hooks/useCreatorFollows';
 import { useLikes } from '../hooks/useLikes';
 import { COMMUNITY_INDUSTRIES } from '../constants/listingCategories';
@@ -48,6 +48,8 @@ import { readCreatorExpectedRate, formatCreatorExpectedRate, parseCreatorExpecte
 import { readApiError } from '../utils/apiError';
 import { CURRENCY_LABELS } from '../constants/currencies';
 import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const ROLES = [
   { value: 'STUDENT', label: 'STUDENT' },
@@ -865,8 +867,9 @@ export default function CommunityPage() {
 // ─── Sync Profile Photo Modal ─────────────────────────────────────────────────
 function SyncProfilePhotoModal({ onConfirm, onCancel }) {
   return (
-    <div
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    <AppOverlay>
+<div
+      className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={e => e.target === e.currentTarget && onCancel()}
       role="dialog"
       aria-modal="true"
@@ -926,6 +929,7 @@ function SyncProfilePhotoModal({ onConfirm, onCancel }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -997,7 +1001,8 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[540px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
@@ -1101,6 +1106,7 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
         )}
       </div>
     </div>
+</AppOverlay>
   );
 }
 

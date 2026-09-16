@@ -125,6 +125,8 @@ const socialRowTwo = [
 
 
 
+const SHOW_APPLY_REGISTRY_OFFICE_FOOTER = false;
+
 const socialLinkClass = 'home-footer-social-link';
 
 
@@ -212,7 +214,7 @@ export default function HomeFooter() {
         <div className="home-footer-logo-col flex flex-col items-start justify-start sm:col-span-2 md:col-span-4">
 
           <Link to="/" className="home-footer-logo-link group mb-4 inline-block" aria-label="Deltapreneur home">
-            <BrandNavLogo className="home-footer-logo" imgClassName="home-footer-logo-image" />
+            <BrandNavLogo className="home-footer-logo" imgClassName="home-footer-logo-image" width={288} height={72} />
           </Link>
 
         </div>
@@ -235,11 +237,13 @@ export default function HomeFooter() {
 
             </ScrollLink>
 
-            <ScrollLink to="/franchise" className={linkClass}>
+            {SHOW_APPLY_REGISTRY_OFFICE_FOOTER ? (
+              <ScrollLink to="/franchise" className={linkClass}>
 
-              {t('footerApplyRegistryOffice', { defaultValue: 'Apply for Registry office' })}
+                {t('footerApplyRegistryOffice', { defaultValue: 'Apply for Registry office' })}
 
-            </ScrollLink>
+              </ScrollLink>
+            ) : null}
 
           </nav>
 

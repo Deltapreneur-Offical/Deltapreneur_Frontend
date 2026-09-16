@@ -11,6 +11,7 @@ import {
 import { useCategoryMap } from '../../context/CategoryContext';
 import { OPERATIONS_SECTIONS } from '../../utils/operationsSections';
 import { readApiError } from '../../utils/apiError';
+import AppOverlay from '../common/AppOverlay';
 
 const VA_CATEGORY_OPTIONS = OPERATIONS_CATEGORY_OPTIONS.filter((opt) => opt.value !== 'compliance');
 
@@ -167,6 +168,7 @@ export default function OperationRoleModal({
   };
 
   return (
+    <AppOverlay>
     <div
       className="operations-role-modal-overlay"
       onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -418,5 +420,6 @@ export default function OperationRoleModal({
         </form>
       </div>
     </div>
+    </AppOverlay>
   );
 }

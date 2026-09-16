@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ventureAPI } from '../../api/services';
 import { fetchHomepageVenturePreview } from '../../utils/homepagePreview';
+import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
@@ -38,6 +39,7 @@ export default function VenturesSection() {
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', ventures);
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(ventures);
 
   const handleViewDetails = (ventureId) => {
     navigateToListingDetail(navigate, 'venture', ventureId);
@@ -77,13 +79,15 @@ export default function VenturesSection() {
           showViewAll={ventures.length > 0}
         />
         {ventures.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">{t('noVentures')}</p>
+          <p className="home-section-empty text-center text-gray-500">{t('noVentures')}</p>
         ) : (
           <HomeCardsNavRow
             accent="venture"
             ariaLabel={t('homeVentureRegister', { defaultValue: 'Ventures' })}
+            hasMore={hasMore}
+            onRevealMore={revealMore}
           >
-            {ventures.map((venture) => (
+            {visible.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
                 {renderVentureCard(venture)}
               </HomePreviewRowItem>

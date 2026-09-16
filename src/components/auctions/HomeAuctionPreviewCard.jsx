@@ -18,7 +18,7 @@ import {
 } from '../../utils/homepageAuctions';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import CreatorPreviewModal from './CreatorPreviewModal';
-import { useIsCarouselClone } from '../home/HomeAutoScrollRow';
+import { useIsCarouselClone } from '../home/carouselCloneContext';
 
 function AuctionCountdownDisplay({ value }) {
   const text = String(value || '').trim();
@@ -61,9 +61,32 @@ function useCountdown(target) {
       const { timeLeft: next } = formatCompactCountdown(target);
       setTimeLeft(next);
     };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
+
+    let id = null;
+    const start = () => {
+      if (id != null) return;
+      id = window.setInterval(tick, 1000);
+    };
+    const stop = () => {
+      if (id == null) return;
+      window.clearInterval(id);
+      id = null;
+    };
+    const sync = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        stop();
+        return;
+      }
+      tick();
+      start();
+    };
+
+    sync();
+    document.addEventListener('visibilitychange', sync);
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', sync);
+    };
   }, [target]);
 
   return timeLeft;

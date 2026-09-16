@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useContext, useMemo, useRef, createContext } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -69,8 +70,11 @@ import AdminPremiumTechTab from '../components/admin/AdminPremiumTechTab';
 import HubRegistrarOfficeAdminTab from '../components/admin/HubRegistrarOfficeAdminTab';
 import FranchiseApplicationsAdminTab from '../components/admin/FranchiseApplicationsAdminTab';
 import { formatEquityPercent } from '../constants/ventureLabels';
+import { isDomainEnquiryPlaceholder } from '../utils/domainEnquiryPlaceholder';
 import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 
 function formatAdminRequestType(type, t) {
@@ -205,9 +209,9 @@ const ADMIN_TOAST_TONE = {
 
 function AdminToastStack({ toasts, onDismiss }) {
   if (!toasts.length) return null;
-  return (
+  return createPortal(
     <div
-      className="fixed right-4 top-4 z-[1100] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-2"
+      className="pointer-events-none fixed right-4 top-4 z-[11000] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-2"
       role="region"
       aria-label="Notifications"
     >
@@ -218,7 +222,7 @@ function AdminToastStack({ toasts, onDismiss }) {
           <div
             key={toast.id}
             role={toast.type === 'error' ? 'alert' : 'status'}
-            className={`flex items-start gap-3 rounded-xl border ${tone.border} bg-white p-3 text-sm shadow-lg ring-1 ring-black/5`}
+            className={`pointer-events-auto flex items-start gap-3 rounded-xl border ${tone.border} bg-white p-3 text-sm shadow-lg ring-1 ring-black/5`}
           >
             <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone.iconColor}`} aria-hidden />
             <p className={`min-w-0 flex-1 leading-5 ${tone.text}`}>{toast.message}</p>
@@ -233,7 +237,8 @@ function AdminToastStack({ toasts, onDismiss }) {
           </div>
         );
       })}
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -332,6 +337,7 @@ function isPendingDomainVerification(item) {
 }
 
 function isPendingDomainEnquiry(item) {
+  if (isDomainEnquiryPlaceholder(item)) return false;
   const status = String(item?.status ?? '').toUpperCase();
   return status === 'PENDING'
     || status === 'IN_PROGRESS'
@@ -970,13 +976,13 @@ export default function AdminDashboardPage() {
               <FranchiseApplicationsAdminTab toast={toast} />
             ) : tab === 'homepage-features' ? (
               <div className="admin-homepage-features-grid">
-                <HomepageFeatureSelector type="domain" />
-                <HomepageFeatureSelector type="venture" />
-                <HomepageFeatureSelector type="coventure" />
-                <HomepageFeatureSelector type="software" />
-                <HomepageFeatureSelector type="community" />
-                <HomepageFeatureSelector type="virtual-assistant" />
-                <HomepageFeatureSelector type="auction" />
+                <HomepageFeatureSelector type="domain" toast={toast} />
+                <HomepageFeatureSelector type="venture" toast={toast} />
+                <HomepageFeatureSelector type="coventure" toast={toast} />
+                <HomepageFeatureSelector type="software" toast={toast} />
+                <HomepageFeatureSelector type="community" toast={toast} />
+                <HomepageFeatureSelector type="virtual-assistant" toast={toast} />
+                <HomepageFeatureSelector type="auction" toast={toast} />
               </div>
             ) : tab === 'domain-transfers' ? (
               <DomainTransferAdminTab />
@@ -1525,8 +1531,9 @@ function VentureAdminRow({
       )}
 
       {submissionsOpen && (
-        <div
-          className="fixed inset-0 z-[1050] bg-black/30"
+        <AppOverlay>
+<div
+          className="fixed inset-0 z-[11000] bg-black/30"
           onClick={() => setSubmissionsOpen(false)}
           role="presentation"
         >
@@ -1609,6 +1616,7 @@ function VentureAdminRow({
             </div>
           </aside>
         </div>
+</AppOverlay>
       )}
     </div>
   );
@@ -2339,6 +2347,7 @@ const DOMAIN_ENQUIRY_STATUS_COLORS = {
 
 const DOMAIN_ENQUIRY_FILTER_TABS = [
   { id: 'all', label: 'All' },
+  { id: 'WAITING_FOR_BUYER', label: 'Waiting for buyer' },
   { id: 'PENDING', label: 'Pending' },
   { id: 'IN_PROGRESS', label: 'In Progress' },
   { id: 'ACCEPTED', label: 'Accepted' },
@@ -2386,7 +2395,8 @@ const DOMAIN_ENQUIRY_STATUS_ACTIONS = {
   },
 };
 
-function getDomainEnquiryCardActions(status) {
+function getDomainEnquiryCardActions(status, { isPlaceholder = false } = {}) {
+  if (isPlaceholder) return {};
   switch (status) {
     case 'PENDING':
       return {
@@ -2434,7 +2444,27 @@ function formatEnquiryDate(value) {
   }
 }
 
-function DomainEnquiryStatusBadge({ status }) {
+function DomainEnquiryStatusBadge({ status, waitingForBuyer = false }) {
+  if (waitingForBuyer) {
+    return (
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '0.2rem 0.55rem',
+          borderRadius: '999px',
+          fontSize: '0.72rem',
+          fontWeight: 700,
+          letterSpacing: '0.02em',
+          background: '#f1f5f9',
+          color: '#334155',
+          border: '1px solid #cbd5e1',
+        }}
+      >
+        Waiting for buyer
+      </span>
+    );
+  }
   const normalized = String(status || '').toUpperCase();
   const colors = DOMAIN_ENQUIRY_STATUS_COLORS[normalized] || { bg: '#f3f4f6', text: '#6b7280', border: '#d1d5db' };
   const label = normalized.replace(/_/g, ' ');
@@ -2542,6 +2572,13 @@ function DomainEnquiryStatusModal({ modal, enquiry, loading, onClose, onConfirm,
   );
 }
 
+function enquiryMatchesAdminFilter(item, filter) {
+  if (filter === 'all') return true;
+  if (filter === 'WAITING_FOR_BUYER') return isDomainEnquiryPlaceholder(item);
+  if (isDomainEnquiryPlaceholder(item)) return false;
+  return String(item?.status || '').toUpperCase() === filter;
+}
+
 function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
@@ -2550,10 +2587,9 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
   const [statusModal, setStatusModal] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
 
-  const filteredEnquiries = useMemo(() => {
-    if (statusFilter === 'all') return enquiries;
-    return enquiries.filter((item) => String(item?.status || '').toUpperCase() === statusFilter);
-  }, [enquiries, statusFilter]);
+  const filteredEnquiries = useMemo(() => (
+    enquiries.filter((item) => enquiryMatchesAdminFilter(item, statusFilter))
+  ), [enquiries, statusFilter]);
 
   const openStatusModal = (enquiry, newStatus) => {
     setStatusModal({
@@ -2651,9 +2687,7 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
     <>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
         {DOMAIN_ENQUIRY_FILTER_TABS.map((tab) => {
-          const count = tab.id === 'all'
-            ? enquiries.length
-            : enquiries.filter((item) => String(item?.status || '').toUpperCase() === tab.id).length;
+          const count = enquiries.filter((item) => enquiryMatchesAdminFilter(item, tab.id)).length;
           const active = statusFilter === tab.id;
           return (
             <button
@@ -2676,8 +2710,9 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filteredEnquiries.map((e) => {
+            const isPlaceholder = isDomainEnquiryPlaceholder(e);
             const status = String(e.status || '').toUpperCase();
-            const actions = getDomainEnquiryCardActions(status);
+            const actions = getDomainEnquiryCardActions(status, { isPlaceholder });
 
             return (
               <div key={e.id} className="admin-record-card" style={{ padding: '1rem 1.25rem' }}>
@@ -2691,16 +2726,25 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                       {formatPrice(e.domain?.askingPrice || 0)}
                     </div>
                   </div>
-                  <DomainEnquiryStatusBadge status={e.status} />
+                  <DomainEnquiryStatusBadge status={e.status} waitingForBuyer={isPlaceholder} />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
                               gap: '0.75rem', marginBottom: '0.75rem' }}>
                   <div>
                     <div className="admin-field-label">{t('adminEnquirer')}</div>
-                    <div className="admin-field-value">{e.fullName}</div>
-                    <div className="admin-field-meta">{e.email}</div>
-                    <div className="admin-field-meta">{e.phone}</div>
+                    {isPlaceholder ? (
+                      <>
+                        <div className="admin-field-value">No buyer has enquired yet</div>
+                        <div className="admin-field-meta">This is a listed premium domain, not a buyer ticket.</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="admin-field-value">{e.fullName}</div>
+                        <div className="admin-field-meta">{e.email}</div>
+                        <div className="admin-field-meta">{e.phone}</div>
+                      </>
+                    )}
                   </div>
                   <div>
                     <div className="admin-field-label">{t('adminDomainLister')}</div>
@@ -2711,10 +2755,15 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                   </div>
                 </div>
 
-                {e.message && (
+                {e.message && !isPlaceholder && (
                   <div className="admin-quote">
                     "{e.message}"
                   </div>
+                )}
+                {isPlaceholder && (
+                  <p className="admin-field-meta" style={{ margin: '0 0 0.75rem' }}>
+                    Review the listing itself from Review queue → Domain, or the Domains tab. A real enquiry appears here only after a buyer submits one.
+                  </p>
                 )}
 
                 {e.adminNotes && (
@@ -2756,6 +2805,7 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                   </div>
                 )}
 
+                {Object.values(actions).some(Boolean) ? (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {actions.forward && (
                     <button
@@ -2838,6 +2888,7 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                     </button>
                   )}
                 </div>
+                ) : null}
               </div>
             );
           })}
@@ -2932,7 +2983,8 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[460px] bg-[#fdfcff] border border-gray-200 rounded-[20px] shadow-[0_24px_50px_rgba(0,0,0,0.1)] p-8 overflow-hidden">
         <div className="absolute -top-32 -left-32 w-72 h-72 bg-purple-100/50 rounded-full blur-3xl pointer-events-none" />
         
@@ -2942,7 +2994,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
         
         <div className="relative z-10 mb-6">
           <div className="inline-flex items-center px-3 py-1.5 bg-purple-50 border border-purple-200 text-purple-600 text-[10px] font-bold tracking-wider uppercase rounded-lg mb-4">
-            {t('adminForwardModalBadge', 'Forward to Deltapreneur')}
+            {t('adminForwardModalBadge', 'Forward To Delta Operators')}
           </div>
           <h2 className="text-3xl font-bold text-[#0B152A] mb-2">{t('adminAssignHubRegistrar')}</h2>
           <p className="text-[15px] text-gray-500">
@@ -3023,6 +3075,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -3043,7 +3096,8 @@ function TakeDownModal({ target, onConfirm, onClose }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-card" style={{ maxWidth: 440 }}>
         <div className="modal-glow" />
         <button className="modal-close" onClick={onClose}>✕</button>
@@ -3081,6 +3135,7 @@ function TakeDownModal({ target, onConfirm, onClose }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -3758,7 +3813,10 @@ function mapQueueItem(item, type) {
   const titleByType = {
     venture: getString(item?.brandDetails?.brandName, item?.brand_details?.brand_name, item?.name, item?.title, 'Untitled venture'),
     domain: getString(item?.domainName, item?.name, 'Domain'),
-    domain_enquiry: getString(item?.domainName, item?.domain?.domainName, 'Domain enquiry'),
+    domain_enquiry: getString(
+      `${item?.domain?.domainName || item?.domainName || ''}${item?.domain?.domainExtension || ''}`.trim(),
+      'Domain enquiry',
+    ),
     technology: getString(item?.name, item?.title, 'Technology'),
     software_auction: getString(item?.softwareName, item?.software?.title, item?.software?.name, item?.title, 'Software auction'),
     cobrother_payment: getString(item?.ventureTitle, item?.title, item?.entityTitle, 'Deltapreneur request'),
@@ -3768,7 +3826,11 @@ function mapQueueItem(item, type) {
     id: `${type}-${item?.id ?? Math.random().toString(36).slice(2)}`,
     type,
     title: titleByType[type] || 'Item',
-    owner: getString(item?.ownerName, item?.userName, item?.user?.name, item?.email, item?.listedBy?.email, item?.buyerName, item?.listerName),
+    owner: getString(
+      type === 'domain_enquiry' ? item?.fullName : null,
+      item?.ownerName, item?.userName, item?.user?.name, item?.email,
+      item?.domain?.listedBy?.email, item?.listedBy?.email, item?.buyerName, item?.listerName,
+    ),
     status: getString(
       type === 'venture' ? 'PENDING_APPROVAL' : null,
       type === 'technology' ? 'PENDING_VERIFICATION' : null,

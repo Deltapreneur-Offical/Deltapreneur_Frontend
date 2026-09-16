@@ -7,6 +7,8 @@ import { unwrapApiData } from '../utils/apiResponse';
 import { readApiError } from '../utils/apiError';
 import { vaAdminModulePath } from '../utils/virtualAssistantAdminNav';
 import VaProfilePhoto from '../components/virtual-assistant/VaProfilePhoto';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const STATUS_CONFIG = {
   published: { label: 'Published', className: 'bg-green-100 text-green-800' },
@@ -235,7 +237,8 @@ const VirtualAssistantPublishedProfilesPage = ({ embedded = false }) => {
       )}
 
       {selectedProfile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-900">Published Profile Details</h3>
@@ -330,6 +333,7 @@ const VirtualAssistantPublishedProfilesPage = ({ embedded = false }) => {
             )}
           </div>
         </div>
+</AppOverlay>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Mail, Phone, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import AppOverlay from '../common/AppOverlay';
 import { useCurrency } from '../../context/CurrencyContext';
 import { formatRequestAdminPrice } from '../../utils/operationsPricing';
 
@@ -29,8 +30,9 @@ export default function OperationsContactModal({ request, loading, onClose, onMa
   const isHire = request.requestType === 'hire';
 
   return (
+    <AppOverlay>
     <div
-      className="fixed inset-0 z-[1100] flex items-end justify-center bg-gray-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-[11000] flex items-end justify-center bg-gray-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="operations-contact-modal-title"
@@ -128,5 +130,6 @@ export default function OperationsContactModal({ request, loading, onClose, onMa
         </div>
       </div>
     </div>
+    </AppOverlay>
   );
 }

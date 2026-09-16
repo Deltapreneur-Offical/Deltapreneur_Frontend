@@ -14,6 +14,8 @@ import HomeSectionHeader from './HomeSectionHeader';
 import HomeOperationsPreviewCard from './HomeOperationsPreviewCard';
 import HomeCardsNavRow from './HomeCardsNavRow';
 import { HomePreviewRowItem } from './HomePreviewRow';
+import { HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
+import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import OperationsRequestModal from '../operations/OperationsRequestModal';
 import OperationsRequestSuccess from '../operations/OperationsRequestSuccess';
 
@@ -35,7 +37,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const [requestTarget, setRequestTarget] = useState(null);
   const [requestSuccess, setRequestSuccess] = useState(null);
 
-  const vaFeatured = useFeaturedVirtualAssistants(48, {
+  const vaFeatured = useFeaturedVirtualAssistants(HOMEPAGE_PREVIEW_LIMIT, {
     enabled: isAssistanceSection,
     featuredOnly: true,
   });
@@ -65,9 +67,9 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
     setLoading(true);
 
     operationsAPI
-      .list({ serviceType: section.serviceType })
+      .list({ serviceType: section.serviceType, page_size: HOMEPAGE_PREVIEW_LIMIT })
       .then(({ data }) => {
-        if (!cancelled) setServices(asArray(data));
+        if (!cancelled) setServices(asArray(data).slice(0, HOMEPAGE_PREVIEW_LIMIT));
       })
       .catch(() => {
         if (!cancelled) setServices([]);
@@ -84,6 +86,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const title = section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel });
   const accent = isAssistanceSection ? 'assistance' : 'operations';
   const viewAllPath = operationsPathForSection(sectionId);
+  const { visible: visibleServices, hasMore: servicesHasMore, revealMore: revealMoreServices } = useHomepageCardReveal(services);
 
   const openServiceRequest = (service) => {
     operationsAPI.get(service.id)
@@ -128,10 +131,11 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
           />
           <FeaturedVirtualAssistantsListing
             layout="row"
-            pageSize={20}
-            cards={vaFeatured.cards}
+            pageSize={HOMEPAGE_PREVIEW_LIMIT}
+            cards={vaFeatured.cards.slice(0, HOMEPAGE_PREVIEW_LIMIT)}
             loading={false}
             ariaLabel={title}
+            revealInPages
           />
         </div>
       </section>
@@ -245,12 +249,12 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
         />
 
         {services.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="home-section-empty text-center text-gray-500">
             {t('operationsHomeEmpty', { defaultValue: 'No services available yet.' })}
           </p>
         ) : (
-          <HomeCardsNavRow accent="operations" ariaLabel={title}>
-            {services.map((service) => (
+          <HomeCardsNavRow accent="operations" ariaLabel={title} hasMore={servicesHasMore} onRevealMore={revealMoreServices}>
+            {visibleServices.map((service) => (
               <HomePreviewRowItem key={service.id}>
                 {renderServiceCard(service)}
               </HomePreviewRowItem>

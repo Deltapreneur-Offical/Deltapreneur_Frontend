@@ -1,10 +1,11 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import DomainsSection from '../home/DomainsSection';
 import FeaturedDomainsSection from '../home/FeaturedDomainsSection';
-import { PUBLIC_OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
+import { HOMEPAGE_OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
 import HomeSectionCardSkeleton from '../home/HomeSectionCardSkeleton';
+import NearViewport from '../home/NearViewport';
 
+const DomainsSection = lazy(() => import('../home/DomainsSection'));
 const VenturesSection = lazy(() => import('../home/VenturesSection'));
 const CoVenturesSection = lazy(() => import('../home/CoVenturesSection'));
 const AuctionsSection = lazy(() => import('../home/AuctionsSection'));
@@ -14,19 +15,17 @@ const HomeRegistrationsSection = lazy(() => import('../home/HomeRegistrationsSec
 const CommunitySection = lazy(() => import('../home/CommunitySection'));
 const FeedbackSection = lazy(() => import('../home/FeedbackSection'));
 
-const PREFETCH_SECTIONS = [
-  () => import('../home/VenturesSection'),
-  () => import('../home/CoVenturesSection'),
-  () => import('../home/AuctionsSection'),
-  () => import('../home/TechnologySection'),
-  () => import('../home/HomeOperationsCarouselSection'),
-  () => import('../home/HomeRegistrationsSection'),
-  () => import('../home/CommunitySection'),
-  () => import('../home/FeedbackSection'),
-];
-
 function IndependentSection({ title, to, variant = 'browse', compact = false, children }) {
-  const fallback = (
+  const reserved = (
+    <HomeSectionCardSkeleton
+      title={title}
+      to={to}
+      variant={variant}
+      compact={compact}
+      reserveOnly
+    />
+  );
+  const loading = (
     <HomeSectionCardSkeleton
       title={title}
       to={to}
@@ -36,25 +35,26 @@ function IndependentSection({ title, to, variant = 'browse', compact = false, ch
   );
 
   return (
-    <Suspense fallback={fallback}>
-      {children}
-    </Suspense>
+    <NearViewport fallback={reserved}>
+      <Suspense fallback={loading}>
+        {children}
+      </Suspense>
+    </NearViewport>
   );
 }
 
 export default function ExploreSection() {
   const { t } = useTranslation();
 
-  useEffect(() => {
-    PREFETCH_SECTIONS.forEach((load) => {
-      void load();
-    });
-  }, []);
-
   return (
     <>
       <FeaturedDomainsSection />
-      <DomainsSection />
+      <IndependentSection
+        title={t('homeDomainRegister', { defaultValue: 'Delta Domains' })}
+        to="/domains"
+      >
+        <DomainsSection />
+      </IndependentSection>
 
       <IndependentSection title={t('homeVentureRegister', { defaultValue: 'Ventures' })} to="/ventures">
         <VenturesSection />
@@ -76,7 +76,7 @@ export default function ExploreSection() {
         <TechnologySection />
       </IndependentSection>
 
-      {PUBLIC_OPERATIONS_SECTIONS.map((section) => (
+      {HOMEPAGE_OPERATIONS_SECTIONS.map((section) => (
         <IndependentSection
           key={section.id}
           title={section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel })}
@@ -99,9 +99,11 @@ export default function ExploreSection() {
         <CommunitySection />
       </IndependentSection>
 
-      <Suspense fallback={null}>
-        <FeedbackSection />
-      </Suspense>
+      <NearViewport fallback={<div className="min-h-[18rem]" aria-hidden="true" />}>
+        <Suspense fallback={<div className="min-h-[18rem]" aria-hidden="true" />}>
+          <FeedbackSection />
+        </Suspense>
+      </NearViewport>
     </>
   );
 }

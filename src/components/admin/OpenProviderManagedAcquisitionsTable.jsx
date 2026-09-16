@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { openProviderManagedAcquisitionAPI } from '../../api/services';
 import useCurrency from '../../context/CurrencyContext';
+import AppOverlay from '../common/AppOverlay';
+
 
 const STATUS_FILTERS = [
   { id: 'all', label: 'All' },
@@ -226,7 +228,8 @@ export default function OpenProviderManagedAcquisitionsTable({ rows, onRefresh }
       )}
 
       {modal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <h3 className="font-display text-xl font-bold text-gray-900 mb-2">
               {modal.action === 'remove'
@@ -237,7 +240,7 @@ export default function OpenProviderManagedAcquisitionsTable({ rows, onRefresh }
               Message to buyer (email + in-app notification):
             </p>
             <textarea
-              className="w-full rounded-xl border border-gray-200 p-3 text-sm min-h-[100px]"
+              className="w-full rounded-xl border border-gray-200 bg-white p-3 text-sm text-gray-900 placeholder:text-gray-400 min-h-[100px] max-h-[40vh]"
               value={modal.adminNotes}
               onChange={(e) => setModal((m) => ({ ...m, adminNotes: e.target.value }))}
               disabled={loading}
@@ -263,6 +266,7 @@ export default function OpenProviderManagedAcquisitionsTable({ rows, onRefresh }
             </div>
           </div>
         </div>
+</AppOverlay>
       )}
     </>
   );

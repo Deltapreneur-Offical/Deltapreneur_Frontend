@@ -5,6 +5,8 @@ import { notificationAPI } from '../api/services';
 import { unwrapApiList } from '../utils/apiResponse';
 import AppLayout from '../components/layout/AppLayout';
 import { Trash2, AlertTriangle } from 'lucide-react';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const TYPE_ICONS = {
   COVENTURE_APPLICATION_RECEIVED:      '📋',
@@ -303,7 +305,8 @@ export default function NotificationsPage() {
 
         {/* Confirmation Modal */}
         {deleteModal.open && (
-          <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <AppOverlay>
+<div className="fixed inset-0 z-[11000] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
               <div className="flex items-center gap-3 text-red-600 mb-4">
                 <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
@@ -343,6 +346,7 @@ export default function NotificationsPage() {
               </div>
             </div>
           </div>
+</AppOverlay>
         )}
       </div>
     </AppLayout>

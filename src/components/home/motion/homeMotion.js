@@ -129,15 +129,16 @@ export const heroTaglineEnter = {
 };
 
 export const heroHeadlineEnter = {
+  // LCP is this headline — never start hidden or Lighthouse waits on JS/motion.
   hidden: {
-    opacity: 0,
-    y: 16,
+    opacity: 1,
+    y: 0,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.56,
+      duration: 0.01,
       ease: HOME_EASE,
     },
   },

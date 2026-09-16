@@ -23,6 +23,8 @@ import {
   setCachedPremiumItems,
 } from '../utils/registryPremiumCache';
 import { preferredTldRank, normalizeSearchFqdn } from '../utils/domainSearch';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const DEFAULT_TLD = 'com';
 const PREMIUM_LOADING_MESSAGES = 3;
@@ -1102,8 +1104,9 @@ export default function DomainStorefrontPage() {
 
               {/* ══ EPP / Auth Code confirmation — shown only after Submit ══ */}
               {showTransferConfirm && (
-                <div
-                  className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+                <AppOverlay>
+<div
+                  className="fixed inset-0 z-[11000] flex items-center justify-center p-4 overflow-y-auto"
                   style={{ background: 'rgba(15, 23, 42, 0.55)' }}
                   onClick={() => setShowTransferConfirm(false)}
                   role="dialog"
@@ -1208,6 +1211,7 @@ export default function DomainStorefrontPage() {
                     </div>
                   </div>
                 </div>
+</AppOverlay>
               )}
 
               {transferSubMode === 'in' && transferOrders.length > 0 && (

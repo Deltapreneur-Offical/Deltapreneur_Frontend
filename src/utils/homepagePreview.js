@@ -9,6 +9,12 @@ import { fetchListPage, HOME_PREVIEW_PAGE_SIZE } from './listPagination';
 import { resolveVaProfilePhotoUrl } from './virtualAssistantDisplay';
 import { normalizePublicImageUrl } from './imageUrl';
 
+function homepageFetchPageSize(limit) {
+  const n = Number(limit);
+  const requested = Number.isFinite(n) && n > 0 ? n : HOMEPAGE_PREVIEW_LIMIT;
+  return Math.min(HOME_PREVIEW_PAGE_SIZE, Math.max(1, requested));
+}
+
 /** Normalize API rows into the shape listing cards expect. */
 export function normalizeHomepageListing(item, type = 'domain') {
   if (!item || typeof item !== 'object') return item;
@@ -171,11 +177,12 @@ async function fetchPublicCatalogPreview(
   { filterFn, maxPages = 8 } = {},
 ) {
   const merged = [];
+  const pageSize = homepageFetchPageSize(limit);
 
   for (let page = 1; page <= maxPages; page += 1) {
     const { items, total } = await fetchListPage(requestFn, {
       page,
-      pageSize: HOME_PREVIEW_PAGE_SIZE,
+      pageSize,
     });
     if (!items.length) break;
 
@@ -195,7 +202,7 @@ async function fetchPublicCatalogPreview(
 
     const reportedTotal = Number(total);
     if (
-      items.length < HOME_PREVIEW_PAGE_SIZE
+      items.length < pageSize
       || (Number.isFinite(reportedTotal) && merged.length >= reportedTotal)
     ) {
       break;
@@ -217,6 +224,7 @@ export async function fetchHomepageSectionPreview(
   options = {},
 ) {
   const { filterFn, featuredQuery, fillCatalog = true, maxPages = 8 } = options;
+  const pageSize = homepageFetchPageSize(limit);
 
   if (!featuredQuery) {
     return fetchPublicCatalogPreview(requestFn, type, limit, { filterFn, maxPages });
@@ -227,7 +235,7 @@ export async function fetchHomepageSectionPreview(
     for (let page = 1; page <= maxPages; page += 1) {
       const { items, total } = await fetchListPage(requestFn, {
         page,
-        pageSize: HOME_PREVIEW_PAGE_SIZE,
+        pageSize,
         featured_only: true,
         ...featuredQuery,
       });
@@ -245,7 +253,7 @@ export async function fetchHomepageSectionPreview(
       }
       const reportedTotal = Number(total);
       if (
-        items.length < HOME_PREVIEW_PAGE_SIZE
+        items.length < pageSize
         || (Number.isFinite(reportedTotal) && featuredMerged.length >= reportedTotal)
       ) {
         break;

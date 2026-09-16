@@ -30,6 +30,8 @@ import { payAuctionCreationFee, fetchListingFeesAndCharges } from '../utils/auct
 import useCurrency from '../context/CurrencyContext';
 import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 import { hasPlacedCommunityAuctionBid } from '../utils/communityAuctionMeetings';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
 function useCountdown(endTime) {
@@ -1362,7 +1364,8 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[440px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer hover:text-gray-700"
@@ -1402,6 +1405,7 @@ function ReAuctionModal({ auctionId, onClose, onSuccess }) {
         </form>
       </div>
     </div>
+</AppOverlay>
   );
 }
 

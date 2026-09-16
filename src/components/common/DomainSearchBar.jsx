@@ -101,13 +101,6 @@ function TldPriceMarquee() {
   const [tldPrices, setTldPrices] = useState(() => readTldMarqueeCache());
   const [isLoading, setIsLoading] = useState(() => readTldMarqueeCache().length === 0);
 
-  const maskRef = useRef(null);
-  const trackRef = useRef(null);
-  const scrubbingRef = useRef(false);
-  const lastPointerXRef = useRef(null);
-  const baseOffsetRef = useRef(0);
-  const durationSec = 48;
-
   useEffect(() => {
     let isCancelled = false;
     let refreshSequence = 0;
@@ -165,118 +158,6 @@ function TldPriceMarquee() {
     };
   }, []);
 
-  const readTrackOffsetPx = () => {
-    const track = trackRef.current;
-    if (!track) return 0;
-    const style = window.getComputedStyle(track);
-    const matrix = style.transform;
-    if (!matrix || matrix === 'none') return 0;
-    // matrix(a, b, c, d, tx, ty) or matrix3d(...)
-    if (matrix.startsWith('matrix3d(')) {
-      const parts = matrix.slice(9, -1).split(',').map((v) => Number(v.trim()));
-      return Number.isFinite(parts[12]) ? parts[12] : 0;
-    }
-    if (matrix.startsWith('matrix(')) {
-      const parts = matrix.slice(7, -1).split(',').map((v) => Number(v.trim()));
-      return Number.isFinite(parts[4]) ? parts[4] : 0;
-    }
-    return 0;
-  };
-
-  const oneSetWidth = () => {
-    const track = trackRef.current;
-    if (!track) return 0;
-    // Two identical sets → loop width is half the track.
-    return track.scrollWidth / 2;
-  };
-
-  const wrapOffset = (value) => {
-    const w = oneSetWidth();
-    if (!(w > 0) || !Number.isFinite(value)) return value;
-    let next = value % w;
-    if (next > 0) next -= w;
-    if (next <= -w) next += w;
-    return next;
-  };
-
-  const setPausedClass = (on) => {
-    maskRef.current?.classList.toggle('tld-price-marquee-mask--paused', on);
-  };
-
-  const freezeAtCurrent = () => {
-    const track = trackRef.current;
-    if (!track) return 0;
-    const x = wrapOffset(readTrackOffsetPx());
-    track.style.animation = 'none';
-    track.style.transform = `translate3d(${x}px,0,0)`;
-    baseOffsetRef.current = x;
-    return x;
-  };
-
-  const resumeAutoFrom = (offsetPx) => {
-    const track = trackRef.current;
-    if (!track) return;
-    const w = oneSetWidth();
-    const x = wrapOffset(offsetPx);
-    // Negative delay resumes the CSS loop from the current pixel.
-    const progress = w > 0 ? (Math.abs(x) % w) / w : 0;
-    const delaySec = -(progress * durationSec);
-    track.style.animation = 'none';
-    track.style.transform = '';
-    // Force reflow so the browser restarts the animation cleanly.
-    void track.offsetWidth;
-    track.style.animation = `tld-price-marquee-scroll ${durationSec}s linear infinite`;
-    track.style.animationDelay = `${delaySec}s`;
-  };
-
-  const onMouseEnter = (event) => {
-    if (reduceMotion) return;
-    scrubbingRef.current = true;
-    lastPointerXRef.current = event.clientX;
-    freezeAtCurrent();
-    setPausedClass(true);
-  };
-
-  const onMouseLeave = () => {
-    if (reduceMotion) return;
-    scrubbingRef.current = false;
-    lastPointerXRef.current = null;
-    setPausedClass(false);
-    resumeAutoFrom(baseOffsetRef.current);
-  };
-
-  const onPointerMove = (event) => {
-    if (reduceMotion || !scrubbingRef.current) return;
-    if (lastPointerXRef.current == null) {
-      lastPointerXRef.current = event.clientX;
-      return;
-    }
-    const dx = event.clientX - lastPointerXRef.current;
-    lastPointerXRef.current = event.clientX;
-    if (!dx) return;
-    const track = trackRef.current;
-    if (!track) return;
-    const next = wrapOffset(baseOffsetRef.current + dx);
-    baseOffsetRef.current = next;
-    track.style.transform = `translate3d(${next}px,0,0)`;
-  };
-
-  const onPointerDown = (event) => {
-    if (reduceMotion || event.pointerType === 'mouse') return;
-    scrubbingRef.current = true;
-    lastPointerXRef.current = event.clientX;
-    freezeAtCurrent();
-    setPausedClass(true);
-  };
-
-  const onPointerUp = (event) => {
-    if (reduceMotion || event.pointerType === 'mouse') return;
-    scrubbingRef.current = false;
-    lastPointerXRef.current = null;
-    setPausedClass(false);
-    resumeAutoFrom(baseOffsetRef.current);
-  };
-
   const renderSet = (setKey, hidden) => (
     <div
       className="tld-price-marquee-set"
@@ -317,24 +198,11 @@ function TldPriceMarquee() {
   if (tldPrices.length === 0) return null;
 
   return (
-    <div
-      ref={maskRef}
-      className="tld-price-marquee-mask"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-    >
+    <div className="tld-price-marquee-mask">
       <div className="tld-price-marquee-viewport">
-        <div
-          ref={trackRef}
-          className={`tld-price-marquee-track${reduceMotion ? '' : ' tld-price-marquee-track--auto'}`}
-          style={reduceMotion ? undefined : { animationDuration: `${durationSec}s` }}
-        >
+        <div className={`tld-price-marquee-track${reduceMotion ? '' : ' tld-price-marquee-track--auto'}`}>
           {renderSet('a', false)}
-          {renderSet('b', true)}
+          {reduceMotion ? null : renderSet('b', true)}
         </div>
       </div>
     </div>
@@ -1453,52 +1321,52 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     >
       <div className={`w-full ${embedded ? '' : 'mx-auto max-w-[1200px]'}`}>
 
-        {/* Desktop: search input perfectly aligned with TLD Price Marquee row, tabs below */}
-        <div className="hidden lg:block">
-          <div className="flex items-center gap-6 w-full">
-            <div className="w-full max-w-[660px] shrink-0">
-              {desktopSearchForm}
+        {isDesktopLayout ? (
+          <div>
+            <div className="flex items-center gap-6 w-full">
+              <div className="w-full max-w-[660px] shrink-0">
+                {desktopSearchForm}
+              </div>
+
+              {searchMode === 'new' && (
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <TldPriceMarquee />
+                </div>
+              )}
             </div>
 
-            {searchMode === 'new' && isDesktopLayout && (
-              <div className="flex-1 min-w-0 overflow-hidden">
+            <div className="mt-3 flex justify-start pl-2">
+              <BrandSearchTabs
+                searchMode={searchMode}
+                onTabChange={handleTabChange}
+                onTabInteract={onTabInteract}
+                layoutId="brand-search-active-pill-desktop"
+              />
+            </div>
+          </div>
+        ) : (
+          <HeroSearchStack animateHero={animateHero} className="w-full min-w-0 max-w-full">
+            <div className="flex w-full min-w-0 max-w-full flex-col items-stretch gap-3 sm:gap-4">
+              {mobileSearchForm}
+            </div>
+
+            <div className="mt-3 flex w-full min-w-0 max-w-full justify-center pb-2 overflow-visible">
+              <BrandSearchTabs
+                searchMode={searchMode}
+                onTabChange={handleTabChange}
+                onTabInteract={onTabInteract}
+                mobile
+                layoutId="brand-search-active-pill-mobile"
+              />
+            </div>
+
+            {searchMode === 'new' && (
+              <div className="mt-2 w-full overflow-hidden">
                 <TldPriceMarquee />
               </div>
             )}
-          </div>
-
-          <div className="mt-3 flex justify-start pl-2">
-            <BrandSearchTabs
-              searchMode={searchMode}
-              onTabChange={handleTabChange}
-              onTabInteract={onTabInteract}
-              layoutId="brand-search-active-pill-desktop"
-            />
-          </div>
-        </div>
-
-        {/* Mobile / tablet — search + tabs share one entrance so spacing never collapses */}
-        <HeroSearchStack animateHero={animateHero} className="w-full min-w-0 max-w-full lg:hidden">
-          <div className="flex w-full min-w-0 max-w-full flex-col items-stretch gap-3 sm:gap-4">
-            {mobileSearchForm}
-          </div>
-
-          <div className="mt-3 flex w-full min-w-0 max-w-full justify-center pb-2 overflow-visible">
-            <BrandSearchTabs
-              searchMode={searchMode}
-              onTabChange={handleTabChange}
-              onTabInteract={onTabInteract}
-              mobile
-              layoutId="brand-search-active-pill-mobile"
-            />
-          </div>
-
-          {searchMode === 'new' && !isDesktopLayout && (
-            <div className="mt-2 w-full overflow-hidden">
-              <TldPriceMarquee />
-            </div>
-          )}
-        </HeroSearchStack>
+          </HeroSearchStack>
+        )}
 
         {/* Results */}
         <div className="mt-4">

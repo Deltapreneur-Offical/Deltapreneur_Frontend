@@ -11,6 +11,11 @@ describe('apiError', () => {
   it('keeps safe user-facing messages', () => {
     expect(isSafeUserFacingMessage('Invalid email or password')).toBe(true);
     expect(isSafeUserFacingMessage('Traceback (most recent call last)')).toBe(false);
+    expect(
+      isSafeUserFacingMessage(
+        'Maximum 8 featured items allowed. Please unfeature one item before featuring another.',
+      ),
+    ).toBe(true);
   });
 
   it('reads nested FastAPI validation payloads', () => {

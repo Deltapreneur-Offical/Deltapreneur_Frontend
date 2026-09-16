@@ -4,10 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FaPhoneAlt, FaWhatsapp } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import cobrotherProfile from '../../assets/cobrother_community_profil.png';
+import cobrotherProfile from '../../assets/cobrother_community_profil_64.png';
 import CartButton from './CartButton';
 import CurrencyDropdown from './CurrencyDropdown';
 import LanguageDropdown from './LanguageDropdown';
+import AppOverlay from './AppOverlay';
 import {
   EXTERNAL_LINK_PROPS,
   SUPPORT_PHONE_DISPLAY,
@@ -23,6 +24,9 @@ const ProfileFlipAvatar = memo(function ProfileFlipAvatar({ flipped, userInitial
           <img
             src={cobrotherProfile}
             alt=""
+            width={28}
+            height={28}
+            decoding="async"
             className="home-profile-flip-icon"
             draggable={false}
           />
@@ -264,6 +268,9 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 <img
                   src={cobrotherProfile}
                   alt=""
+                  width={28}
+                  height={28}
+                  decoding="async"
                   className="home-profile-flip-icon"
                   draggable={false}
                 />
@@ -276,7 +283,7 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
           createPortal(
             <div
               ref={dropdownRef}
-              className="fixed bg-white border border-gray-200 rounded-xl shadow-xl min-w-[10rem] overflow-hidden"
+              className="home-top-nav-profile-menu fixed bg-white border border-gray-200 rounded-xl shadow-xl min-w-[10rem] overflow-hidden"
               style={dropdownStyle}
             >
             {user ? (
@@ -387,7 +394,8 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
       {showLogoutConfirm &&
         typeof document !== 'undefined' &&
         createPortal(
-          <div
+          <AppOverlay>
+<div
             className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             role="dialog"
             aria-modal="true"
@@ -415,7 +423,8 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 </button>
               </div>
             </div>
-          </div>,
+          </div>
+</AppOverlay>,
           document.body,
         )}
     </>

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { authAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 import { readApiError } from '../../utils/apiError';
+import AppOverlay from '../common/AppOverlay';
 
 
 export default function ProfileCompletionModal({ forceOpen = false }) {
@@ -73,7 +74,8 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 animate-fadeIn">
+    <AppOverlay>
+    <div className="fixed inset-0 z-[11000] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 animate-fadeIn">
       <div className="relative my-auto w-full max-w-[520px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-slideUp">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-orange-100/30 blur-3xl pointer-events-none" />
 
@@ -203,5 +205,6 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
         </div>
       </div>
     </div>
+    </AppOverlay>
   );
 }

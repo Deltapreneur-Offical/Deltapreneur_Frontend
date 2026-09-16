@@ -130,4 +130,41 @@ describe('PurchasesPage technology services', () => {
       user: expect.anything(),
     });
   });
+
+  it('shows purchases unavailable when every purchases API fails', async () => {
+    mocks.getMyPurchasesDomain.mockRejectedValue(new Error('500'));
+    mocks.listOrders.mockRejectedValue(new Error('503'));
+    mocks.getMyPurchasesTech.mockRejectedValue(new Error('500'));
+    mocks.listBuyer.mockRejectedValue(new Error('503'));
+    mocks.getMyVentures.mockRejectedValue(new Error('500'));
+
+    renderPurchases();
+
+    expect(await screen.findByText('Purchases unavailable')).toBeInTheDocument();
+    expect(screen.getByText(/Unable to load purchases right now/i)).toBeInTheDocument();
+    expect(screen.queryByText('No purchases yet')).not.toBeInTheDocument();
+  });
+
+  it('still shows technology purchases when other category APIs fail', async () => {
+    mocks.getMyPurchasesDomain.mockRejectedValue(new Error('503'));
+    mocks.listOrders.mockRejectedValue(new Error('503'));
+    mocks.listBuyer.mockRejectedValue(new Error('503'));
+    mocks.getMyVentures.mockRejectedValue(new Error('503'));
+    mocks.getMyPurchasesTech.mockResolvedValue({ data: [linkInBioPurchase] });
+
+    renderPurchases();
+
+    expect(await screen.findByText('Link in Bio')).toBeInTheDocument();
+    expect(screen.getByText(/Some purchase categories could not be loaded/i)).toBeInTheDocument();
+    expect(screen.queryByText('No purchases yet')).not.toBeInTheDocument();
+  });
+
+  it('shows empty state only when APIs succeed with zero purchases', async () => {
+    mocks.getMyPurchasesTech.mockResolvedValue({ data: [] });
+
+    renderPurchases();
+
+    expect(await screen.findByText('No purchases yet')).toBeInTheDocument();
+    expect(screen.queryByText('Purchases unavailable')).not.toBeInTheDocument();
+  });
 });

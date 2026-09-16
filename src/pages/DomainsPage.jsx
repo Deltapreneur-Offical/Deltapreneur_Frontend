@@ -65,12 +65,16 @@ import DomainVerificationPendingBanner, { PendingVerificationDot } from '../comp
 import { isDomainPendingVerification } from '../utils/domainVerification';
 import { useDomainPendingVerification } from '../hooks/useDomainPendingVerification';
 import { notifyDomainVerificationChanged } from '../utils/domainVerificationEvents';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
   PENDING: { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', border: 'rgba(200,169,110,0.3)' },
   SOLD: { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
 };
+
+const DOMAIN_DETAIL_BODY_CLASS = 'domains-detail-modal-open';
 
 const formatInr = (value) =>
   new Intl.NumberFormat('en-IN', {
@@ -150,6 +154,7 @@ export default function DomainsPage() {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { currency, getSymbol } = useCurrency();
+  const isDomainAdmin = roleWaivesAuctionPlatformFees(user?.role) || Boolean(user?.isAdmin);
 
   const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
   const navigate = useNavigate();
@@ -196,6 +201,7 @@ export default function DomainsPage() {
     if (String(domain.domainStatus || '').toUpperCase() === 'SOLD') return false;
     if (domain.takenDown) return false;
     if (listingAuctionPhase(domain) !== 'idle') return false;
+    if (isDomainAdmin) return true;
     if (isMineTab) return Boolean(user);
     return isListingOwner(domain, user, 'domain');
   };
@@ -383,6 +389,14 @@ export default function DomainsPage() {
     },
   });
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    document.body.classList.toggle(DOMAIN_DETAIL_BODY_CLASS, Boolean(detailTarget));
+    return () => {
+      document.body.classList.remove(DOMAIN_DETAIL_BODY_CLASS);
+    };
+  }, [detailTarget]);
+
   const handleDelete = async () => {
     try {
       await domainAPI.delete(deleteTarget);
@@ -397,9 +411,28 @@ export default function DomainsPage() {
       .then((items) => setAllDomains(extractDomainList({ items, data: items })));
   return (
     <AppLayout>
+      <style>{`
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-top-nav,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-main-nav,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-nav-overlay,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-nav-drawer,
+        body.${DOMAIN_DETAIL_BODY_CLASS} [data-home-nav-dropdown],
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-nav-util-panel,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-top-nav-profile-menu,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .app-layout-sidebar,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .app-sidebar-backdrop,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .app-layout-header,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .app-notif-dropdown,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .app-profile-regional-menu-popover {
+          visibility: hidden !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
+      `}</style>
       <Confetti show={showConfetti} />
       {showConfetti && (
-        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/30 backdrop-blur-sm pointer-events-none animate-fadeIn">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/30 backdrop-blur-sm pointer-events-none animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl px-10 py-8 text-center max-w-sm mx-4 animate-slideUp">
             <div className="text-5xl mb-3">🌐</div>
             <h2 className="font-display text-2xl font-extrabold text-gray-900 mb-1">{t('domainsPageListedSuccessTitle')}</h2>
@@ -418,6 +451,7 @@ export default function DomainsPage() {
             </button>
           </div>
         </div>
+</AppOverlay>
       )}
       <div>
         {(showForm || editTarget) ? (
@@ -1319,7 +1353,7 @@ export default function DomainsPage() {
                           <DomainListingCard
                             domain={marketplaceCard}
                             marketplace
-                            isOwner={isListingOwner(marketplaceCard, user, 'domain')}
+                            isOwner={isDomainAdmin || isListingOwner(marketplaceCard, user, 'domain')}
                             likeState={getLike(marketplaceCard.id)}
                             onLike={() => toggleLike(marketplaceCard.id)}
                             onView={() => openDetailIfAllowed(marketplaceCard)}
@@ -1333,7 +1367,7 @@ export default function DomainsPage() {
                             }}
                             onViewAuction={() => navigate(marketplaceCard.auction?.id ? `/auction/${marketplaceCard.auction.id}` : '/auctions')}
                             onDelete={() => setDeleteTarget(marketplaceCard.id)}
-                            onPutForAuction={isListingOwner(marketplaceCard, user, 'domain') && marketplaceCard.saleType !== 'AUCTION' ? () => setAuctionTarget(marketplaceCard) : undefined}
+                            onPutForAuction={canStartDomainAuction(marketplaceCard) ? () => setAuctionTarget(marketplaceCard) : undefined}
                           />
                         </ListingCardShell>
                       </div>
@@ -1424,7 +1458,7 @@ export default function DomainsPage() {
                       <DomainListingCard
                         domain={d}
                         marketplace
-                        isOwner={isMineTab || isListingOwner(d, user, 'domain')}
+                        isOwner={isDomainAdmin || isMineTab || isListingOwner(d, user, 'domain')}
                         likeState={getLike(d.id)}
                         onLike={() => toggleLike(d.id)}
                         onView={() => openDetailIfAllowed(d)}
@@ -1478,7 +1512,7 @@ export default function DomainsPage() {
       {detailTarget && (
         <DomainDetailModal
           domain={detailTarget}
-          isOwner={isMineTab || isListingOwner(detailTarget, user, 'domain')}
+          isOwner={isDomainAdmin || isMineTab || isListingOwner(detailTarget, user, 'domain')}
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
           onViewsUpdated={(id, views) => {
@@ -1606,8 +1640,9 @@ export function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
   const labelCls = 'text-sm font-medium text-gray-700';
 
   return (
-    <div
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    <AppOverlay>
+<div
+      className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
@@ -1702,6 +1737,7 @@ export function PutForAuctionModal({ domain, user, onClose, onSuccess }) {
         </form>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -2393,7 +2429,8 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[520px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8 overflow-x-hidden">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
@@ -2527,6 +2564,7 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -2535,7 +2573,8 @@ function BuyDomainModal({ domain, onClose, onSuccess, vaServices = [], vaLoading
 function PurchaseSuccessModal({ domain, onClose }) {
   const { t } = useTranslation();
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[440px] text-center bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <div className="text-5xl mb-4">🎉</div>
@@ -2550,6 +2589,7 @@ function PurchaseSuccessModal({ domain, onClose }) {
         <button className="btn-glow w-full" onClick={onClose}>{t('domainVerifyDone')}</button>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -2613,8 +2653,9 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
 
   return (
-    <div
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn"
+    <AppOverlay>
+<div
+      className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn"
       onClick={e => e.target === e.currentTarget && onClose?.()}
     >
       <div className="relative w-full h-[100dvh] sm:h-auto max-w-[600px] sm:max-h-[90vh] flex flex-col min-h-0 bg-white sm:border sm:border-gray-200 sm:rounded-[24px] shadow-2xl overflow-hidden animate-slideUp">
@@ -2851,6 +2892,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 

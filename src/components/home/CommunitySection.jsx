@@ -6,6 +6,8 @@ import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
 import { isCreatorProfileVisible } from '../../utils/creatorProfile';
+import { HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
+import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import CommunityListingCard from '../listings/CommunityListingCard';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
@@ -49,12 +51,13 @@ export default function CommunitySection() {
         if (id == null || seen.has(id)) return false;
         seen.add(id);
         return true;
-      });
+      }).slice(0, HOMEPAGE_PREVIEW_LIMIT);
     },
     [communities],
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', previewCommunities);
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewCommunities);
 
   const handleViewProfile = (communityId) => {
     navigateToListingDetail(navigate, 'community', communityId);
@@ -86,10 +89,10 @@ export default function CommunitySection() {
           showViewAll={previewCommunities.length > 0}
         />
         {previewCommunities.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">{t('noDisruptors')}</p>
+          <p className="home-section-empty text-center text-gray-500">{t('noDisruptors')}</p>
         ) : (
-          <HomeCardsNavRow accent="community" ariaLabel="Deltapreneurs">
-            {previewCommunities.map((item) => (
+          <HomeCardsNavRow accent="community" ariaLabel="Deltapreneurs" hasMore={hasMore} onRevealMore={revealMore}>
+            {visible.map((item) => (
               <HomePreviewRowItem key={item.id}>
                 {renderCommunityCard(item)}
               </HomePreviewRowItem>

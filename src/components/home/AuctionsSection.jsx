@@ -18,6 +18,7 @@ import {
   resolveHomeAuctionPricingType,
   hasHomeAuctionViewCount,
 } from '../../utils/homepageAuctions';
+import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import { unwrapApiData } from '../../utils/apiResponse';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
@@ -86,39 +87,97 @@ function mergeListingMeta(auction, listing) {
   return auction;
 }
 
-async function fetchHomeAuctionListingMeta(auction) {
+function listingMetaCacheKey(auction) {
   const category = auction.category || 'domain';
-  const needsViews = !hasHomeAuctionViewCount(auction);
-  const needsPricing = !resolveHomeAuctionPricingType(auction);
+  if (category === 'domain') {
+    const id = auction.domain?.id ?? auction.domainId ?? auction.domain_id;
+    return id ? `domain:${id}` : null;
+  }
+  if (category === 'community') {
+    const id = auction.community?.id ?? auction.communityId ?? auction.community_id;
+    return id ? `community:${id}` : null;
+  }
+  if (category === 'technology') {
+    const id = auction.software?.id ?? auction.softwareId ?? auction.software_id;
+    return id ? `technology:${id}` : null;
+  }
+  return null;
+}
 
-  if (!needsViews && !needsPricing) return auction;
+function applyCachedListingMeta(auction, cache) {
+  const key = listingMetaCacheKey(auction);
+  if (!key) return auction;
+  const cached = cache.get(key);
+  return cached ? mergeListingMeta(auction, cached) : auction;
+}
 
-  try {
-    if (category === 'domain') {
-      const domainId = auction.domain?.id ?? auction.domainId ?? auction.domain_id;
-      if (!domainId) return auction;
-      const listing = unwrapApiData(await domainAPI.get(domainId));
-      return mergeListingMeta(auction, listing);
+const listingMetaInflight = new Map();
+
+async function fetchHomeAuctionListingMeta(auction, cache) {
+  const hydrated = applyCachedListingMeta(auction, cache);
+  const needsViews = !hasHomeAuctionViewCount(hydrated);
+  const needsPricing = !resolveHomeAuctionPricingType(hydrated);
+  if (!needsViews && !needsPricing) return hydrated;
+
+  const category = auction.category || 'domain';
+  const key = listingMetaCacheKey(auction);
+  if (key && listingMetaInflight.has(key)) {
+    try {
+      const listing = await listingMetaInflight.get(key);
+      if (listing && key) cache.set(key, listing);
+      return listing ? mergeListingMeta(hydrated, listing) : hydrated;
+    } catch {
+      return hydrated;
     }
-
-    if (category === 'community') {
-      const communityId = auction.community?.id ?? auction.communityId ?? auction.community_id;
-      if (!communityId) return auction;
-      const profile = unwrapApiData(await communityAPI.getOne(communityId));
-      return mergeListingMeta(auction, profile);
-    }
-
-    if (category === 'technology') {
-      const softwareId = auction.software?.id ?? auction.softwareId ?? auction.software_id;
-      if (!softwareId) return auction;
-      const listing = unwrapApiData(await technologyAPI.get(softwareId));
-      return mergeListingMeta(auction, listing);
-    }
-  } catch {
-    return auction;
   }
 
-  return auction;
+  const request = (async () => {
+    if (category === 'domain') {
+      const domainId = auction.domain?.id ?? auction.domainId ?? auction.domain_id;
+      if (!domainId) return null;
+      return unwrapApiData(await domainAPI.get(domainId));
+    }
+    if (category === 'community') {
+      const communityId = auction.community?.id ?? auction.communityId ?? auction.community_id;
+      if (!communityId) return null;
+      return unwrapApiData(await communityAPI.getOne(communityId));
+    }
+    if (category === 'technology') {
+      const softwareId = auction.software?.id ?? auction.softwareId ?? auction.software_id;
+      if (!softwareId) return null;
+      return unwrapApiData(await technologyAPI.get(softwareId));
+    }
+    return null;
+  })();
+
+  if (key) listingMetaInflight.set(key, request);
+  try {
+    const listing = await request;
+    if (listing && key) cache.set(key, listing);
+    return listing ? mergeListingMeta(hydrated, listing) : hydrated;
+  } catch {
+    return hydrated;
+  } finally {
+    if (key) listingMetaInflight.delete(key);
+  }
+}
+
+function activeListFingerprint(rows) {
+  return extractActiveList(rows).map((row) => ([
+    row?.id,
+    row?.status,
+    row?.endTime ?? row?.end_time,
+    row?.currentBid ?? row?.current_bid ?? row?.highestBid ?? row?.highest_bid,
+    row?.totalBids ?? row?.total_bids ?? row?.bidCount ?? row?.bid_count,
+  ].join(':'))).join('|');
+}
+
+function auctionsFingerprint(bundle) {
+  return [
+    activeListFingerprint(bundle.domains),
+    activeListFingerprint(bundle.community),
+    activeListFingerprint(bundle.software),
+  ].join('~');
 }
 
 export default function AuctionsSection() {
@@ -131,6 +190,8 @@ export default function AuctionsSection() {
   });
   const [loading, setLoading] = useState(true);
   const loadInFlightRef = useRef(false);
+  const auctionsFingerprintRef = useRef('');
+  const listingMetaCacheRef = useRef(new Map());
 
   const loadAuctions = useCallback(async ({ showLoading = false } = {}) => {
     if (loadInFlightRef.current) return;
@@ -138,17 +199,23 @@ export default function AuctionsSection() {
     try {
       if (showLoading) setLoading(true);
       const [domainsRes, communityRes, softwareRes] = await Promise.all([
-        auctionAPI.getActive({ page: 1, page_size: 24 }).catch(() => ({ data: [] })),
+        auctionAPI.getActive({ page: 1, page_size: 8 }).catch(() => ({ data: [] })),
         communityAuctionAPI.getActive().catch(() => ({ data: [] })),
         softwareAuctionAPI.getActive().catch(() => ({ data: [] })),
       ]);
 
-      setAuctions({
+      const next = {
         domains: extractActiveList(domainsRes.data),
         community: extractActiveList(communityRes.data),
         software: extractActiveList(softwareRes.data),
-      });
+      };
+      const fingerprint = auctionsFingerprint(next);
+      if (fingerprint !== auctionsFingerprintRef.current) {
+        auctionsFingerprintRef.current = fingerprint;
+        setAuctions(next);
+      }
     } catch {
+      auctionsFingerprintRef.current = '';
       setAuctions({ domains: [], community: [], software: [] });
     } finally {
       loadInFlightRef.current = false;
@@ -186,13 +253,15 @@ export default function AuctionsSection() {
 
   useEffect(() => {
     let cancelled = false;
-    setDisplayAuctions(baseAuctions);
+    const cache = listingMetaCacheRef.current;
+    const hydrated = baseAuctions.map((auction) => applyCachedListingMeta(auction, cache));
+    setDisplayAuctions(hydrated);
 
-    if (!baseAuctions.length) return undefined;
+    if (!hydrated.length) return undefined;
 
     (async () => {
       const enriched = await Promise.all(
-        baseAuctions.map((auction) => fetchHomeAuctionListingMeta(auction)),
+        hydrated.map((auction) => fetchHomeAuctionListingMeta(auction, cache)),
       );
       if (!cancelled) setDisplayAuctions(enriched);
     })();
@@ -218,6 +287,7 @@ export default function AuctionsSection() {
   const domainLikes = useLikes('DOMAIN', domainLikeItems);
   const communityLikes = useLikes('COMMUNITY', communityLikeItems);
   const softwareLikes = useLikes('SOFTWARE', softwareLikeItems);
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(displayAuctions);
 
   const getAuctionLike = useCallback((auction) => {
     const target = resolveHomeAuctionLikeTarget(auction);
@@ -255,13 +325,15 @@ export default function AuctionsSection() {
           showViewAll={displayAuctions.length > 0}
         />
         {displayAuctions.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">{t('noAuctions')}</p>
+          <p className="home-section-empty text-center text-gray-500">{t('noAuctions')}</p>
         ) : (
           <HomeCardsNavRow
             accent="auction"
             ariaLabel={t('homeRegistryAuctions', { defaultValue: 'Auctions' })}
+            hasMore={hasMore}
+            onRevealMore={revealMore}
           >
-            {displayAuctions.map((auction) => (
+            {visible.map((auction) => (
               <HomePreviewRowItem key={`${auction.category}-${auction.id}`}>
                 <AuctionPreviewCard
                   auction={auction}

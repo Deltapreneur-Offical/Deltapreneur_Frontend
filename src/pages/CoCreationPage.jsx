@@ -62,6 +62,8 @@ import { fetchAllListPages } from '../utils/listPagination';
 import { resolveMarketplaceListingRows } from '../utils/listingVisibility';
 import { asArray } from '../utils/asArray';
 import { computeCommissionBreakdown, fetchListingFeesAndCharges, payAuctionCreationFee } from '../utils/auctionFees';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 export default function CoCreationPage() {
   const { t } = useTranslation();
@@ -1417,7 +1419,8 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full h-[100dvh] sm:h-auto max-w-[960px] sm:max-h-[90vh] flex flex-col min-h-0 bg-white sm:border sm:border-gray-200 sm:rounded-[24px] shadow-2xl overflow-hidden animate-slideUp">
         {/* Header Gradient */}
         <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-br from-indigo-50/90 to-blue-50/50 pointer-events-none" />
@@ -1604,6 +1607,7 @@ function BuySoftwareModal({ item, selectedPlan, user, onClose, onSuccess }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -1634,7 +1638,8 @@ function PurchaseSuccessModal({ item, onClose }) {
   const navigate = useNavigate();
   
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[480px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8 text-center flex flex-col items-center">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-green-100/30 blur-3xl pointer-events-none" />
 
@@ -1677,6 +1682,7 @@ function PurchaseSuccessModal({ item, onClose }) {
         </button>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -1715,7 +1721,8 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
   }, [hasPlans, enabledPlans, selectedPlanKey]);
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[600px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
@@ -2013,6 +2020,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
         )}
       </div>
     </div>
+</AppOverlay>
   );
 }
 

@@ -191,11 +191,15 @@
   border-radius: inherit;
   pointer-events: none;
   box-shadow: 0 0 0 0 var(--home-nav-pulse);
-  animation: home-cards-nav-pulse 2s ease-out infinite;
+  animation: none;
+  opacity: 0;
 }
 
-.home-cards-nav::after {
-  animation-delay: 1s;
+.home-cards-nav:hover:not(:disabled)::before,
+.home-cards-nav:focus-visible:not(:disabled)::before,
+.home-cards-nav:active:not(:disabled)::before {
+  animation: home-cards-nav-pulse 0.7s ease-out 1;
+  opacity: 1;
 }
 
 /* Keep the same ripple on both arrows, including the disabled left button at the start */

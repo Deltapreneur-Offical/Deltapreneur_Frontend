@@ -21,6 +21,7 @@ import verifiedIcon from '../../assets/Verified_Icon.png';
 import OverflowMarqueeText from '../common/OverflowMarqueeText';
 import PriceSectionIcon from '../common/PriceSectionIcon';
 import RegistryStandardBadge from '../domain/RegistryStandardBadge';
+import { roleWaivesAuctionPlatformFees } from '../../utils/adminRoles';
 import '../../styles/domain-listing-cards.css';
 
 const PRIMARY_BTN =
@@ -106,6 +107,7 @@ export default function DomainListingCard({
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
+  const isAdmin = roleWaivesAuctionPlatformFees(user?.role) || Boolean(user?.isAdmin);
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
@@ -144,11 +146,16 @@ export default function DomainListingCard({
       setShareOpen(false);
       setOwnerMenuOpen(false);
     };
-    document.addEventListener('mousedown', handleClick);
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    document.addEventListener('pointerdown', handleClick);
+    document.addEventListener('keydown', handleKeyDown);
     window.addEventListener('scroll', handleClose, { passive: true });
     window.addEventListener('resize', handleClose);
     return () => {
-      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('pointerdown', handleClick);
+      document.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('scroll', handleClose);
       window.removeEventListener('resize', handleClose);
     };
@@ -411,6 +418,61 @@ export default function DomainListingCard({
     if (marketplace) {
     const priceText = priceAmount > 0 ? formatPrice(priceAmount) : null;
     const canBuy = statusKey === 'AVAILABLE' && !purchaseBlocked && priceAmount > 0 && !isOwner;
+    const canUseAdminMenu = isAdmin && Boolean(onEdit) && Boolean(onDelete);
+
+    const renderAdminActionsMenu = () => (
+      <div className="relative shrink-0" ref={ownerMenuRef}>
+        <button
+          type="button"
+          className={OWNER_ACTION_BTN_EDIT}
+          onClick={toggleOwnerMenu}
+          aria-label={t('edit', { defaultValue: 'Edit' })}
+          aria-haspopup="menu"
+          aria-expanded={ownerMenuOpen}
+          title={t('edit', { defaultValue: 'Edit' })}
+        >
+          <EditIcon size={15} />
+        </button>
+        {ownerMenuOpen && createPortal(
+          <div
+            ref={ownerMenuPortalRef}
+            role="menu"
+            className="fixed z-[9999] w-36 overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.16)]"
+            style={{ top: ownerMenuCoords.top, left: ownerMenuCoords.left }}
+            onClick={stop}
+            onMouseDown={stop}
+          >
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.8125rem] font-semibold text-slate-700 transition-colors hover:bg-slate-50 active:bg-slate-100"
+              onClick={(e) => {
+                stop(e);
+                setOwnerMenuOpen(false);
+                onEdit();
+              }}
+            >
+              <EditIcon size={14} />
+              {t('edit', { defaultValue: 'Edit' })}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.8125rem] font-semibold text-rose-600 transition-colors hover:bg-rose-50 active:bg-rose-100"
+              onClick={(e) => {
+                stop(e);
+                setOwnerMenuOpen(false);
+                onDelete();
+              }}
+            >
+              <Trash2 size={14} />
+              {t('delete', { defaultValue: 'Delete' })}
+            </button>
+          </div>,
+          document.body
+        )}
+      </div>
+    );
 
     return (
       <div
@@ -493,29 +555,17 @@ export default function DomainListingCard({
         <div className="mt-auto pt-3">
           {isOwner ? (
             (() => {
-              const hasOwnerEdit = Boolean(onEdit);
+              const hasAdminActions = canUseAdminMenu;
               const hasAuctionCta = Boolean(onPutForAuction) || isLiveAuction || isWinnerPhase;
-              const showDelete = Boolean(onDelete) && !browseMode;
 
               // Homepage / browse cards have no edit or auction actions — one centred
               // owner label instead of two identical "Your listing" pills.
-              if (!hasOwnerEdit && !hasAuctionCta) {
+              if (!hasAdminActions && !hasAuctionCta) {
                 return (
                   <div className="flex w-full min-w-0 items-center justify-center gap-2">
                     <span className={`${OWNER_ACTION_BTN_MUTED} px-4`}>
                       {t('listingCardYourListing', { defaultValue: 'Your listing' })}
                     </span>
-                    {showDelete ? (
-                      <button
-                        type="button"
-                        className="domain-search-card__delete-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 transition-colors"
-                        onClick={(e) => { stop(e); onDelete(); }}
-                        aria-label={t('delete', { defaultValue: 'Delete' })}
-                        title={t('delete', { defaultValue: 'Delete' })}
-                      >
-                        <Trash2 size={15} strokeWidth={2} />
-                      </button>
-                    ) : null}
                   </div>
                 );
               }
@@ -525,21 +575,7 @@ export default function DomainListingCard({
             <ListingOwnerActionPair
               className="min-w-0 flex-1"
               left={
-                hasOwnerEdit ? (
-                  <button
-                    type="button"
-                    className={OWNER_ACTION_BTN_EDIT}
-                    onClick={(e) => { stop(e); onEdit(); }}
-                    aria-label={t('edit')}
-                    title={t('edit')}
-                  >
-                    <EditIcon size={15} />
-                  </button>
-                ) : (
-                  <span className={OWNER_ACTION_BTN_MUTED}>
-                    {t('listingCardYourListing', { defaultValue: 'Your listing' })}
-                  </span>
-                )
+                hasAdminActions ? renderAdminActionsMenu() : null
               }
               right={
                 isWinnerPhase ? (
@@ -585,17 +621,6 @@ export default function DomainListingCard({
                 )
               }
             />
-            {showDelete ? (
-              <button
-                type="button"
-                className="domain-search-card__delete-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 transition-colors"
-                onClick={(e) => { stop(e); onDelete(); }}
-                aria-label={t('delete', { defaultValue: 'Delete' })}
-                title={t('delete', { defaultValue: 'Delete' })}
-              >
-                <Trash2 size={15} strokeWidth={2} />
-              </button>
-            ) : null}
             </div>
               );
             })()

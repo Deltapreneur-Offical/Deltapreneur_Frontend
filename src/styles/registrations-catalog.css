@@ -1258,12 +1258,12 @@
 
 .home-preview-row__item .reg-mini-card-wrapper,
 .home-auto-scroll-row__item .reg-mini-card-wrapper {
-  height: auto;
+  height: 100%;
 }
 
 .home-preview-row__item .reg-mini-card,
 .home-auto-scroll-row__item .reg-mini-card {
-  height: auto;
+  height: 100%;
 }
 
 .reg-mini-card__share {
@@ -1359,7 +1359,7 @@
   align-items: center;
   justify-content: flex-start;
   width: 100%;
-  margin-top: 0.2rem;
+  margin-top: auto;
   padding-top: 0.15rem;
   padding-right: 0;
 }
@@ -1593,7 +1593,7 @@
 
 .reg-cards-row-wrap .home-preview-row.reg-cards-preview-row {
   cursor: grab;
-  align-items: flex-start !important;
+  align-items: stretch !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   padding-top: 0.5rem !important;
@@ -1613,8 +1613,8 @@
 .reg-cards-row-wrap .home-preview-row.reg-cards-preview-row .home-preview-row__card,
 .reg-cards-row-wrap .home-preview-row.reg-cards-preview-row .home-preview-row__card > .reg-mini-card-wrapper {
   min-height: 0 !important;
-  height: auto !important;
-  align-self: flex-start;
+  height: 100% !important;
+  align-self: stretch;
 }
 
 .reg-cards-row-wrap .home-preview-row.reg-cards-preview-row .home-preview-row__item:first-child,

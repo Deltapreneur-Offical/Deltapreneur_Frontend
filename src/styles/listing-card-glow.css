@@ -343,17 +343,34 @@
   box-shadow: 0 12px 28px rgba(245, 158, 11, 0.12) !important;
 }
 
-/* Delta Venture cards — lime-mint hover */
+/* Delta Venture cards — hover lift without teal border ring */
 .venture-listing-card--coventure.card-glow-hover:hover,
 .venture-listing-card--coventure.card-glow-hover:hover:not(.creator-profile-card) {
   transform: translateY(-2px) translateZ(0);
-  border: 1.5px solid transparent !important;
-  background:
-    linear-gradient(#F3FDE8, #F3FDE8) padding-box,
-    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
-  background-origin: padding-box, border-box !important;
-  background-clip: padding-box, border-box !important;
-  box-shadow: 0 12px 28px rgba(30, 216, 145, 0.16) !important;
+  border: none !important;
+  border-width: 0 !important;
+  border-color: transparent !important;
+  background: #F0FDFA !important;
+  background-color: #F0FDFA !important;
+  background-image: none !important;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.16) !important;
+}
+
+/* Ventures marketplace — keep hover borderless even against dashboard-saffron */
+body.app-layout-body .venture-listing-grid .venture-listing-card--coventure.card-glow-hover:hover,
+body.app-layout-body .venture-listing-grid .venture-listing-card--coventure.card-glow-hover:hover:not(.creator-profile-card),
+body.app-layout-body .venture-listing-grid .venture-listing-card--coventure.card-glow-hover:hover:not(.creator-profile-card):not(.virtual-assistant-listing-card),
+body.app-layout-body .venture-listing-grid--page .venture-listing-card--coventure.card-glow-hover:hover,
+body.app-layout-body .venture-listing-grid--page .venture-listing-card--coventure.card-glow-hover:hover:not(.creator-profile-card),
+body.app-layout-body .venture-listing-grid--page .venture-listing-card--coventure.card-glow-hover:hover:not(.creator-profile-card):not(.virtual-assistant-listing-card) {
+  border: none !important;
+  border-width: 0 !important;
+  border-color: transparent !important;
+  outline: none !important;
+  background: #F0FDFA !important;
+  background-color: #F0FDFA !important;
+  background-image: none !important;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.16) !important;
 }
 
 /* Body stays pure white on hover — only the banner tints warm */
@@ -375,18 +392,18 @@
 
 .venture-listing-card--coventure.card-glow-hover:hover .domain-listing-card__price-box,
 .venture-listing-card--coventure.card-glow-hover:hover .domain-listing-card__price-box--coventure {
-  border: 1.5px solid transparent !important;
+  border: 1px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
+    linear-gradient(#14B8A6, #14B8A6) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 0 1px rgba(30, 216, 145, 0.22), 0 6px 16px rgba(30, 216, 145, 0.16) !important;
+  box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.22), 0 6px 16px rgba(15, 118, 110, 0.16) !important;
 }
 
 .venture-listing-card--coventure.card-glow-hover:hover .venture-listing-card__equity-badge {
   background: #FFFFFF !important;
-  border-color: #1ED891 !important;
+  border-color: #14B8A6 !important;
 }
 
 .venture-listing-card--coventure.card-glow-hover:hover .domain-listing-card__price-box,
@@ -396,10 +413,10 @@
 
 .venture-listing-card--coventure .domain-listing-card__price-box,
 .venture-listing-card--coventure .domain-listing-card__price-box--coventure {
-  border: 2px solid transparent !important;
+  border: 1px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
+    linear-gradient(#14B8A6, #14B8A6) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow: none !important;
@@ -407,7 +424,7 @@
 
 .venture-listing-card--coventure .domain-listing-card__price-box .domain-listing-card__price-cta,
 .venture-listing-card--coventure .domain-listing-card__price-box--coventure .domain-listing-card__price-cta {
-  color: #1ED891 !important;
+  color: #14B8A6 !important;
 }
 
 .venture-listing-card--venture.card-glow-hover::after,

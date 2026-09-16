@@ -51,6 +51,7 @@ export default function VenturesSection() {
         venture={venture}
         browseMode
         compact
+        homepageVentureContentOnly
         likeState={getLike(venture.id)}
         onLike={() => toggleLike(venture.id)}
         onView={() => handleViewDetails(venture.id)}
@@ -70,7 +71,7 @@ export default function VenturesSection() {
   }
 
   return (
-    <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
+    <section className="home-ventures-section bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader
           title={t('homeVentureRegister', { defaultValue: 'Ventures' })}

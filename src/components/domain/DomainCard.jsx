@@ -100,7 +100,7 @@ function GstIncludedCaption({ show }) {
   const { t } = useTranslation();
   if (!show) return null;
   return (
-    <span className="block mt-1 text-[10px] font-semibold text-gray-400">
+    <span className="basis-full mt-0.5 text-[10px] font-semibold text-gray-400">
       {t('domainCardGstIncluded', { defaultValue: 'GST included' })}
     </span>
   );
@@ -220,12 +220,12 @@ export default function DomainCard({
           ) : null}
           {priceText ? (
             <p
-              className="text-xl sm:text-2xl font-extrabold text-gray-950 leading-none"
+              className="domain-card-price-row inline-flex max-w-full flex-wrap items-baseline gap-x-1.5 gap-y-1 text-xl sm:text-2xl font-extrabold text-gray-950 leading-tight"
               translate="no"
               title={priceTitle}
             >
-              {priceText}
-              <span className="text-xs font-medium text-gray-400 ml-1.5">{priceYearSuffix}</span>
+              <span className="whitespace-nowrap">{priceText}</span>
+              <span className="whitespace-nowrap text-xs font-medium text-gray-400">{priceYearSuffix}</span>
               <GstIncludedCaption show={item.gstIncluded} />
             </p>
           ) : (
@@ -316,12 +316,12 @@ export default function DomainCard({
         ) : null}
         {priceText ? (
           <p
-            className="text-base font-extrabold text-gray-950 leading-none pt-0.5"
+            className="domain-card-price-row inline-flex max-w-full flex-wrap items-baseline gap-x-1 gap-y-0.5 text-base font-extrabold text-gray-950 leading-tight pt-0.5"
             translate="no"
             title={priceTitle}
           >
-            {priceText}
-            <span className="text-[11px] font-medium text-gray-400 ml-1">{priceYearSuffix}</span>
+            <span className="whitespace-nowrap">{priceText}</span>
+            <span className="whitespace-nowrap text-[11px] font-medium text-gray-400">{priceYearSuffix}</span>
             <GstIncludedCaption show={item.gstIncluded} />
           </p>
         ) : (

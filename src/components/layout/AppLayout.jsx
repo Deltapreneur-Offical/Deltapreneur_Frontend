@@ -1017,7 +1017,7 @@ export default function AppLayout({ children }) {
                 createPortal(
                   <div
                     ref={profileMenuRef}
-                    className="fixed bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
+                    className="app-profile-regional-menu-popover fixed bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
                     style={profileMenuStyle}
                     role="menu"
                   >

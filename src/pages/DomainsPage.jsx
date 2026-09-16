@@ -72,6 +72,8 @@ const STATUS_COLORS = {
   SOLD: { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
 };
 
+const DOMAIN_DETAIL_BODY_CLASS = 'domains-detail-modal-open';
+
 const formatInr = (value) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -150,6 +152,7 @@ export default function DomainsPage() {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { currency, getSymbol } = useCurrency();
+  const isDomainAdmin = roleWaivesAuctionPlatformFees(user?.role) || Boolean(user?.isAdmin);
 
   const { services: vaServices, loading: vaLoading } = useVirtualAssistantCatalog();
   const navigate = useNavigate();
@@ -196,6 +199,7 @@ export default function DomainsPage() {
     if (String(domain.domainStatus || '').toUpperCase() === 'SOLD') return false;
     if (domain.takenDown) return false;
     if (listingAuctionPhase(domain) !== 'idle') return false;
+    if (isDomainAdmin) return true;
     if (isMineTab) return Boolean(user);
     return isListingOwner(domain, user, 'domain');
   };
@@ -383,6 +387,14 @@ export default function DomainsPage() {
     },
   });
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    document.body.classList.toggle(DOMAIN_DETAIL_BODY_CLASS, Boolean(detailTarget));
+    return () => {
+      document.body.classList.remove(DOMAIN_DETAIL_BODY_CLASS);
+    };
+  }, [detailTarget]);
+
   const handleDelete = async () => {
     try {
       await domainAPI.delete(deleteTarget);
@@ -397,6 +409,24 @@ export default function DomainsPage() {
       .then((items) => setAllDomains(extractDomainList({ items, data: items })));
   return (
     <AppLayout>
+      <style>{`
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-top-nav,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-main-nav,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-nav-overlay,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-nav-drawer,
+        body.${DOMAIN_DETAIL_BODY_CLASS} [data-home-nav-dropdown],
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-nav-util-panel,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .home-top-nav-profile-menu,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .app-layout-sidebar,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .app-sidebar-backdrop,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .app-layout-header,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .app-notif-dropdown,
+        body.${DOMAIN_DETAIL_BODY_CLASS} .app-profile-regional-menu-popover {
+          visibility: hidden !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
+      `}</style>
       <Confetti show={showConfetti} />
       {showConfetti && (
         <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/30 backdrop-blur-sm pointer-events-none animate-fadeIn">
@@ -1113,7 +1143,7 @@ export default function DomainsPage() {
                   .domains-sync-layout .domain-search-card > .pr-9.space-y-2 > :not([hidden]) ~ :not([hidden]) {
                     margin-top: 0 !important;
                   }
-                  /* Keep ₹… (1st Year) on one line — never wrap the suffix. */
+                  /* Compact dashboard price rows; Delta Domains can wrap the suffix as a whole. */
                   .domains-sync-layout .domain-search-card > .pr-9 > p.text-base,
                   .domains-sync-layout .domain-search-card .domain-search-card__price {
                     min-width: 0 !important;
@@ -1142,6 +1172,20 @@ export default function DomainsPage() {
                   .domains-sync-layout .domain-search-card .domain-search-card__price > span {
                     white-space: nowrap !important;
                     display: inline !important;
+                  }
+                  .domains-sync-layout .domain-search-card > .pr-9 > .domain-card-price-row {
+                    display: inline-flex !important;
+                    flex-wrap: wrap !important;
+                    align-items: baseline !important;
+                    gap: 0.15rem 0.25rem !important;
+                    white-space: normal !important;
+                    overflow: visible !important;
+                    text-overflow: clip !important;
+                    line-height: 1.18 !important;
+                  }
+                  .domains-sync-layout .domain-search-card > .pr-9 > .domain-card-price-row > span {
+                    display: inline-flex !important;
+                    white-space: nowrap !important;
                   }
                   /* Renewal / Inclusive text sits directly under the price. */
                   .domains-sync-layout .domain-search-card > .pr-9 > p.text-base + p,
@@ -1290,7 +1334,7 @@ export default function DomainsPage() {
                           <DomainListingCard
                             domain={marketplaceCard}
                             marketplace
-                            isOwner={isListingOwner(marketplaceCard, user, 'domain')}
+                            isOwner={isDomainAdmin || isListingOwner(marketplaceCard, user, 'domain')}
                             likeState={getLike(marketplaceCard.id)}
                             onLike={() => toggleLike(marketplaceCard.id)}
                             onView={() => openDetailIfAllowed(marketplaceCard)}
@@ -1304,7 +1348,7 @@ export default function DomainsPage() {
                             }}
                             onViewAuction={() => navigate(marketplaceCard.auction?.id ? `/auction/${marketplaceCard.auction.id}` : '/auctions')}
                             onDelete={() => setDeleteTarget(marketplaceCard.id)}
-                            onPutForAuction={isListingOwner(marketplaceCard, user, 'domain') && marketplaceCard.saleType !== 'AUCTION' ? () => setAuctionTarget(marketplaceCard) : undefined}
+                            onPutForAuction={canStartDomainAuction(marketplaceCard) ? () => setAuctionTarget(marketplaceCard) : undefined}
                           />
                         </ListingCardShell>
                       </div>
@@ -1395,7 +1439,7 @@ export default function DomainsPage() {
                       <DomainListingCard
                         domain={d}
                         marketplace
-                        isOwner={isMineTab || isListingOwner(d, user, 'domain')}
+                        isOwner={isDomainAdmin || isMineTab || isListingOwner(d, user, 'domain')}
                         likeState={getLike(d.id)}
                         onLike={() => toggleLike(d.id)}
                         onView={() => openDetailIfAllowed(d)}
@@ -1449,7 +1493,7 @@ export default function DomainsPage() {
       {detailTarget && (
         <DomainDetailModal
           domain={detailTarget}
-          isOwner={isMineTab || isListingOwner(detailTarget, user, 'domain')}
+          isOwner={isDomainAdmin || isMineTab || isListingOwner(detailTarget, user, 'domain')}
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
           onViewsUpdated={(id, views) => {
@@ -2585,7 +2629,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy,
 
   return (
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn"
+      className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn"
       onClick={e => e.target === e.currentTarget && onClose?.()}
     >
       <div className="relative w-full h-[100dvh] sm:h-auto max-w-[600px] sm:max-h-[90vh] flex flex-col min-h-0 bg-white sm:border sm:border-gray-200 sm:rounded-[24px] shadow-2xl overflow-hidden animate-slideUp">

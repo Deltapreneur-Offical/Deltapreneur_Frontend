@@ -70,6 +70,7 @@ import AdminPremiumTechTab from '../components/admin/AdminPremiumTechTab';
 import HubRegistrarOfficeAdminTab from '../components/admin/HubRegistrarOfficeAdminTab';
 import FranchiseApplicationsAdminTab from '../components/admin/FranchiseApplicationsAdminTab';
 import { formatEquityPercent } from '../constants/ventureLabels';
+import { isDomainEnquiryPlaceholder } from '../utils/domainEnquiryPlaceholder';
 import { resolveVentureVerificationStatus } from '../utils/ventureVerification';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 
@@ -334,6 +335,7 @@ function isPendingDomainVerification(item) {
 }
 
 function isPendingDomainEnquiry(item) {
+  if (isDomainEnquiryPlaceholder(item)) return false;
   const status = String(item?.status ?? '').toUpperCase();
   return status === 'PENDING'
     || status === 'IN_PROGRESS'
@@ -2341,6 +2343,7 @@ const DOMAIN_ENQUIRY_STATUS_COLORS = {
 
 const DOMAIN_ENQUIRY_FILTER_TABS = [
   { id: 'all', label: 'All' },
+  { id: 'WAITING_FOR_BUYER', label: 'Waiting for buyer' },
   { id: 'PENDING', label: 'Pending' },
   { id: 'IN_PROGRESS', label: 'In Progress' },
   { id: 'ACCEPTED', label: 'Accepted' },
@@ -2388,7 +2391,8 @@ const DOMAIN_ENQUIRY_STATUS_ACTIONS = {
   },
 };
 
-function getDomainEnquiryCardActions(status) {
+function getDomainEnquiryCardActions(status, { isPlaceholder = false } = {}) {
+  if (isPlaceholder) return {};
   switch (status) {
     case 'PENDING':
       return {
@@ -2436,7 +2440,27 @@ function formatEnquiryDate(value) {
   }
 }
 
-function DomainEnquiryStatusBadge({ status }) {
+function DomainEnquiryStatusBadge({ status, waitingForBuyer = false }) {
+  if (waitingForBuyer) {
+    return (
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '0.2rem 0.55rem',
+          borderRadius: '999px',
+          fontSize: '0.72rem',
+          fontWeight: 700,
+          letterSpacing: '0.02em',
+          background: '#f1f5f9',
+          color: '#334155',
+          border: '1px solid #cbd5e1',
+        }}
+      >
+        Waiting for buyer
+      </span>
+    );
+  }
   const normalized = String(status || '').toUpperCase();
   const colors = DOMAIN_ENQUIRY_STATUS_COLORS[normalized] || { bg: '#f3f4f6', text: '#6b7280', border: '#d1d5db' };
   const label = normalized.replace(/_/g, ' ');
@@ -2544,6 +2568,13 @@ function DomainEnquiryStatusModal({ modal, enquiry, loading, onClose, onConfirm,
   );
 }
 
+function enquiryMatchesAdminFilter(item, filter) {
+  if (filter === 'all') return true;
+  if (filter === 'WAITING_FOR_BUYER') return isDomainEnquiryPlaceholder(item);
+  if (isDomainEnquiryPlaceholder(item)) return false;
+  return String(item?.status || '').toUpperCase() === filter;
+}
+
 function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
@@ -2552,10 +2583,9 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
   const [statusModal, setStatusModal] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
 
-  const filteredEnquiries = useMemo(() => {
-    if (statusFilter === 'all') return enquiries;
-    return enquiries.filter((item) => String(item?.status || '').toUpperCase() === statusFilter);
-  }, [enquiries, statusFilter]);
+  const filteredEnquiries = useMemo(() => (
+    enquiries.filter((item) => enquiryMatchesAdminFilter(item, statusFilter))
+  ), [enquiries, statusFilter]);
 
   const openStatusModal = (enquiry, newStatus) => {
     setStatusModal({
@@ -2653,9 +2683,7 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
     <>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
         {DOMAIN_ENQUIRY_FILTER_TABS.map((tab) => {
-          const count = tab.id === 'all'
-            ? enquiries.length
-            : enquiries.filter((item) => String(item?.status || '').toUpperCase() === tab.id).length;
+          const count = enquiries.filter((item) => enquiryMatchesAdminFilter(item, tab.id)).length;
           const active = statusFilter === tab.id;
           return (
             <button
@@ -2678,8 +2706,9 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filteredEnquiries.map((e) => {
+            const isPlaceholder = isDomainEnquiryPlaceholder(e);
             const status = String(e.status || '').toUpperCase();
-            const actions = getDomainEnquiryCardActions(status);
+            const actions = getDomainEnquiryCardActions(status, { isPlaceholder });
 
             return (
               <div key={e.id} className="admin-record-card" style={{ padding: '1rem 1.25rem' }}>
@@ -2693,16 +2722,25 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                       {formatPrice(e.domain?.askingPrice || 0)}
                     </div>
                   </div>
-                  <DomainEnquiryStatusBadge status={e.status} />
+                  <DomainEnquiryStatusBadge status={e.status} waitingForBuyer={isPlaceholder} />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
                               gap: '0.75rem', marginBottom: '0.75rem' }}>
                   <div>
                     <div className="admin-field-label">{t('adminEnquirer')}</div>
-                    <div className="admin-field-value">{e.fullName}</div>
-                    <div className="admin-field-meta">{e.email}</div>
-                    <div className="admin-field-meta">{e.phone}</div>
+                    {isPlaceholder ? (
+                      <>
+                        <div className="admin-field-value">No buyer has enquired yet</div>
+                        <div className="admin-field-meta">This is a listed premium domain, not a buyer ticket.</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="admin-field-value">{e.fullName}</div>
+                        <div className="admin-field-meta">{e.email}</div>
+                        <div className="admin-field-meta">{e.phone}</div>
+                      </>
+                    )}
                   </div>
                   <div>
                     <div className="admin-field-label">{t('adminDomainLister')}</div>
@@ -2713,10 +2751,15 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                   </div>
                 </div>
 
-                {e.message && (
+                {e.message && !isPlaceholder && (
                   <div className="admin-quote">
                     "{e.message}"
                   </div>
+                )}
+                {isPlaceholder && (
+                  <p className="admin-field-meta" style={{ margin: '0 0 0.75rem' }}>
+                    Review the listing itself from Review queue → Domain, or the Domains tab. A real enquiry appears here only after a buyer submits one.
+                  </p>
                 )}
 
                 {e.adminNotes && (
@@ -2758,6 +2801,7 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                   </div>
                 )}
 
+                {Object.values(actions).some(Boolean) ? (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {actions.forward && (
                     <button
@@ -2840,6 +2884,7 @@ function DomainEnquiriesTable({ enquiries, onForward, onRefresh }) {
                     </button>
                   )}
                 </div>
+                ) : null}
               </div>
             );
           })}
@@ -3760,7 +3805,10 @@ function mapQueueItem(item, type) {
   const titleByType = {
     venture: getString(item?.brandDetails?.brandName, item?.brand_details?.brand_name, item?.name, item?.title, 'Untitled venture'),
     domain: getString(item?.domainName, item?.name, 'Domain'),
-    domain_enquiry: getString(item?.domainName, item?.domain?.domainName, 'Domain enquiry'),
+    domain_enquiry: getString(
+      `${item?.domain?.domainName || item?.domainName || ''}${item?.domain?.domainExtension || ''}`.trim(),
+      'Domain enquiry',
+    ),
     technology: getString(item?.name, item?.title, 'Technology'),
     software_auction: getString(item?.softwareName, item?.software?.title, item?.software?.name, item?.title, 'Software auction'),
     cobrother_payment: getString(item?.ventureTitle, item?.title, item?.entityTitle, 'Deltapreneur request'),
@@ -3770,7 +3818,11 @@ function mapQueueItem(item, type) {
     id: `${type}-${item?.id ?? Math.random().toString(36).slice(2)}`,
     type,
     title: titleByType[type] || 'Item',
-    owner: getString(item?.ownerName, item?.userName, item?.user?.name, item?.email, item?.listedBy?.email, item?.buyerName, item?.listerName),
+    owner: getString(
+      type === 'domain_enquiry' ? item?.fullName : null,
+      item?.ownerName, item?.userName, item?.user?.name, item?.email,
+      item?.domain?.listedBy?.email, item?.listedBy?.email, item?.buyerName, item?.listerName,
+    ),
     status: getString(
       type === 'venture' ? 'PENDING_APPROVAL' : null,
       type === 'technology' ? 'PENDING_VERIFICATION' : null,

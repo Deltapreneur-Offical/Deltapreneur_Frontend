@@ -282,7 +282,7 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
           createPortal(
             <div
               ref={dropdownRef}
-              className="fixed bg-white border border-gray-200 rounded-xl shadow-xl min-w-[10rem] overflow-hidden"
+              className="home-top-nav-profile-menu fixed bg-white border border-gray-200 rounded-xl shadow-xl min-w-[10rem] overflow-hidden"
               style={dropdownStyle}
             >
             {user ? (

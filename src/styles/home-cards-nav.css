@@ -83,27 +83,20 @@
   height: auto !important;
 }
 
-/* Domains + Delta Domains only: slightly narrower so cards read less stretched / more square.
-   Does not affect other home carousels or Domains dashboard cards. */
+/* Domains + Delta Domains only: fixed card width so the carousel fills the
+   row with as many cards as fit (not capped to 4 with empty space after).
+   Remaining cards stay reachable via the side arrows. Home-only — dashboard untouched. */
 .home-domains-section .home-preview-row .home-preview-row__item {
-  width: min(14.5rem, 100%) !important;
+  width: 14.5rem !important;
+  max-width: 14.5rem !important;
+  flex: 0 0 14.5rem !important;
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (max-width: 639px) {
   .home-domains-section .home-preview-row .home-preview-row__item {
-    width: min(14.5rem, calc((100% - 1.25rem) / 2)) !important;
-  }
-}
-
-@media (min-width: 1024px) and (max-width: 1199px) {
-  .home-domains-section .home-preview-row .home-preview-row__item {
-    width: min(14.5rem, calc((100% - 2 * 1.25rem) / 3)) !important;
-  }
-}
-
-@media (min-width: 1200px) {
-  .home-domains-section .home-preview-row .home-preview-row__item {
-    width: min(14.5rem, calc((100% - 3 * 1.25rem) / 4)) !important;
+    width: min(14.5rem, 100%) !important;
+    max-width: min(14.5rem, 100%) !important;
+    flex: 0 0 min(14.5rem, 100%) !important;
   }
 }
 
@@ -117,6 +110,11 @@
 
 .home-domains-section .domain-search-card > *:last-child {
   margin-top: auto;
+}
+
+/* Home Delta Domains only — hide GST caption; leave price / renews / CTA unchanged. */
+.home-domains-section .domain-card-gst-caption {
+  display: none !important;
 }
 
 .home-cards-nav-row--dragging {

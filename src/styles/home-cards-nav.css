@@ -83,6 +83,30 @@
   height: auto !important;
 }
 
+/* Domains + Delta Domains only: slightly narrower so cards read less stretched / more square.
+   Does not affect other home carousels or Domains dashboard cards. */
+.home-domains-section .home-preview-row .home-preview-row__item {
+  width: min(14.5rem, 100%) !important;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .home-domains-section .home-preview-row .home-preview-row__item {
+    width: min(14.5rem, calc((100% - 1.25rem) / 2)) !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .home-domains-section .home-preview-row .home-preview-row__item {
+    width: min(14.5rem, calc((100% - 2 * 1.25rem) / 3)) !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .home-domains-section .home-preview-row .home-preview-row__item {
+    width: min(14.5rem, calc((100% - 3 * 1.25rem) / 4)) !important;
+  }
+}
+
 .home-domains-section .domain-search-card {
   height: auto !important;
   min-height: 0 !important;

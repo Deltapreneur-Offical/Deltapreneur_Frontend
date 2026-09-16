@@ -1022,8 +1022,9 @@ export default function DomainsPage() {
                     border: 1px solid rgba(20, 184, 166, 0.24);
                   }
                   .domains-sync-layout__cell {
+                    --domains-sync-card-size: 16.75rem;
                     display: grid;
-                    grid-template-columns: repeat(2, minmax(0, 16rem));
+                    grid-template-columns: repeat(2, minmax(0, var(--domains-sync-card-size)));
                     gap: 0.85rem;
                     row-gap: 0.85rem;
                     align-items: start;
@@ -1048,24 +1049,26 @@ export default function DomainsPage() {
                   .domains-sync-layout__item {
                     display: flex;
                     min-width: 0;
-                    width: min(100%, 16rem);
-                    height: 13.75rem !important;
-                    max-height: 13.75rem !important;
+                    width: min(100%, var(--domains-sync-card-size));
+                    /* Dashboard-only: one shared compact height for Delta + Domains */
+                    --domains-sync-card-h: 12.35rem;
+                    height: var(--domains-sync-card-h) !important;
+                    max-height: var(--domains-sync-card-h) !important;
                     align-items: stretch;
                   }
                   .domains-sync-layout__item > * {
                     width: 100%;
-                    max-width: 16rem;
+                    max-width: var(--domains-sync-card-size);
                     height: 100% !important;
                     max-height: 100% !important;
                   }
                   .domains-sync-layout .listing-card-glow-shell {
                     width: 100% !important;
-                    max-width: 16rem !important;
-                    height: 13.75rem !important;
-                    min-height: 13.75rem !important;
-                    max-height: 13.75rem !important;
-                    flex: 0 0 13.75rem !important;
+                    max-width: var(--domains-sync-card-size) !important;
+                    height: var(--domains-sync-card-h, 11.25rem) !important;
+                    min-height: var(--domains-sync-card-h, 11.25rem) !important;
+                    max-height: var(--domains-sync-card-h, 11.25rem) !important;
+                    flex: 0 0 var(--domains-sync-card-h, 11.25rem) !important;
                     display: flex !important;
                     flex-direction: column !important;
                     /* No shell inset — card stays full width; overflow visible so border/ring/shadow are not clipped. */
@@ -1082,23 +1085,23 @@ export default function DomainsPage() {
                     max-height: 100% !important;
                   }
                   /*
-                   * Dashboard-only: compact uniform card height.
+                   * Dashboard-only: compact uniform card height for Delta + Domains.
                    * Do not touch border / ring / box-shadow — keep original card outline.
+                   * Home page cards are NOT under .domains-sync-layout.
                    */
                   .domains-sync-layout .domain-search-card {
                     width: 100% !important;
-                    max-width: 16rem !important;
-                    height: 13.75rem !important;
-                    min-height: 13.75rem !important;
-                    max-height: 13.75rem !important;
-                    flex: 0 0 13.75rem !important;
+                    max-width: var(--domains-sync-card-size) !important;
+                    height: 100% !important;
+                    min-height: 0 !important;
+                    max-height: 100% !important;
+                    flex: 1 1 auto !important;
                     display: flex !important;
                     flex-direction: column !important;
                     justify-content: flex-start !important;
                     box-sizing: border-box !important;
-                    /* Original DomainCard padding (p-4) — do not restyle the border. */
-                    padding: 1rem !important;
-                    overflow: visible !important;
+                    padding: 0.7rem 0.85rem 0.65rem !important;
+                    overflow: hidden !important;
                   }
                   .domains-sync-layout .domain-search-card > .pr-9 {
                     flex: 0 0 auto !important;
@@ -1113,9 +1116,11 @@ export default function DomainsPage() {
                   .domains-sync-layout .domain-search-card > .pr-9.space-y-2 > :not([hidden]) ~ :not([hidden]) {
                     margin-top: 0 !important;
                   }
-                  /* Keep ₹… (1st Year) on one line — never wrap the suffix. */
+                  /* Price + (1st Year) stay on one tight line. */
+                  .domains-sync-layout .domain-search-card > .pr-9 > p.domain-card-price-line,
                   .domains-sync-layout .domain-search-card > .pr-9 > p.text-base,
                   .domains-sync-layout .domain-search-card .domain-search-card__price {
+                    display: block !important;
                     min-width: 0 !important;
                     max-width: 100% !important;
                     height: auto !important;
@@ -1123,45 +1128,69 @@ export default function DomainsPage() {
                     max-height: none !important;
                     margin: 0 !important;
                     padding-top: 0.1rem !important;
-                    font-size: 0.78rem !important;
-                    line-height: 1.15 !important;
+                    font-size: 0.72rem !important;
+                    line-height: 1.2 !important;
                     white-space: nowrap !important;
                     overflow: hidden !important;
-                    text-overflow: ellipsis !important;
+                    text-overflow: clip !important;
                     overflow-wrap: normal !important;
                     word-break: normal !important;
                     flex: 0 0 auto !important;
                   }
+                  .domains-sync-layout .domain-search-card .domain-card-price-value,
                   .domains-sync-layout .domain-search-card .domain-search-card__price-value {
-                    min-width: 0 !important;
-                    white-space: nowrap !important;
-                    overflow-wrap: normal !important;
-                    word-break: normal !important;
-                  }
-                  .domains-sync-layout .domain-search-card > .pr-9 > p.text-base > span,
-                  .domains-sync-layout .domain-search-card .domain-search-card__price > span {
-                    white-space: nowrap !important;
                     display: inline !important;
+                    min-width: 0 !important;
+                    flex: none !important;
+                    white-space: nowrap !important;
+                    overflow: visible !important;
+                    text-overflow: clip !important;
                   }
-                  /* Renewal / Inclusive text sits directly under the price. */
+                  /* Keep (1st Year) immediately after the price. */
+                  .domains-sync-layout .domain-search-card > .pr-9 > p .domain-card-year-suffix,
+                  .domains-sync-layout .domain-search-card .domain-search-card__price > .domain-card-year-suffix {
+                    display: inline !important;
+                    flex: none !important;
+                    margin-left: 0.2rem !important;
+                    white-space: nowrap !important;
+                    overflow: visible !important;
+                    text-overflow: clip !important;
+                  }
+                  .domains-sync-layout .domain-search-card > .pr-9 > .domain-card-gst-caption {
+                    display: block !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    white-space: normal !important;
+                    overflow: visible !important;
+                    flex: 0 0 auto !important;
+                    font-size: 0.625rem !important;
+                    line-height: 1.25 !important;
+                    color: #9ca3af !important;
+                  }
+                  /* Renewal text sits under GST (or under price when GST is absent). */
                   .domains-sync-layout .domain-search-card > .pr-9 > p.text-base + p,
+                  .domains-sync-layout .domain-search-card > .pr-9 > .domain-card-gst-caption + p,
                   .domains-sync-layout .domain-search-card .domain-search-card__price + p {
                     margin-top: 0 !important;
                     padding-top: 0 !important;
                     flex: 0 0 auto !important;
+                    white-space: normal !important;
+                    overflow: visible !important;
                   }
                   .domains-sync-layout .domain-search-card .absolute.top-2\\.5.right-2\\.5 button,
                   .domains-sync-layout .domain-search-card .absolute.top-2\\.5.right-2\\.5 [role='button'] {
                     width: 2rem !important;
                     height: 2rem !important;
                   }
-                  /* Small natural gap only — no large empty band above Add to Cart. */
+                  /* Keep CTA close to the price/renewal text inside square cards. */
                   .domains-sync-layout .domain-search-card > .mt-3,
                   .domains-sync-layout .domain-search-card > .mt-3\\.5,
                   .domains-sync-layout .domain-search-card > .mt-auto {
-                    margin-top: 0.4rem !important;
+                    margin-top: 0.85rem !important;
+                    margin-bottom: 0 !important;
                     flex-shrink: 0 !important;
                     padding-top: 0 !important;
+                    padding-bottom: 0 !important;
                     width: auto !important;
                     max-width: 100% !important;
                     min-width: 0 !important;

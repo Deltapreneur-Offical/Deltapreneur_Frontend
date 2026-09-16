@@ -100,9 +100,9 @@ function GstIncludedCaption({ show }) {
   const { t } = useTranslation();
   if (!show) return null;
   return (
-    <span className="block mt-1 text-[10px] font-semibold text-gray-400">
+    <p className="domain-card-gst-caption m-0 text-[10px] font-semibold text-gray-400 leading-snug">
       {t('domainCardGstIncluded', { defaultValue: 'GST included' })}
-    </span>
+    </p>
   );
 }
 
@@ -134,6 +134,10 @@ export default function DomainCard({
   featured = false,
   showStyleBadge = false,
   stackPremiumBadge = false,
+  /** Delta/Showcase cards: hide ✓ AVAILABLE; keep ✦ DELTA. */
+  hideAvailabilityBadge = false,
+  /** Delta/Showcase cards: hide DELTA text under the domain name. */
+  hideDomainTypeLabel = false,
   className = '',
   /** { shareType, originalQuery } — enables the Share & Earn button on this card. */
   shareContext = null,
@@ -201,7 +205,7 @@ export default function DomainCard({
         ) : null}
         <div className="pr-10 space-y-2">
           <div className={stackPremiumBadge && item.isPremium ? 'flex flex-col items-start gap-1' : 'flex flex-wrap items-center gap-2'}>
-            <StatusBadge status={item.status} />
+            {!hideAvailabilityBadge ? <StatusBadge status={item.status} /> : null}
             {item.isPremium ? <RegistryPremiumBadge /> : item.available ? <RegistryStandardBadge /> : null}
           </div>
           {showStyleBadge && item.style ? (
@@ -213,21 +217,23 @@ export default function DomainCard({
             <span translate="no">{item.name}</span>
             <span translate="no" className={item.isPremium ? 'text-amber-700' : 'domain-card-standard-tld text-teal-700'}>.{item.tld}</span>
           </h2>
-          {item.isPremium ? (
+          {!hideDomainTypeLabel && item.isPremium ? (
             <p className="text-xs font-semibold text-amber-800/85">{t('domainCardPremiumDomain', { defaultValue: 'DELTA' })}</p>
-          ) : item.available ? (
+          ) : !hideDomainTypeLabel && item.available ? (
             <p className="domain-card-standard-label text-xs font-semibold text-teal-700">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
           ) : null}
           {priceText ? (
-            <p
-              className="text-xl sm:text-2xl font-extrabold text-gray-950 leading-none"
-              translate="no"
-              title={priceTitle}
-            >
-              {priceText}
-              <span className="text-xs font-medium text-gray-400 ml-1.5">{priceYearSuffix}</span>
+            <>
+              <p
+                className="domain-card-price-line text-xl sm:text-2xl font-extrabold text-gray-950 leading-none"
+                translate="no"
+                title={priceTitle}
+              >
+                <span className="domain-card-price-value">{priceText}</span>
+                <span className="domain-card-year-suffix text-xs font-medium text-gray-400 ml-1.5">{priceYearSuffix}</span>
+              </p>
               <GstIncludedCaption show={item.gstIncluded} />
-            </p>
+            </>
           ) : (
             <p className="text-sm font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>
           )}
@@ -297,7 +303,7 @@ export default function DomainCard({
       ) : null}
       <div className="pr-9 space-y-1.5">
         <div className={stackPremiumBadge && item.isPremium ? 'flex flex-col items-start gap-1' : 'flex flex-wrap items-center gap-1.5'}>
-          <StatusBadge status={item.status} />
+          {!hideAvailabilityBadge ? <StatusBadge status={item.status} /> : null}
           {item.isPremium ? <RegistryPremiumBadge /> : item.available ? <RegistryStandardBadge /> : null}
         </div>
         {showStyleBadge && item.style ? (
@@ -309,21 +315,23 @@ export default function DomainCard({
           <span translate="no">{item.name}</span>
           <span translate="no" className={item.isPremium ? 'text-amber-700' : 'domain-card-standard-tld text-teal-700'}>.{item.tld}</span>
         </h3>
-        {item.isPremium ? (
+        {!hideDomainTypeLabel && item.isPremium ? (
           <p className="text-[11px] font-semibold text-amber-800/80">{t('domainCardPremiumDomain', { defaultValue: 'DELTA' })}</p>
-        ) : item.available ? (
+        ) : !hideDomainTypeLabel && item.available ? (
           <p className="domain-card-standard-label text-[11px] font-semibold text-teal-700">{t('domainCardStandardDomain', { defaultValue: 'Standard Domain' })}</p>
         ) : null}
         {priceText ? (
-          <p
-            className="text-base font-extrabold text-gray-950 leading-none pt-0.5"
-            translate="no"
-            title={priceTitle}
-          >
-            {priceText}
-            <span className="text-[11px] font-medium text-gray-400 ml-1">{priceYearSuffix}</span>
+          <>
+            <p
+              className="domain-card-price-line text-base font-extrabold text-gray-950 leading-none pt-0.5"
+              translate="no"
+              title={priceTitle}
+            >
+              <span className="domain-card-price-value">{priceText}</span>
+              <span className="domain-card-year-suffix text-[11px] font-medium text-gray-400 ml-1">{priceYearSuffix}</span>
+            </p>
             <GstIncludedCaption show={item.gstIncluded} />
-          </p>
+          </>
         ) : (
           <p className="text-xs font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>
         )}

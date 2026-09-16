@@ -25,6 +25,8 @@ export default function ShowcaseDomainCard({ item, shareContext = null, stackPre
   return (
     <DomainCard
       stackPremiumBadge={stackPremiumBadge}
+      hideAvailabilityBadge
+      hideDomainTypeLabel
       item={{
         domain: fullDomain,
         name: item.name,

@@ -458,21 +458,7 @@ export default function DomainListingCard({
         <div className="pr-9 min-w-0 flex-1 space-y-1.5">
           {/* Badges row — extra pb matches Premium card's renewal text spacing */}
           <div className="flex flex-wrap items-center gap-1.5 pb-1.5 min-w-0">
-            <span
-              className={`inline-flex w-fit max-w-full shrink-0 items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                statusKey === 'AVAILABLE'
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : statusKey === 'SOLD'
-                    ? 'bg-red-50 text-red-600 border-red-200'
-                    : 'bg-gray-50 text-gray-400 border-gray-200'
-              }`}
-            >
-              {statusKey === 'AVAILABLE'
-                ? `\u2713 ${t('listingCardAvailable', { defaultValue: 'Available' })}`
-                : statusKey === 'SOLD'
-                  ? t('listingCardSold', { defaultValue: 'Sold' })
-                  : t('listingCardUnavailable', { defaultValue: 'Unavailable' })}
-            </span>
+            {/* Marketplace cards (Home + Domains): ✦ DOMAIN only — no ✓ AVAILABLE */}
             <RegistryStandardBadge />
           </div>
 
@@ -486,9 +472,6 @@ export default function DomainListingCard({
             ) : null}
           </p>
 
-          {/* Standard Domain label */}
-          <p className="text-[11px] font-semibold text-sky-800/80">{t('domainCardStandardDomain', { defaultValue: 'DOMAIN' })}</p>
-
           {priceText ? (
             <>
               <p
@@ -498,7 +481,7 @@ export default function DomainListingCard({
                 <span className="domain-search-card__price-value">{priceText}</span>
               </p>
               <p className="text-[11px] font-medium text-gray-400 leading-snug pt-0.5">
-                {t('inclusiveTaxes', { defaultValue: 'Inclusive of applicable taxes' })}
+                Renews at ₹1,430.18/yr
               </p>
             </>
           ) : (

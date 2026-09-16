@@ -14,6 +14,7 @@ export default function HomeSectionCardSkeleton({
   hideHeader = false,
   animated = false,
   reserveOnly = false,
+  count = SKELETON_COUNT,
 }) {
   if (reserveOnly) {
     return (
@@ -32,7 +33,7 @@ export default function HomeSectionCardSkeleton({
     );
   }
 
-  const cards = Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+  const cards = Array.from({ length: count }).map((_, i) => (
     <HomePreviewRowItem key={i}>
       <HomePreviewCardSkeleton variant={variant} compact={compact} animated={animated} />
     </HomePreviewRowItem>

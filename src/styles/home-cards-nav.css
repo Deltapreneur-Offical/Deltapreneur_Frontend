@@ -74,6 +74,9 @@
 /* Homepage domain / premium cards — compact, content-sized (not 355px-tall) */
 .home-domains-section .home-preview-row {
   align-items: stretch;
+  --home-domains-visible: 5;
+  --home-domains-gap: 1rem;
+  gap: var(--home-domains-gap) !important;
 }
 
 .home-domains-section .home-preview-row__item,
@@ -83,13 +86,20 @@
   height: auto !important;
 }
 
-/* Domains + Delta Domains only: fixed card width so the carousel fills the
-   row with as many cards as fit (not capped to 4 with empty space after).
-   Remaining cards stay reachable via the side arrows. Home-only — dashboard untouched. */
+/* Domains + Delta Domains only: fit 5 cards across the visible row on desktop. */
 .home-domains-section .home-preview-row .home-preview-row__item {
   width: 14.5rem !important;
   max-width: 14.5rem !important;
   flex: 0 0 14.5rem !important;
+}
+
+@media (min-width: 1024px) {
+  .home-domains-section .home-preview-row .home-preview-row__item {
+    /* Exactly 5 cards + 4 gaps fill the row */
+    width: calc((100% - (4 * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    max-width: calc((100% - (4 * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    flex: 0 0 calc((100% - (4 * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+  }
 }
 
 @media (max-width: 639px) {

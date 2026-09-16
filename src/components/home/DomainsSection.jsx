@@ -3,8 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { domainAPI } from '../../api/services';
 import { asArray } from '../../utils/asArray';
 import { normalizeDomainRecord } from '../../utils/domainApiAdapter';
-import { HOMEPAGE_PREVIEW_LIMIT, isOpenProviderShowcaseRow } from '../../utils/homepageListings';
-import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
+import { isOpenProviderShowcaseRow } from '../../utils/homepageListings';
+import {
+  DOMAINS_HOME_PREVIEW_LIMIT,
+  DOMAINS_HOME_VISIBLE,
+  useHomepageCardReveal,
+} from '../../utils/homepageCardReveal';
 import HomeCardsNavRow from './HomeCardsNavRow';
 import { HomePreviewRowItem } from './HomePreviewRow';
 import ShowcaseDomainCard from '../listings/ShowcaseDomainCard';
@@ -21,14 +25,17 @@ export default function DomainsSection() {
   const [previewDomains, setPreviewDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasFetchedDomains, setHasFetchedDomains] = useState(false);
-  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewDomains);
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewDomains, {
+    pageSize: DOMAINS_HOME_VISIBLE,
+    previewLimit: DOMAINS_HOME_PREVIEW_LIMIT,
+  });
 
   useEffect(() => {
     const fetchDomains = async () => {
       try {
         setLoading(true);
         const { data } = await domainAPI.getShowcaseDomains({
-          page_size: HOMEPAGE_PREVIEW_LIMIT,
+          page_size: DOMAINS_HOME_PREVIEW_LIMIT,
         });
         if (!data?.enabled) {
           setPreviewDomains([]);
@@ -37,7 +44,7 @@ export default function DomainsSection() {
         const rows = asArray(data)
           .map(normalizeDomainRecord)
           .filter(isOpenProviderShowcaseRow)
-          .slice(0, HOMEPAGE_PREVIEW_LIMIT);
+          .slice(0, DOMAINS_HOME_PREVIEW_LIMIT);
         setPreviewDomains(rows);
       } catch {
         setPreviewDomains([]);
@@ -55,6 +62,7 @@ export default function DomainsSection() {
         title={t('homeDomainRegister', { defaultValue: 'Delta Domains' })}
         to="/domains"
         accent="domain"
+        count={DOMAINS_HOME_VISIBLE}
       />
     );
   }

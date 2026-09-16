@@ -5,6 +5,10 @@ import { HOMEPAGE_PREVIEW_LIMIT } from './homepageListings';
 /** First page of homepage carousel cards. */
 export const HOMEPAGE_VISIBLE_INITIAL = 4;
 
+/** Domains + Delta Domains: show 5 across on desktop (same idea as registrations). */
+export const DOMAINS_HOME_VISIBLE = 5;
+export const DOMAINS_HOME_PREVIEW_LIMIT = 10;
+
 /** Delta Registrations cards are smaller, so this section uses 5+5. */
 export const REGISTRATIONS_HOME_VISIBLE = 5;
 export const REGISTRATIONS_HOME_PREVIEW_LIMIT = 10;

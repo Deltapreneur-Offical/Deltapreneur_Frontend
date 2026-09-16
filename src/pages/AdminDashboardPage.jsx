@@ -1800,6 +1800,24 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore, onDeletePer
                     Mark Unverified
                   </button>
                 )}
+                {!item.rejected && (
+                  <button
+                    type="button"
+                    className="btn-outline btn-sm"
+                    style={{ fontSize: '0.8rem', border: '1px solid #b91c1c', color: '#b91c1c' }}
+                    onClick={async () => {
+                      try {
+                        await adminAPI.markTechnologyRejected(item.id);
+                        adminToast.success('Technology listing rejected.');
+                        onRefresh?.();
+                      } catch (e) {
+                        adminToast.error(e.response?.data?.error || 'Could not reject listing.');
+                      }
+                    }}
+                  >
+                    Reject
+                  </button>
+                )}
               </>
             )}
             {tabType === 'domains' && !item.takenDown && onVerifyDomain && (

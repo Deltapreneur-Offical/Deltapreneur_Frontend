@@ -237,6 +237,7 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
         get: adminAPI.getTechnologyTransferDetail,
         approvePayout: adminAPI.approveTechnologyPayout,
         releasePayout: adminAPI.releaseTechnologyPayout,
+        processRefund: adminAPI.processTechnologyRefund,
       }
     : domainTransferAdminAPI;
   const [items, setItems] = useState([]);
@@ -365,7 +366,7 @@ export default function DomainTransferAdminTab({ isTechnologyOnly = false }) {
     }
 
     const refundBlocked = ['REFUNDED', 'SELLER_PAID', 'PAYOUT_RELEASED', 'COMPLETED'].includes(transferStatus);
-    if (!isTechnologyOnly && !refundBlocked && escrowHeld && selected.razorpayPaymentId) {
+    if (!refundBlocked && escrowHeld && selected.razorpayPaymentId) {
       const buyerPaid = selected.buyerPaidAmountInr != null ? selected.buyerPaidAmountInr : (selected.grossAmountInr || 0) * 1.18;
       const gstAmount = Math.round(buyerPaid * 1800 / 11800) / 100;
       const listingPrice = Math.round((buyerPaid - gstAmount) * 100) / 100;

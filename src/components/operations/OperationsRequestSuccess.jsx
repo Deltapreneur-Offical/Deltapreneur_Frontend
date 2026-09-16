@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import AppOverlay from '../common/AppOverlay';
 import './operations-request-success.css';
 
 const BOOKING_COLORS = ['#22c55e', '#86efac', '#0ea5e9', '#38bdf8', '#fbbf24', '#f59e0b', '#ffffff'];
@@ -102,6 +103,7 @@ export default function OperationsRequestSuccess({ payload, onClose, onTrack }) 
   const isBooking = payload?.type === 'booking';
 
   return (
+    <AppOverlay>
     <div
       className="ops-success-overlay"
       onClick={onClose}
@@ -154,5 +156,6 @@ export default function OperationsRequestSuccess({ payload, onClose, onTrack }) 
         </div>
       </div>
     </div>
+    </AppOverlay>
   );
 }

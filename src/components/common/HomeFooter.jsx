@@ -125,6 +125,8 @@ const socialRowTwo = [
 
 
 
+const SHOW_APPLY_REGISTRY_OFFICE_FOOTER = false;
+
 const socialLinkClass = 'home-footer-social-link';
 
 
@@ -235,11 +237,13 @@ export default function HomeFooter() {
 
             </ScrollLink>
 
-            <ScrollLink to="/franchise" className={linkClass}>
+            {SHOW_APPLY_REGISTRY_OFFICE_FOOTER ? (
+              <ScrollLink to="/franchise" className={linkClass}>
 
-              {t('footerApplyRegistryOffice', { defaultValue: 'Apply for Registry office' })}
+                {t('footerApplyRegistryOffice', { defaultValue: 'Apply for Registry office' })}
 
-            </ScrollLink>
+              </ScrollLink>
+            ) : null}
 
           </nav>
 

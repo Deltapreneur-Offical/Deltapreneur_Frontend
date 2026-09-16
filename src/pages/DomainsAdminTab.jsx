@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import StatusFilterBar from '../components/admin/StatusFilterBar';
 import { DOMAIN_STATUS_CONFIG, DOMAIN_STATUSES, resolveDomainStatus } from '../utils/domainStatuses';
 import { adminAPI } from '../api/services';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const toast = {
   success: (msg) => alert(msg),
@@ -47,7 +49,8 @@ const ITEMS_PER_PAGE = 20;
 
 function PermanentDeleteConfirmModal({ count, onConfirm, onCancel, loading }) {
   return (
-    <div
+    <AppOverlay>
+<div
       className="fixed inset-0 z-[10100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       role="dialog"
       aria-modal="true"
@@ -97,6 +100,7 @@ function PermanentDeleteConfirmModal({ count, onConfirm, onCancel, loading }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 

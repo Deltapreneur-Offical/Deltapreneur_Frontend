@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ventureAPI } from '../../api/services';
+import AppOverlay from '../common/AppOverlay';
 import './venture-gstin-verification-modal.css';
 
 const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
@@ -143,6 +144,7 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
   })();
 
   return (
+    <AppOverlay>
     <div className="gst-modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="gst-modal" role="dialog" aria-modal="true" aria-labelledby="gst-modal-title">
         <button type="button" className="gst-modal__close" onClick={onClose} aria-label="Close">
@@ -321,5 +323,6 @@ export default function VentureGstinVerificationModal({ venture, onClose, onVeri
         )}
       </div>
     </div>
+    </AppOverlay>
   );
 }

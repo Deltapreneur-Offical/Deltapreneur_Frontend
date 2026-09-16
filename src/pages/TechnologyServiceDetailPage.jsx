@@ -6,6 +6,7 @@ import { technologyServicesAPI } from '../api/technologyServicesApi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
+import AppOverlay from '../components/common/AppOverlay';
 import {
   Cpu,
   Layout,
@@ -599,7 +600,8 @@ export default function TechnologyServiceDetailPage() {
 
       {/* Checkout Modal */}
       {purchasingPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl relative border border-gray-100">
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               Confirm Subscription
@@ -844,11 +846,13 @@ export default function TechnologyServiceDetailPage() {
             </div>
           </div>
         </div>
+</AppOverlay>
       )}
 
       {/* Success Modal */}
       {purchasedSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-md p-4">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-slate-900/70 backdrop-blur-md p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl text-center relative">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-4">
               <ShieldCheck className="h-10 w-10" />
@@ -873,6 +877,7 @@ export default function TechnologyServiceDetailPage() {
             </button>
           </div>
         </div>
+</AppOverlay>
       )}
 
     </AppLayout>

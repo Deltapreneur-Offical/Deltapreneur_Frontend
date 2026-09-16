@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Wallet, History, Gift, ArrowUpRight, ArrowDownLeft, X, RefreshCw } from 'lucide-react';
 import api from '../../api/axios';
+import AppOverlay from '../common/AppOverlay';
+
 
 export default function EdgePointsWalletCard() {
   const { t } = useTranslation();
@@ -118,7 +120,8 @@ export default function EdgePointsWalletCard() {
 
       {/* History & Referrals Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-950/45 backdrop-blur-sm animate-fadeIn">
+        <AppOverlay>
+<div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-950/45 backdrop-blur-sm animate-fadeIn">
           <div className="bg-gradient-to-br from-[#C2410C] via-[#9A3412] to-[#7C2D12] border border-[#FB923C]/40 text-white rounded-2xl w-full max-w-2xl max-h-[85vh] shadow-2xl flex flex-col overflow-hidden animate-slideUp">
             {/* Modal Header */}
             <div className="px-6 py-5 border-b border-white/20 flex items-center justify-between">
@@ -244,6 +247,7 @@ export default function EdgePointsWalletCard() {
             </div>
           </div>
         </div>
+</AppOverlay>
       )}
     </>
   );

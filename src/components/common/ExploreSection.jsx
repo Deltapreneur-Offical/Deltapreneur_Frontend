@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import FeaturedDomainsSection from '../home/FeaturedDomainsSection';
-import { PUBLIC_OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
+import { HOMEPAGE_OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
 import HomeSectionCardSkeleton from '../home/HomeSectionCardSkeleton';
 import NearViewport from '../home/NearViewport';
 
@@ -76,7 +76,7 @@ export default function ExploreSection() {
         <TechnologySection />
       </IndependentSection>
 
-      {PUBLIC_OPERATIONS_SECTIONS.map((section) => (
+      {HOMEPAGE_OPERATIONS_SECTIONS.map((section) => (
         <IndependentSection
           key={section.id}
           title={section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel })}

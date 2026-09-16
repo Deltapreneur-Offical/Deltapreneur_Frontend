@@ -26,6 +26,8 @@ import {
 import { adminAPI } from '../../api/services';
 import { getStoredAccessToken } from '../../utils/authSession';
 import { formatInr } from '../../utils/money';
+import AppOverlay from '../common/AppOverlay';
+
 
 /** Only treat a 401 as expiry when the interceptor has already dropped the live token. */
 export function isTrackRecordsCurrentSessionLost(err) {
@@ -973,8 +975,9 @@ export default function AdminTrackRecordsTab() {
 
       {/* Details Modal — centered dialog with dimmed overlay */}
       {drawerOpen && selectedRecord && (
-        <div
-          className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 transition-opacity"
+        <AppOverlay>
+<div
+          className="fixed inset-0 z-[11000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 transition-opacity"
           onClick={() => setDrawerOpen(false)}
           role="dialog"
           aria-modal="true"
@@ -1359,6 +1362,7 @@ export default function AdminTrackRecordsTab() {
             </div>
           </div>
         </div>
+</AppOverlay>
       )}
     </div>
   );

@@ -8,15 +8,31 @@ import { isCoVentureListing } from '../../utils/ventureListingHelpers';
 import { asArray } from '../../utils/asArray';
 import { mergeAdminHomepageAuctionItems } from '../../utils/homepageAuctions';
 import { vaDisplayReference } from '../../utils/virtualAssistantDisplay';
+import { readApiError } from '../../utils/apiError';
+import {
+  HOMEPAGE_FEATURE_MAX_MESSAGE,
+  canAddHomepageFeature,
+  remainingHomepageFeatureSlots,
+} from '../../utils/homepageFeatureLimit';
 
 const SECTION_KEYS = {
-  domain: 'homepageFeatureDomains',
-  venture: 'homepageFeatureVentures',
-  coventure: 'homepageFeatureCoVentures',
-  software: 'homepageFeatureSoftware',
-  community: 'homepageFeatureCreators',
-  auction: 'homepageFeatureAuctions',
-  'virtual-assistant': 'homepageFeatureVirtualAssistants',
+  domain: 'homeMarketplaceDomains',
+  venture: 'homeVentureRegister',
+  coventure: 'homeCoVenturesRegister',
+  software: 'homeTechnologyRegister',
+  community: 'homeCommunityRegister',
+  auction: 'homeRegistryAuctions',
+  'virtual-assistant': 'homeOperationsVaTitle',
+};
+
+const SECTION_DEFAULTS = {
+  domain: 'Domains',
+  venture: 'Ventures',
+  coventure: 'Delta Ventures',
+  software: 'DeltaOs (Operating System)',
+  community: 'Deltapreneurs',
+  auction: 'Auctions',
+  'virtual-assistant': 'DeltaOp (Operators)',
 };
 
 const TYPE_KEYS = {
@@ -76,6 +92,7 @@ function FeaturedSwitch({ active, pending, onToggle, t }) {
       role="switch"
       aria-checked={active}
       aria-busy={pending}
+      disabled={pending}
       aria-label={active ? t('homepageFeatureSwitchRemove') : t('homepageFeatureSwitchAdd')}
       onClick={onToggle}
       className={`admin-feature-switch ${active ? 'is-on' : ''} ${pending ? 'is-busy' : ''}`}
@@ -88,7 +105,7 @@ function FeaturedSwitch({ active, pending, onToggle, t }) {
   );
 }
 
-export default function HomepageFeatureSelector({ type }) {
+export default function HomepageFeatureSelector({ type, toast }) {
   const { t } = useTranslation();
   const typeLabel = t(TYPE_KEYS[type]);
   const listingType = LISTING_TYPE[type] ?? type;
@@ -101,6 +118,7 @@ export default function HomepageFeatureSelector({ type }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [pendingIds, setPendingIds] = useState(() => new Set());
+  const pendingIdsRef = useRef(new Set());
   const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   const fetchItems = useCallback(async () => {
@@ -228,6 +246,20 @@ export default function HomepageFeatureSelector({ type }) {
   const someVisibleSelected = paginated.some((item) => selectedIds.has(String(item.id))) && !allVisibleSelected;
   const selectAllRef = useRef(null);
   const [bulkPending, setBulkPending] = useState(false);
+  const featuredCountRef = useRef(0);
+
+  useEffect(() => {
+    if (pendingIds.size > 0) return;
+    featuredCountRef.current = featuredCount;
+  }, [featuredCount, pendingIds]);
+
+  const notifyFeatureLimit = useCallback(() => {
+    const message = t('homepageFeatureMaxReached', {
+      defaultValue: HOMEPAGE_FEATURE_MAX_MESSAGE,
+    });
+    if (toast?.error) toast.error(message);
+    else window.alert(message);
+  }, [t, toast]);
 
   useEffect(() => {
     if (selectAllRef.current) {
@@ -241,9 +273,18 @@ export default function HomepageFeatureSelector({ type }) {
   const rangeEnd = Math.min(safePage * pageSize, filteredSorted.length);
 
   const handleToggle = async (id, currentFeatured) => {
-    if (pendingIds.has(String(id))) return;
+    const key = String(id);
+    if (pendingIdsRef.current.has(key)) return;
 
     const nextFeatured = !currentFeatured;
+    if (nextFeatured && !canAddHomepageFeature(featuredCountRef.current)) {
+      notifyFeatureLimit();
+      return;
+    }
+
+    pendingIdsRef.current.add(key);
+    if (nextFeatured) featuredCountRef.current += 1;
+    else featuredCountRef.current = Math.max(0, featuredCountRef.current - 1);
     const typeMap = {
       domain: 'DOMAIN',
       venture: 'VENTURE',
@@ -259,7 +300,7 @@ export default function HomepageFeatureSelector({ type }) {
       ? AUCTION_FEATURE_TYPE[target?.category] || 'DOMAIN_AUCTION'
       : typeMap[type];
 
-    setPendingIds((prev) => new Set(prev).add(String(id)));
+    setPendingIds((prev) => new Set(prev).add(key));
     setItems((prev) =>
       prev.map((item) => (sameItemId(item.id, id) ? { ...item, featured: nextFeatured } : item)),
     );
@@ -273,17 +314,38 @@ export default function HomepageFeatureSelector({ type }) {
             sameItemId(item.id, id) ? { ...item, featured: confirmedFeatured } : item,
           ),
         );
+        if (confirmedFeatured !== nextFeatured) {
+          featuredCountRef.current = confirmedFeatured
+            ? featuredCountRef.current + 1
+            : Math.max(0, featuredCountRef.current - 1);
+        }
+      } else if (response?.data?.success === false) {
+        featuredCountRef.current = nextFeatured
+          ? Math.max(0, featuredCountRef.current - 1)
+          : featuredCountRef.current + 1;
+        setItems((prev) =>
+          prev.map((item) => (sameItemId(item.id, id) ? { ...item, featured: currentFeatured } : item)),
+        );
+        const message = response?.data?.error || t('homepageFeatureToggleFailed');
+        if (toast?.error) toast.error(message);
+        else window.alert(message);
       }
     } catch (error) {
       console.error('Failed to toggle homepage feature:', error);
+      featuredCountRef.current = nextFeatured
+        ? Math.max(0, featuredCountRef.current - 1)
+        : featuredCountRef.current + 1;
       setItems((prev) =>
         prev.map((item) => (sameItemId(item.id, id) ? { ...item, featured: currentFeatured } : item)),
       );
-      alert(t('homepageFeatureToggleFailed'));
+      const message = readApiError(error, t('homepageFeatureToggleFailed'));
+      if (toast?.error) toast.error(message);
+      else window.alert(message);
     } finally {
+      pendingIdsRef.current.delete(key);
       setPendingIds((prev) => {
         const next = new Set(prev);
-        next.delete(String(id));
+        next.delete(key);
         return next;
       });
     }
@@ -323,14 +385,26 @@ export default function HomepageFeatureSelector({ type }) {
 
   const handleBulkFeatureSelected = async (shouldFeature) => {
     if (bulkPending || selectedPending || selectedOnPage.length === 0) return;
-    const toToggle = selectedOnPage.filter((item) => Boolean(item.featured) !== shouldFeature);
+    let toToggle = selectedOnPage.filter((item) => Boolean(item.featured) !== shouldFeature);
     if (toToggle.length === 0) return;
+
+    if (shouldFeature) {
+      const remaining = remainingHomepageFeatureSlots(featuredCountRef.current);
+      if (remaining === 0) {
+        notifyFeatureLimit();
+        return;
+      }
+      if (toToggle.length > remaining) {
+        notifyFeatureLimit();
+        toToggle = toToggle.slice(0, remaining);
+      }
+    }
 
     setBulkPending(true);
     try {
-      await Promise.all(
-        toToggle.map((item) => handleToggle(item.id, Boolean(item.featured))),
-      );
+      for (const item of toToggle) {
+        await handleToggle(item.id, Boolean(item.featured));
+      }
     } finally {
       setBulkPending(false);
     }
@@ -349,7 +423,7 @@ export default function HomepageFeatureSelector({ type }) {
     <div className="admin-feature-card">
       <div className="admin-feature-card-head">
         <div className="admin-feature-card-head-main">
-          <h3 className="admin-feature-card-title">{t(SECTION_KEYS[type])}</h3>
+          <h3 className="admin-feature-card-title">{t(SECTION_KEYS[type], { defaultValue: SECTION_DEFAULTS[type] })}</h3>
           <p className="admin-feature-card-subtitle">
             {type === 'venture'
               ? t('homepageFeatureVentureSubtitle')

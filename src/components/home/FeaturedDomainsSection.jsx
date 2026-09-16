@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { domainAPI } from '../../api/services';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
+import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import { isOpenProviderShowcaseRow } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { isListingOwner } from '../../utils/listingVisibility';
@@ -57,6 +58,7 @@ export default function FeaturedDomainsSection() {
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', previewDomains);
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewDomains);
 
   const handleViewDetails = (domainId) => {
     navigateToListingDetail(navigate, 'domain', domainId);
@@ -73,17 +75,17 @@ export default function FeaturedDomainsSection() {
         />
         {loading ? (
           <HomeCardsNavRow accent="domain" ariaLabel={title}>
-            {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: 4 }).map((_, i) => (
               <HomePreviewRowItem key={i}>
                 <HomePreviewCardSkeleton variant="browse" />
               </HomePreviewRowItem>
             ))}
           </HomeCardsNavRow>
         ) : previewDomains.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">{t('noDomains')}</p>
+          <p className="home-section-empty text-center text-gray-500">{t('noDomains')}</p>
         ) : (
-          <HomeCardsNavRow accent="domain" ariaLabel={title}>
-            {previewDomains.map((domain) => (
+          <HomeCardsNavRow accent="domain" ariaLabel={title} hasMore={hasMore} onRevealMore={revealMore}>
+            {visible.map((domain) => (
               <HomePreviewRowItem key={domain.id}>
                 <DomainListingCard
                   domain={domain}

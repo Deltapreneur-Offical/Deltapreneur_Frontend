@@ -1,4 +1,4 @@
-import { Children, useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { Children, useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import HomePreviewRow from './HomePreviewRow';
 import '../../styles/home-cards-nav.css';
@@ -19,11 +19,14 @@ export default function HomeCardsNavRow({
   ariaLabel,
   className = '',
   rowClassName = '',
+  hasMore = false,
+  onRevealMore,
 }) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const itemCount = Children.toArray(children).length;
-  const showArrows = itemCount > 1;
+  const showArrows = itemCount > 1 || hasMore;
+  const prevItemCountRef = useRef(itemCount);
   const wrapRef = useRef(null);
   const scrollTargetRef = useRef(null);
   const navRafRef = useRef(0);
@@ -98,11 +101,31 @@ export default function HomeCardsNavRow({
     setCanScrollRight(next < maxScroll - 2);
   }, [getPreviewRow, getPageStep]);
 
-  useLayoutEffect(() => {
+  const handleNext = useCallback(() => {
+    const el = getPreviewRow();
+    const maxScroll = el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0;
+    const atEnd = !el || maxScroll <= 2 || el.scrollLeft >= maxScroll - 2;
+    if (atEnd && hasMore) {
+      onRevealMore?.();
+      return;
+    }
+    scrollCards(1);
+  }, [getPreviewRow, hasMore, onRevealMore, scrollCards]);
+
+  useEffect(() => {
+    if (itemCount > prevItemCountRef.current) {
+      const frame = window.requestAnimationFrame(() => scrollCards(1));
+      prevItemCountRef.current = itemCount;
+      return () => window.cancelAnimationFrame(frame);
+    }
+    prevItemCountRef.current = itemCount;
+    return undefined;
+  }, [itemCount, scrollCards]);
+
+  useEffect(() => {
     const el = getPreviewRow();
     if (!el) return undefined;
 
-    updateNavState();
     const rafId = requestAnimationFrame(updateNavState);
     scrollTargetRef.current = null;
 
@@ -233,8 +256,8 @@ export default function HomeCardsNavRow({
         <button
           type="button"
           className="home-cards-nav home-cards-nav--next"
-          onClick={() => scrollCards(1)}
-          disabled={!canScrollRight}
+          onClick={handleNext}
+          disabled={!canScrollRight && !hasMore}
           aria-label="Scroll cards right"
         >
           <ChevronRight size={22} strokeWidth={2.25} aria-hidden />

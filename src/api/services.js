@@ -138,7 +138,7 @@ export { domainTransferAPI, domainTransferAdminAPI, payoutProfileAPI } from './d
 
 export const domainAPI = {
   getAll:          (params)  => api.get('/api/v1/domain/all', { params }),
-  getShowcaseDomains: ()     => api.get('/api/v1/domain/showcase'),
+  getShowcaseDomains: (params) => api.get('/api/v1/domain/showcase', { params }),
   getMyListings:   ()        => api.get('/api/v1/domain/my-listings'),
   getMyPurchases:  ()        => api.get('/api/v1/domain/my-purchases'),
   get:             (id)      => api.get(`/api/v1/domain/listings/${id}`),

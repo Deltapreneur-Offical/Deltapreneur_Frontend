@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FaPhoneAlt, FaWhatsapp } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import cobrotherProfile from '../../assets/cobrother_community_profil.png';
+import cobrotherProfile from '../../assets/cobrother_community_profil_64.png';
 import CartButton from './CartButton';
 import CurrencyDropdown from './CurrencyDropdown';
 import LanguageDropdown from './LanguageDropdown';
@@ -23,6 +23,9 @@ const ProfileFlipAvatar = memo(function ProfileFlipAvatar({ flipped, userInitial
           <img
             src={cobrotherProfile}
             alt=""
+            width={28}
+            height={28}
+            decoding="async"
             className="home-profile-flip-icon"
             draggable={false}
           />
@@ -264,6 +267,9 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 <img
                   src={cobrotherProfile}
                   alt=""
+                  width={28}
+                  height={28}
+                  decoding="async"
                   className="home-profile-flip-icon"
                   draggable={false}
                 />

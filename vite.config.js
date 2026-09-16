@@ -131,11 +131,23 @@ export default defineConfig(({ mode }) => {
       global: 'window',
     },
     build: {
+      modulePreload: {
+        resolveDependencies(filename, deps) {
+          const isHomepageEntry = /(^|\/)index[-.]/.test(filename);
+          if (!isHomepageEntry) return deps;
+          return deps.filter(
+            (dep) =>
+              !/vendor-charts|recharts/.test(dep),
+          );
+        },
+      },
       rollupOptions: {
         output: {
           manualChunks(id) {
             // Keep React in one chunk — splitting `react` into separate vendor chunks
             // created circular imports and broke production (`useState` of undefined).
+            // Do not force /src/pages/* into named chunks: that pulled admin/domains
+            // CSS+JS into the homepage HTML as render-blocking preloads.
             if (id.includes('node_modules')) {
               if (
                 id.includes('/react-dom/') ||
@@ -153,12 +165,6 @@ export default defineConfig(({ mode }) => {
               if (id.includes('axios')) return 'vendor-http';
               return 'vendor';
             }
-            if (id.includes('/src/components/analytics/')) return 'shared-analytics';
-            if (id.includes('/src/pages/PlatformAnalytics')) return 'route-platform-analytics';
-            if (id.includes('/src/pages/Admin')) return 'route-admin';
-            if (id.includes('/src/pages/Domains')) return 'route-domains';
-            if (id.includes('/src/pages/Ventures')) return 'route-ventures';
-            if (id.includes('/src/pages/Auctions')) return 'route-auctions';
           },
         },
       },

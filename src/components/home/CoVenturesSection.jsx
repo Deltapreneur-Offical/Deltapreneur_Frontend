@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ventureAPI } from '../../api/services';
 import { fetchHomepageVenturePreview } from '../../utils/homepagePreview';
+import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
@@ -38,6 +39,7 @@ export default function CoVenturesSection() {
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', ventures);
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(ventures);
 
   const handleViewDetails = (ventureId) => {
     navigateToListingDetail(navigate, 'venture', ventureId);
@@ -79,12 +81,12 @@ export default function CoVenturesSection() {
           showViewAll={ventures.length > 0}
         />
         {ventures.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="home-section-empty text-center text-gray-500">
             {t('noCoVenturesAvailable', { defaultValue: 'No co-ventures are available yet.' })}
           </p>
         ) : (
-          <HomeCardsNavRow accent="coventure" ariaLabel={sectionTitle}>
-            {ventures.map((venture) => (
+          <HomeCardsNavRow accent="coventure" ariaLabel={sectionTitle} hasMore={hasMore} onRevealMore={revealMore}>
+            {visible.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
                 {renderCoVentureCard(venture)}
               </HomePreviewRowItem>

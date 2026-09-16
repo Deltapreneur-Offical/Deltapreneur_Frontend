@@ -53,6 +53,62 @@ describe('fetchHomepageSectionPreview', () => {
     expect(fetchListPage.mock.calls[0][1]).toMatchObject({ featured_only: true });
   });
 
+  it('requests page_size 8 for the default homepage preview limit', async () => {
+    fetchListPage.mockResolvedValue({
+      items: [{
+        id: 'v1',
+        featured: true,
+        verified: true,
+        status: true,
+        listingMode: 'VENTURE',
+        name: 'Alpha',
+      }],
+      total: 1,
+    });
+
+    await fetchHomepageSectionPreview(
+      vi.fn(),
+      'venture',
+      undefined,
+      { featuredQuery: { mode: 'VENTURE' }, fillCatalog: false },
+    );
+
+    expect(fetchListPage.mock.calls[0][1]).toMatchObject({
+      featured_only: true,
+      pageSize: 8,
+    });
+  });
+
+  it('forwards include_showcase: false for homepage marketplace featured', async () => {
+    fetchListPage.mockResolvedValue({
+      items: [{
+        id: 'm1',
+        featured: true,
+        verified: true,
+        status: true,
+        domainName: 'listed.com',
+      }],
+      total: 1,
+    });
+
+    await fetchHomepageSectionPreview(
+      vi.fn(),
+      'domain',
+      undefined,
+      {
+        featuredQuery: { include_showcase: false },
+        fillCatalog: false,
+        maxPages: 2,
+        filterFn: (item) => !isOpenProviderShowcaseRow(item),
+      },
+    );
+
+    expect(fetchListPage.mock.calls[0][1]).toMatchObject({
+      featured_only: true,
+      include_showcase: false,
+    });
+  });
+
   it('keeps paging featured_only until marketplace rows are reached', async () => {
     const showcasePage = Array.from({ length: 48 }, (_, i) => ({
       id: `showcase-${i}`,

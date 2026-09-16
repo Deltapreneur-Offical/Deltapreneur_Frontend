@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { cocreationAPI } from '../../api/services';
 import { technologyServicesAPI } from '../../api/technologyServicesApi';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { asArray } from '../../utils/asArray';
+import { HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
+import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
@@ -45,12 +47,15 @@ export default function TechnologySection() {
         if (!cancelled) setSoftwareLoading(false);
       });
 
-    technologyServicesAPI.getServices()
+    technologyServicesAPI.getServices({ page_size: HOMEPAGE_PREVIEW_LIMIT })
       .then((servRes) => {
         if (cancelled) return;
         const services = servRes?.data?.data || servRes?.data || [];
         setFeaturedServices(
-          asArray(services).slice().sort((a, b) => Number(Boolean(b.featured ?? b.is_featured)) - Number(Boolean(a.featured ?? a.is_featured))),
+          asArray(services)
+            .slice()
+            .sort((a, b) => Number(Boolean(b.featured ?? b.is_featured)) - Number(Boolean(a.featured ?? a.is_featured)))
+            .slice(0, HOMEPAGE_PREVIEW_LIMIT),
         );
       })
       .catch(() => {
@@ -66,12 +71,14 @@ export default function TechnologySection() {
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', previewSoftwares);
+  const softwareReveal = useHomepageCardReveal(previewSoftwares);
+  const serviceReveal = useHomepageCardReveal(featuredServices);
 
-  const handleViewDetails = (softwareId) => {
+  const handleViewDetails = useCallback((softwareId) => {
     navigateToListingDetail(navigate, 'software', softwareId);
-  };
+  }, [navigate]);
 
-  const renderTechnologyCard = (item) => (
+  const renderTechnologyCard = useCallback((item) => (
     <HomePreviewCardShell accent="technology">
       <TechnologyListingCard
         item={item}
@@ -81,7 +88,7 @@ export default function TechnologySection() {
         onView={() => handleViewDetails(item.id)}
       />
     </HomePreviewCardShell>
-  );
+  ), [getLike, toggleLike, handleViewDetails]);
 
   if (softwareLoading && servicesLoading) {
     return <HomeSectionCardSkeleton title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology" />;
@@ -112,8 +119,10 @@ export default function TechnologySection() {
             <HomeCardsNavRow
               accent="technology"
               ariaLabel={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}
+              hasMore={softwareReveal.hasMore}
+              onRevealMore={softwareReveal.revealMore}
             >
-              {previewSoftwares.map((item) => (
+              {softwareReveal.visible.map((item) => (
                 <HomePreviewRowItem key={item.id}>
                   {renderTechnologyCard(item)}
                 </HomePreviewRowItem>
@@ -143,14 +152,19 @@ export default function TechnologySection() {
             </button>
           </div>
 
-          <HomeCardsNavRow accent="technology" ariaLabel="Technology Register">
+          <HomeCardsNavRow
+            accent="technology"
+            ariaLabel="Technology Register"
+            hasMore={serviceReveal.hasMore}
+            onRevealMore={serviceReveal.revealMore}
+          >
             {servicesLoading
               ? Array.from({ length: 4 }).map((_, i) => (
                 <HomePreviewRowItem key={`service-skel-${i}`}>
                   <HomePreviewCardSkeleton variant="browse" />
                 </HomePreviewRowItem>
               ))
-              : featuredServices.map((service) => (
+              : serviceReveal.visible.map((service) => (
                 <HomePreviewRowItem key={service.id || service.slug}>
                   <TechnologyServiceCard service={service} compact homeLayout />
                 </HomePreviewRowItem>

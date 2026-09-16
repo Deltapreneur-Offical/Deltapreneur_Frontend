@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react';
+import '../../styles/dashboard-saffron.css';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Handshake, Gavel, ShoppingBag, ShoppingCart, User, Bell, LogOut, Menu, X, PanelLeft, Shield, Store, Headset, Award, Briefcase } from 'lucide-react';
@@ -1003,6 +1004,9 @@ export default function AppLayout({ children }) {
                       <img
                         src={CreatorIcon}
                         alt=""
+                        width={36}
+                        height={36}
+                        decoding="async"
                         className="w-[90%] h-[90%] object-contain"
                         draggable={false}
                       />

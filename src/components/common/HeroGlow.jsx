@@ -1,36 +1,15 @@
-import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import DomainSearchBar from './DomainSearchBar';
-import {
-  heroEnterContainer,
-  heroHeadlineEnter,
-} from '../home/motion/homeMotion';
 
 export default function HeroGlow() {
-  const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
   const headline = t('homeHeroHeadline', { defaultValue: 'The Delta Edition Of Entrepreneur!' });
 
-  const textStack = reduceMotion ? (
+  const textStack = (
     <div className="hero-text-stack relative z-20 w-full min-w-0">
       <h1 className="hero-headline m-0 font-sans font-semibold text-black">
         {headline}
       </h1>
     </div>
-  ) : (
-    <motion.div
-      className="hero-text-stack relative z-20 w-full min-w-0"
-      variants={heroEnterContainer}
-      initial="hidden"
-      animate="visible"
-    >
-      <motion.h1
-        className="hero-headline m-0 font-sans font-semibold text-black"
-        variants={heroHeadlineEnter}
-      >
-        {headline}
-      </motion.h1>
-    </motion.div>
   );
 
   return (

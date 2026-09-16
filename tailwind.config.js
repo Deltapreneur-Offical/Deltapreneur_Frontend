@@ -28,10 +28,10 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Newsreader', 'serif'],
-        display: ['Newsreader', 'serif'],
-        body: ['Newsreader', 'serif'],
-        mono: ['Newsreader', 'serif'],
+        sans: ['Newsreader', 'Newsreader Fallback', 'Georgia', 'serif'],
+        display: ['Newsreader', 'Newsreader Fallback', 'Georgia', 'serif'],
+        body: ['Newsreader', 'Newsreader Fallback', 'Georgia', 'serif'],
+        mono: ['Newsreader', 'Newsreader Fallback', 'Georgia', 'serif'],
       },
       borderRadius: {
         'DEFAULT': '10px',
@@ -50,8 +50,8 @@ export default {
           to: { opacity: '1', transform: 'translateY(0)' }
         },
         shimmer: {
-          '0%': { backgroundPosition: '200% 0' },
-          '100%': { backgroundPosition: '-200% 0' }
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.45' }
         },
         'confetti-fall': {
           '0%':   { transform: 'translateY(-10px) rotate(0deg)', opacity: '1' },

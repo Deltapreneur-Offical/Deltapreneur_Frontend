@@ -1,8 +1,8 @@
-import { useMemo, useState, useCallback, useLayoutEffect, useRef } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Share2, Check, ChevronLeft, ChevronRight } from 'lucide-react';
-import bulletpointTick from '../../assets/bulletpointtick.png';
+import bulletpointTick from '../../assets/bulletpointtick_32.png';
 import PriceSectionIcon from '../common/PriceSectionIcon';
 import {
   Briefcase, Building2, Car, Clapperboard, Copyright, Cpu,
@@ -11,6 +11,11 @@ import {
   Shield, ShoppingBag, Truck, Users, UtensilsCrossed, Wheat, Zap,
 } from 'lucide-react';
 import { registrationsPathForCategory, REGISTRATIONS_PAGE_PATH } from '../../utils/operationsSections';
+import {
+  REGISTRATIONS_HOME_PREVIEW_LIMIT,
+  REGISTRATIONS_HOME_VISIBLE,
+  useHomepageCardReveal,
+} from '../../utils/homepageCardReveal';
 import { usePublicHubRegistrarCategories } from '../../context/CategoryContext';
 import useCurrency from '../../context/CurrencyContext';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
@@ -45,19 +50,26 @@ export default function HomeRegistrationsSection() {
   const scrollTargetRef = useRef(null);
   const navRafRef = useRef(0);
   const navFlagsRef = useRef({ left: false, right: false, overflow: false });
+  const prevVisibleCountRef = useRef(0);
   const navigate = useNavigate();
   const waitingForCategories = !fetched && allCategories.length === 0;
 
   const filteredCategories = useMemo(() => {
     const query = categoryFilter.trim().toLowerCase();
-    if (!query) return allCategories;
-    return allCategories.filter((cat) => (
-      cat.label.toLowerCase().includes(query)
-      || cat.slug.toLowerCase().includes(query)
-      || (cat.description || '').toLowerCase().includes(query)
-      || (cat.highlights || []).some((p) => p.toLowerCase().includes(query))
-    ));
+    const matched = !query
+      ? allCategories
+      : allCategories.filter((cat) => (
+        cat.label.toLowerCase().includes(query)
+        || cat.slug.toLowerCase().includes(query)
+        || (cat.description || '').toLowerCase().includes(query)
+        || (cat.highlights || []).some((p) => p.toLowerCase().includes(query))
+      ));
+    return matched.slice(0, REGISTRATIONS_HOME_PREVIEW_LIMIT);
   }, [categoryFilter, allCategories]);
+  const { visible: visibleCategories, hasMore: categoriesHasMore, revealMore: revealMoreCategories } = useHomepageCardReveal(
+    filteredCategories,
+    { pageSize: REGISTRATIONS_HOME_VISIBLE, previewLimit: REGISTRATIONS_HOME_PREVIEW_LIMIT },
+  );
 
   const getPreviewRow = useCallback(() => (
     rowWrapRef.current?.querySelector('.home-preview-row') || null
@@ -129,11 +141,32 @@ export default function HomeRegistrationsSection() {
     setCanScrollRight(next < maxScroll - 2);
   }, [getPreviewRow, getPageStep]);
 
-  useLayoutEffect(() => {
+  const handleNextCards = useCallback(() => {
+    const el = getPreviewRow();
+    const maxScroll = el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0;
+    const atEnd = !el || maxScroll <= 2 || el.scrollLeft >= maxScroll - 2;
+    if (atEnd && categoriesHasMore) {
+      revealMoreCategories();
+      return;
+    }
+    scrollCards(1);
+  }, [getPreviewRow, categoriesHasMore, revealMoreCategories, scrollCards]);
+
+  useEffect(() => {
+    const count = visibleCategories.length;
+    if (count > prevVisibleCountRef.current) {
+      const frame = window.requestAnimationFrame(() => scrollCards(1));
+      prevVisibleCountRef.current = count;
+      return () => window.cancelAnimationFrame(frame);
+    }
+    prevVisibleCountRef.current = count;
+    return undefined;
+  }, [visibleCategories.length, scrollCards]);
+
+  useEffect(() => {
     const el = getPreviewRow();
     if (!el) return undefined;
 
-    updateNavState();
     const rafId = requestAnimationFrame(updateNavState);
     scrollTargetRef.current = null;
 
@@ -334,8 +367,12 @@ export default function HomeRegistrationsSection() {
                   <img
                     src={bulletpointTick}
                     alt=""
+                    width={14}
+                    height={14}
                     aria-hidden
                     draggable="false"
+                    decoding="async"
+                    loading="lazy"
                     className="reg-mini-card__bullet"
                   />
                   <span>{translated}</span>
@@ -406,13 +443,13 @@ export default function HomeRegistrationsSection() {
             </HomePreviewRow>
           </div>
         ) : filteredCategories.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">{t('regCatalogEmpty', { defaultValue: 'No category found. Check back soon, we are working on it.' })}</p>
+          <p className="home-section-empty text-center text-gray-500">{t('regCatalogEmpty', { defaultValue: 'No category found. Check back soon, we are working on it.' })}</p>
         ) : (
           <div
-            className={`reg-cards-row-wrap${filteredCategories.length > 1 ? '' : ' reg-cards-row-wrap--no-overflow'}`}
+            className={`reg-cards-row-wrap${visibleCategories.length > 1 || categoriesHasMore ? '' : ' reg-cards-row-wrap--no-overflow'}`}
             ref={rowWrapRef}
           >
-            {filteredCategories.length > 1 ? (
+            {visibleCategories.length > 1 || categoriesHasMore ? (
               <button
                 type="button"
                 className="reg-cards-nav reg-cards-nav--prev"
@@ -424,18 +461,18 @@ export default function HomeRegistrationsSection() {
               </button>
             ) : null}
             <HomePreviewRow className="reg-cards-preview-row">
-              {filteredCategories.map((cat) => (
+              {visibleCategories.map((cat) => (
                 <HomePreviewRowItem key={cat.slug}>
                   {renderCard(cat)}
                 </HomePreviewRowItem>
               ))}
             </HomePreviewRow>
-            {filteredCategories.length > 1 ? (
+            {visibleCategories.length > 1 || categoriesHasMore ? (
               <button
                 type="button"
                 className="reg-cards-nav reg-cards-nav--next"
-                onClick={() => scrollCards(1)}
-                disabled={!canScrollRight}
+                onClick={handleNextCards}
+                disabled={!canScrollRight && !categoriesHasMore}
                 aria-label="Scroll registration cards right"
               >
                 <ChevronRight size={22} strokeWidth={2.25} aria-hidden />

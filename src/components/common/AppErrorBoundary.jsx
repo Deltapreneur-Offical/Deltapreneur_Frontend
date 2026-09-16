@@ -1,4 +1,6 @@
 import { Component } from 'react';
+import AppOverlay from './AppOverlay';
+
 
 export default class AppErrorBoundary extends Component {
   constructor(props) {
@@ -17,8 +19,9 @@ export default class AppErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-5 px-6 py-12 text-center overflow-auto"
+        <AppOverlay>
+<div
+          className="fixed inset-0 z-[11000] flex flex-col items-center justify-center gap-5 px-6 py-12 text-center overflow-auto"
           style={{
             background: 'linear-gradient(165deg, #f8fafc 0%, #eef2ff 42%, #f1f5f9 100%)',
           }}
@@ -61,6 +64,7 @@ export default class AppErrorBoundary extends Component {
             )}
           </div>
         </div>
+</AppOverlay>
       );
     }
     return this.props.children;

@@ -23,6 +23,7 @@ import { isVentureProfileComplete } from '../utils/ventureProfileUtils';
 import { formatEquityOfferedPct, formatEquityPercent } from '../constants/ventureLabels';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import FormCheckbox from '../components/common/FormCheckbox';
+import AppOverlay from '../components/common/AppOverlay';
 import {
   countVenturesPendingVerification,
   filterVenturesForSection,
@@ -521,8 +522,9 @@ function IncomingPitches() {
       </div>
 
       {pendingAction?.type === 'accept' && pendingPitch && (
+        <AppOverlay>
         <div
-          className="fixed inset-0 z-[999] flex items-center justify-center p-6 animate-fadeIn backdrop-blur-md"
+          className="fixed inset-0 z-[11000] flex items-center justify-center p-6 animate-fadeIn backdrop-blur-md"
           style={{ background: 'rgba(17, 24, 39, 0.42)' }}
           onClick={(e) => e.target === e.currentTarget && closeAction()}
         >
@@ -558,6 +560,7 @@ function IncomingPitches() {
             </div>
           </div>
         </div>
+        </AppOverlay>
       )}
 
       <ConfirmDialog
@@ -843,8 +846,9 @@ function IncomingApplications() {
       )}
 
       {selectTarget && (
+        <AppOverlay>
         <div
-          className="fixed inset-0 z-[999] flex items-center justify-center p-6 animate-fadeIn backdrop-blur-md"
+          className="fixed inset-0 z-[11000] flex items-center justify-center p-6 animate-fadeIn backdrop-blur-md"
           style={{ background: 'rgba(17, 24, 39, 0.42)' }}
           onClick={(e) => e.target === e.currentTarget && closeSelectPartner()}
         >
@@ -880,6 +884,7 @@ function IncomingApplications() {
             </div>
           </div>
         </div>
+        </AppOverlay>
       )}
     </div>
   );

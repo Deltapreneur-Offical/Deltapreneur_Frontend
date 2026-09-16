@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { technologyServicesAPI } from '../../api/technologyServicesApi';
+import AppOverlay from '../common/AppOverlay';
 import {
   Wallet,
   AlertTriangle,
@@ -835,7 +836,8 @@ export default function AdminPremiumTechTab() {
 
       {/* Per Product Pricing Override Modal */}
       {editingService && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-150">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h3 className="font-extrabold text-base text-gray-900">Set Price Override</h3>
@@ -888,10 +890,12 @@ export default function AdminPremiumTechTab() {
             </div>
           </div>
         </div>
+</AppOverlay>
       )}
 
       {accessDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div>
@@ -952,6 +956,7 @@ export default function AdminPremiumTechTab() {
             )}
           </div>
         </div>
+</AppOverlay>
       )}
     </div>
   );

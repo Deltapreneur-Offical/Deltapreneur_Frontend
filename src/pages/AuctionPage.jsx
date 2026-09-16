@@ -16,6 +16,8 @@ import useCurrency from '../context/CurrencyContext';
 import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 import EdgePointsRedeemToggle from '../components/profile/EdgePointsRedeemToggle';
 import { REQUIRE_DOMAIN_VERIFICATION_BEFORE_PURCHASE } from '../config/featureFlags';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const LIVE_AUCTION_STATUSES = new Set(['ACTIVE', 'EXTENDED']);
 const FINAL_WINNER_STATUSES = new Set(['ENDED', 'PAYMENT_PENDING', 'COMPLETED']);
@@ -994,7 +996,8 @@ function ReAuctionModal({ auctionId, domainId, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[440px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
@@ -1031,5 +1034,6 @@ function ReAuctionModal({ auctionId, domainId, onClose, onSuccess }) {
         </form>
       </div>
     </div>
+</AppOverlay>
   );
 }

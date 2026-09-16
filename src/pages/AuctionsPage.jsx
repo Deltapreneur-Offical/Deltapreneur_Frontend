@@ -10,7 +10,7 @@ import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
 import DomainsIcon from '../assets/CoBranding.png';
 import TechnologyIcon from '../assets/CoCreation.png';
-import CreatorIcon from '../assets/Cobrother_Profile.png';
+import CreatorIcon from '../assets/Deltapreneurs_icon.png';
 import cobrotherViewMark from '../assets/Cobrother_Profile.png';
 import { formatCountdown, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
 import { resolveAuctionListerName } from '../utils/auctionLister';

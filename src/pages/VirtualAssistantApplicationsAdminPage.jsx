@@ -6,6 +6,8 @@ import { adminAPI } from '../api/services';
 import { unwrapApiData } from '../utils/apiResponse';
 import { vaDisplayReference } from '../utils/virtualAssistantDisplay';
 import VaProfilePhoto from '../components/virtual-assistant/VaProfilePhoto';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 
 const STATUS_BADGE = {
@@ -452,7 +454,8 @@ function VirtualAssistantApplicationsAdminPage({ embedded = false }) {
 
       {/* Delete Confirm Modal */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border border-gray-100">
             <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center mb-4">
               <Trash2 size={22} className="text-red-500" />
@@ -493,6 +496,7 @@ function VirtualAssistantApplicationsAdminPage({ embedded = false }) {
             </div>
           </div>
         </div>
+</AppOverlay>
       )}
       </div>
     </div>

@@ -8,6 +8,7 @@ import cobrotherProfile from '../../assets/cobrother_community_profil_64.png';
 import CartButton from './CartButton';
 import CurrencyDropdown from './CurrencyDropdown';
 import LanguageDropdown from './LanguageDropdown';
+import AppOverlay from './AppOverlay';
 import {
   EXTERNAL_LINK_PROPS,
   SUPPORT_PHONE_DISPLAY,
@@ -393,7 +394,8 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
       {showLogoutConfirm &&
         typeof document !== 'undefined' &&
         createPortal(
-          <div
+          <AppOverlay>
+<div
             className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             role="dialog"
             aria-modal="true"
@@ -421,7 +423,8 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
                 </button>
               </div>
             </div>
-          </div>,
+          </div>
+</AppOverlay>,
           document.body,
         )}
     </>

@@ -5,6 +5,8 @@ import { formatAuctionDate, formatAuctionDateTime } from '../utils/auctionDate';
 import useCurrency from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import SoftwareAuctionTakeDownTab from './SoftwareAuctionTakeDownTab';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const APPROVAL_COLORS = {
   PENDING_APPROVAL: { color: '#b45309', bg: 'rgba(245,158,11,0.12)', labelKey: 'softwareAuctionAdminPendingReview' },
@@ -530,7 +532,8 @@ function RejectModal({ softwareName, auctionId, onClose, onRejected }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-card" style={{ maxWidth: 440 }}>
         <div className="modal-glow" />
         <button className="modal-close" onClick={onClose}>✕</button>
@@ -569,6 +572,7 @@ function RejectModal({ softwareName, auctionId, onClose, onRejected }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
@@ -592,7 +596,8 @@ function TakeDownModal({ softwareName, auctionId, onClose, onTakeDown }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-card" style={{ maxWidth: 440 }}>
         <div className="modal-glow" />
         <button className="modal-close" onClick={onClose}>✕</button>
@@ -657,13 +662,15 @@ function TakeDownModal({ softwareName, auctionId, onClose, onTakeDown }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 
 // ─── Approve Again confirmation modal ──────────────────────────────────────────
 function ApproveAgainModal({ softwareName, onClose, onConfirm }) {
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-card" style={{ maxWidth: 440 }}>
         <div className="modal-glow" />
         <button className="modal-close" onClick={onClose}>✕</button>
@@ -694,5 +701,6 @@ function ApproveAgainModal({ softwareName, onClose, onConfirm }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }

@@ -5,6 +5,8 @@ import StatusFilterBar from './StatusFilterBar';
 import { adminAPI } from '../../api/services';
 import { unwrapApiData } from '../../utils/apiResponse';
 import VaProfilePhoto from '../virtual-assistant/VaProfilePhoto';
+import AppOverlay from '../common/AppOverlay';
+
 
 const STATUS_CONFIG = [
   { id: 'all', label: 'All' },
@@ -295,7 +297,8 @@ const VirtualAssistantsAdminTab = ({ data, loading, onRefresh }) => {
       )}
 
       {selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-900">Application Details</h3>
@@ -476,9 +479,11 @@ const VirtualAssistantsAdminTab = ({ data, loading, onRefresh }) => {
             )}
           </div>
         </div>
+</AppOverlay>
       )}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Application</h3>
             <p className="text-sm text-gray-600 mb-4">
@@ -518,6 +523,7 @@ const VirtualAssistantsAdminTab = ({ data, loading, onRefresh }) => {
             </div>
           </div>
         </div>
+</AppOverlay>
       )}
     </div>
   );

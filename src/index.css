@@ -787,7 +787,7 @@ input[type="checkbox"] {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 999;
+  z-index: 11000;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(6px);
   display: flex;
@@ -12152,7 +12152,7 @@ body.home-menu-open {
 .operations-request-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 999;
+  z-index: 11000;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -13678,7 +13678,7 @@ body.home-menu-open {
 .operations-role-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 999;
+  z-index: 11000;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -14023,6 +14023,11 @@ body.home-menu-open {
     transform: scale(1.4);
     opacity: 0.85;
   }
+}
+
+body.app-overlay-open .whatsapp-floating-btn {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .whatsapp-floating-btn {

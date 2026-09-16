@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { adminAPI, domainAPI } from '../api/services';
 import { readApiError } from '../utils/apiError';
+import AppOverlay from '../components/common/AppOverlay';
 
 const ALL_METHODS = [
   {
@@ -298,9 +299,11 @@ export default function DomainVerificationModal({
   if (embedded) return inner;
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+    <div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
       {inner}
     </div>
+    </AppOverlay>
   );
 }
 

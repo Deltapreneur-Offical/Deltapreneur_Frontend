@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ShieldCheck, X } from 'lucide-react';
 import { ventureAPI } from '../../api/services';
+import AppOverlay from '../common/AppOverlay';
 import { unwrapApiData } from '../../utils/apiResponse';
 import {
   canOpenVentureVerification,
@@ -182,8 +183,9 @@ export default function VentureVerifyListingModal({
   };
 
   return (
+    <AppOverlay>
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6 animate-fadeIn backdrop-blur-md"
+      className="fixed inset-0 z-[11000] flex items-center justify-center overflow-y-auto overscroll-contain p-4 sm:p-6 animate-fadeIn backdrop-blur-md"
       style={{ background: 'rgba(17, 24, 39, 0.42)' }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
@@ -282,5 +284,6 @@ export default function VentureVerifyListingModal({
         )}
       </div>
     </div>
+    </AppOverlay>
   );
 }

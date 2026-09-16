@@ -1,4 +1,4 @@
-import broAILogo from '../../assets/Cobrother_Profile.png';
+import deltapreneursIcon from '../../assets/Deltapreneurs_icon.png';
 
 export default function CreatorDashboardIcon({ size = 24, className = '', strokeWidth: _ignored, ...props }) {
   return (
@@ -9,7 +9,7 @@ export default function CreatorDashboardIcon({ size = 24, className = '', stroke
       {...props}
     >
       <img
-        src={broAILogo}
+        src={deltapreneursIcon}
         alt=""
         className="dashboard-creator-icon__img"
       />

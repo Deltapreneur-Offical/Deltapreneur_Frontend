@@ -22,6 +22,8 @@ import {
 import { canManageRegisteredDomain, domainManagementHref } from '../utils/domainManagement';
 import VentureDealRow from '../components/venture/VentureDealRow';
 import { isVentureDealBuyer } from '../utils/ventureDeal';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const PURCHASES_STAT_ICON = { size: 20, strokeWidth: 2, 'aria-hidden': true };
 
@@ -395,7 +397,8 @@ export default function PurchasesPage() {
       )}
 
       {helpSuccess && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={() => setHelpSuccess(null)}>
+        <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={() => setHelpSuccess(null)}>
           <div className="relative w-full max-w-[440px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] text-center animate-slideUp">
             <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
             <div className="relative z-10 p-8">
@@ -414,6 +417,7 @@ export default function PurchasesPage() {
             </div>
           </div>
         </div>
+</AppOverlay>
       )}
     </AppLayout>
   );
@@ -933,7 +937,8 @@ function HubRegistrarHelpModal({ purchase, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[500px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] text-center animate-slideUp">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
         <div className="relative z-10 p-8">
@@ -981,6 +986,7 @@ function HubRegistrarHelpModal({ purchase, onClose, onSuccess }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 

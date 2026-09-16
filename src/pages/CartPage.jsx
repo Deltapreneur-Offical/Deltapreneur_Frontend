@@ -27,6 +27,8 @@ import {
 import { PREMIUM_DOMAIN_MIN_PRICE } from '../utils/domainPricing';
 import { notifyCartChanged } from '../utils/cartEvents';
 import PaymentProcessingOverlay from '../components/cart/PaymentProcessingOverlay';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const EMPTY_REDEMPTION = {
   redeem: false,
@@ -606,7 +608,8 @@ export default function CartPage() {
   const cartOverlays = (
     <>
       {confirmPremiumOpen && (
-        <div
+        <AppOverlay>
+<div
           className="fixed inset-0 z-[11000] flex items-center justify-center overflow-y-auto overscroll-contain bg-slate-950/55 backdrop-blur-sm p-4 sm:p-6"
           onClick={(e) => {
             if (e.target === e.currentTarget && !checkoutLoading) setConfirmPremiumOpen(false);
@@ -692,9 +695,11 @@ export default function CartPage() {
             </div>
           </div>
         </div>
+</AppOverlay>
       )}
       {premiumConfirmSuccess && (
-        <div
+        <AppOverlay>
+<div
           className="fixed inset-0 z-[11000] flex items-center justify-center bg-slate-950/55 backdrop-blur-sm p-4"
           onClick={(e) => e.target === e.currentTarget && setPremiumConfirmSuccess(null)}
           role="dialog"
@@ -725,9 +730,11 @@ export default function CartPage() {
             </button>
           </div>
         </div>
+</AppOverlay>
       )}
       {paymentSuccess && (
-        <div
+        <AppOverlay>
+<div
           className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={(e) => e.target === e.currentTarget && closePaymentSuccess()}
           role="dialog"
@@ -780,6 +787,7 @@ export default function CartPage() {
             </button>
           </motion.div>
         </div>
+</AppOverlay>
       )}
     </>
   );

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { coBrotherAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import AppOverlay from '../components/common/AppOverlay';
+
 
 const STATUS_COLORS = {
   PAYMENT_PENDING:   '#c8a96e',
@@ -183,7 +185,8 @@ function RespondModal({ request, onRespond, onClose }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <AppOverlay>
+<div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-card" style={{ maxWidth: 460 }}>
         <div className="modal-glow" />
         <button className="modal-close" onClick={onClose}>✕</button>
@@ -213,6 +216,7 @@ function RespondModal({ request, onRespond, onClose }) {
         </div>
       </div>
     </div>
+</AppOverlay>
   );
 }
 

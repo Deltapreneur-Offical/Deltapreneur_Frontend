@@ -5,6 +5,7 @@ import useCurrency from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import { fetchListingFeesAndCharges, payAuctionCreationFee } from '../utils/auctionFees';
 import { roleWaivesAuctionPlatformFees } from '../utils/adminRoles';
+import AppOverlay from '../components/common/AppOverlay';
 
 const DURATIONS = ['ONE_DAY', 'THREE_DAYS', 'FIVE_DAYS', 'SEVEN_DAYS', 'FOURTEEN_DAYS', 'THIRTY_DAYS'];
 const DURATION_KEYS = {
@@ -80,6 +81,7 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
   };
 
   return (
+    <AppOverlay>
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-card" style={{ maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}>
         <div className="modal-glow" />
@@ -186,5 +188,6 @@ export default function SoftwareAuctionRequestModal({ software, onClose, onSubmi
         </div>
       </div>
     </div>
+    </AppOverlay>
   );
 }

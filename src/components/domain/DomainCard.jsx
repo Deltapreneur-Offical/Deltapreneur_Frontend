@@ -138,6 +138,8 @@ export default function DomainCard({
   hideAvailabilityBadge = false,
   /** Delta/Showcase cards: hide DELTA text under the domain name. */
   hideDomainTypeLabel = false,
+  /** Delta/Showcase cards: hide the GST included caption. */
+  hideGstCaption = false,
   className = '',
   /** { shareType, originalQuery } — enables the Share & Earn button on this card. */
   shareContext = null,
@@ -232,7 +234,7 @@ export default function DomainCard({
                 <span className="domain-card-price-value">{priceText}</span>
                 <span className="domain-card-year-suffix text-xs font-medium text-gray-400 ml-1.5">{priceYearSuffix}</span>
               </p>
-              <GstIncludedCaption show={item.gstIncluded} />
+              <GstIncludedCaption show={!hideGstCaption && item.gstIncluded} />
             </>
           ) : (
             <p className="text-sm font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>
@@ -330,7 +332,7 @@ export default function DomainCard({
               <span className="domain-card-price-value">{priceText}</span>
               <span className="domain-card-year-suffix text-[11px] font-medium text-gray-400 ml-1">{priceYearSuffix}</span>
             </p>
-            <GstIncludedCaption show={item.gstIncluded} />
+            <GstIncludedCaption show={!hideGstCaption && item.gstIncluded} />
           </>
         ) : (
           <p className="text-xs font-semibold text-gray-400">{t('domainCardPriceUnavailable', { defaultValue: 'Price unavailable' })}</p>

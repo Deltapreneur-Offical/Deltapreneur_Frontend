@@ -2787,6 +2787,19 @@
   justify-content: flex-start;
 }
 
+/*
+ * Home DeltaOs services carousel (HomeCardsNavRow): translateZ(0) + overflow-x
+ * clips the first card’s left edge at the scrollport. Manual paging has no
+ * marquee, so drop the compositor hack here only — leave auto-scroll rows alone.
+ */
+.home-cards-nav-wrap .home-preview-row.home-cards-nav-row .tech-service-card {
+  will-change: auto;
+  transform: none;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .home-preview-row__item:has(.tech-service-card) {
   align-self: flex-start;
   height: auto;

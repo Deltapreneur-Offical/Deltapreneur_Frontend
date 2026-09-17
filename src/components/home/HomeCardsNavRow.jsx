@@ -126,7 +126,14 @@ export default function HomeCardsNavRow({
     const el = getPreviewRow();
     if (!el) return undefined;
 
-    const rafId = requestAnimationFrame(updateNavState);
+    const rafId = requestAnimationFrame(() => {
+      // DeltaOs services: ensure the track starts at the first card (no left clip).
+      if (wrapRef.current?.classList.contains('home-deltaos-services-nav') && el.scrollLeft !== 0) {
+        el.scrollLeft = 0;
+        scrollTargetRef.current = 0;
+      }
+      updateNavState();
+    });
     scrollTargetRef.current = null;
 
     const onScroll = () => updateNavState();

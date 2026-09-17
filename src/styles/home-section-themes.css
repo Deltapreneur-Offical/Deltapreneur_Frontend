@@ -376,7 +376,7 @@
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #e11d2e 0%, #ff751f 100%) border-box !important;
+    linear-gradient(#1E88FF, #1E88FF) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
 }
@@ -393,10 +393,10 @@
 .home-preview-card-border--venture:hover .venture-listing-card--venture .domain-listing-card__price-box--venture {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #fbbf24 0%, #fb923c 100%) border-box !important;
+    linear-gradient(#1E88FF, #1E88FF) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.18), 0 6px 16px rgba(251, 146, 60, 0.12) !important;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.18), 0 6px 16px rgba(59, 130, 246, 0.12) !important;
 }
 
 /* Venture homepage — no color change on hover (elevation/shadow only) */

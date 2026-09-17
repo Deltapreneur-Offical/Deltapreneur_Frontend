@@ -493,3 +493,16 @@
     height: 4.75rem;
   }
 }
+
+/* Homepage DeltaOp: blue compensation pill at rest (not saffron). */
+body.home-page-body .home-preview-card-border--assistance .va-listing-card__compensation,
+body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation,
+body.home-page-body .home-preview-card-border--assistance .domain-listing-card__price-box.va-listing-card__compensation {
+  border: 1.5px solid transparent !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(#1E88FF, #1E88FF) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+}

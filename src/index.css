@@ -690,6 +690,17 @@ input[type="checkbox"] {
   opacity: 0.65;
 }
 
+.domain-card-year-suffix {
+  white-space: nowrap;
+}
+
+.domain-card-year-suffix sup {
+  font-size: 0.62em;
+  font-weight: inherit;
+  line-height: 0;
+  vertical-align: super;
+}
+
 /* GPU-accelerated profile flip (homepage nav) */
 .home-top-nav-profile,
 .home-top-nav-profile-btn {
@@ -5268,6 +5279,40 @@ input[type="checkbox"] {
 
 [data-app-layout-scroll] select {
   color-scheme: light;
+}
+
+/* Technology subscribe overlay is portaled to body, so it misses the
+   dashboard light-input override. Keep typed text readable. */
+.tech-subscribe-modal input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='button']):not([type='submit']),
+.tech-subscribe-modal select,
+.tech-subscribe-modal textarea {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  caret-color: #0f172a;
+  border-color: #d1d5db !important;
+  color-scheme: light;
+}
+
+.tech-subscribe-modal input::placeholder,
+.tech-subscribe-modal textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1;
+}
+
+.tech-subscribe-modal input:focus,
+.tech-subscribe-modal select:focus,
+.tech-subscribe-modal textarea:focus {
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25);
+}
+
+.tech-subscribe-modal input:-webkit-autofill,
+.tech-subscribe-modal input:-webkit-autofill:hover,
+.tech-subscribe-modal input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a;
+  caret-color: #0f172a;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  transition: background-color 9999s ease-out;
 }
 
 .app-layout-collapsed-brand {

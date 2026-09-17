@@ -1236,7 +1236,7 @@
   overflow: hidden;
   pointer-events: none;
   user-select: none;
-  opacity: 0.4;
+  opacity: 0.16;
 }
 
 .reg-mini-card__watermark polygon {
@@ -1267,7 +1267,7 @@ body.home-page-body .reg-mini-card:focus-visible .reg-mini-card__watermark polyg
 
 .reg-mini-card:hover .reg-mini-card__watermark,
 .reg-mini-card:focus-visible .reg-mini-card__watermark {
-  opacity: 0.36;
+  opacity: 0.14;
 }
 
 .home-preview-row__item .reg-mini-card-wrapper,

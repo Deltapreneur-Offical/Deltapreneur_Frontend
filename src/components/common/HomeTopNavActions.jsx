@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -15,29 +15,6 @@ import {
   SUPPORT_PHONE_TEL,
   WHATSAPP_URL,
 } from '../../config/contactLinks';
-
-const ProfileFlipAvatar = memo(function ProfileFlipAvatar({ flipped, userInitial }) {
-  return (
-    <div className="home-profile-flip-scene" aria-hidden="true">
-      <div className={`home-profile-flip-inner${flipped ? ' is-flipped' : ''}`}>
-        <div className="home-profile-flip-face home-profile-flip-face--front">
-          <img
-            src={cobrotherProfile}
-            alt=""
-            width={28}
-            height={28}
-            decoding="async"
-            className="home-profile-flip-icon"
-            draggable={false}
-          />
-        </div>
-        <div className="home-profile-flip-face home-profile-flip-face--back">
-          <span className="home-profile-flip-initial">{userInitial}</span>
-        </div>
-      </div>
-    </div>
-  );
-});
 
 function getUserInitialFromUser(user) {
   if (!user) return '';
@@ -107,7 +84,6 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
   const { t } = useTranslation();
   const { user, logout, refreshUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [showInitial, setShowInitial] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState(null);
@@ -188,21 +164,6 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
     }
   }, [profileDropdownOpen, refreshUser, userKey]);
 
-  useEffect(() => {
-    if (!userKey) {
-      setShowInitial(false);
-      return undefined;
-    }
-
-    const startFlip = setTimeout(() => setShowInitial(true), 1000);
-    const interval = setInterval(() => setShowInitial((prev) => !prev), 3000);
-
-    return () => {
-      clearTimeout(startFlip);
-      clearInterval(interval);
-    };
-  }, [userKey]);
-
   const handleLogoutConfirm = useCallback(async () => {
     setShowLogoutConfirm(false);
     setProfileDropdownOpen(false);
@@ -261,7 +222,9 @@ export default function HomeTopNavActions({ hideContactUs = false } = {}) {
           aria-expanded={profileDropdownOpen}
         >
           {userKey ? (
-            <ProfileFlipAvatar flipped={showInitial} userInitial={userInitial} />
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white" aria-hidden="true">
+              <span className="home-profile-flip-initial">{userInitial}</span>
+            </div>
           ) : (
             <div className="home-profile-flip-scene" aria-hidden="true">
               <div className="home-profile-flip-face home-profile-flip-face--front home-profile-flip-face--static">

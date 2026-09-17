@@ -208,7 +208,6 @@ export default function AppLayout({ children }) {
   const [clearingNotifs, setClearingNotifs] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profileMenuStyle, setProfileMenuStyle] = useState(null);
-  const [showInitial, setShowInitial] = useState(false);
   const [edgePoints, setEdgePoints] = useState(0);
   const [edgePointsWorthInr, setEdgePointsWorthInr] = useState(0);
   const vaCheckDoneRef = useRef(false);
@@ -245,17 +244,6 @@ export default function AppLayout({ children }) {
       zIndex: 10050,
     });
   }, []);
-
-  useEffect(() => {
-    const userKey = user?.id ?? user?.userId;
-    if (!userKey) {
-      setShowInitial(false);
-      return undefined;
-    }
-    const startFlip = setTimeout(() => setShowInitial(true), 1000);
-    const interval = setInterval(() => setShowInitial((prev) => !prev), 3000);
-    return () => { clearTimeout(startFlip); clearInterval(interval); };
-  }, [user?.id, user?.userId]);
 
   useEffect(() => {
     if (vaCheckDoneRef.current) return;
@@ -1000,23 +988,8 @@ export default function AppLayout({ children }) {
                 aria-expanded={profileMenuOpen}
                 aria-haspopup="menu"
               >
-                <div className="home-profile-flip-scene w-full h-full" aria-hidden="true">
-                  <div className={`home-profile-flip-inner${showInitial ? ' is-flipped' : ''} w-full h-full`}>
-                    <div className="home-profile-flip-face home-profile-flip-face--front flex items-center justify-center w-full h-full bg-white rounded-full overflow-hidden">
-                      <img
-                        src={CreatorIcon}
-                        alt=""
-                        width={36}
-                        height={36}
-                        decoding="async"
-                        className="w-[90%] h-[90%] object-contain"
-                        draggable={false}
-                      />
-                    </div>
-                    <div className="home-profile-flip-face home-profile-flip-face--back flex items-center justify-center w-full h-full rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold text-lg">
-                      <span className="home-profile-flip-initial">{displayName.charAt(0)}</span>
-                    </div>
-                  </div>
+                <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold text-lg" aria-hidden="true">
+                  {(displayName || 'U').trim().charAt(0).toUpperCase()}
                 </div>
               </button>
               {profileMenuOpen && profileMenuStyle &&
@@ -1031,6 +1004,10 @@ export default function AppLayout({ children }) {
                       key="profile-regional"
                       displayName={displayName}
                       email={user?.email}
+                      onLogout={() => {
+                        setProfileMenuOpen(false);
+                        setShowLogoutConfirm(true);
+                      }}
                     />
                   </div>,
                   document.body
@@ -1040,7 +1017,7 @@ export default function AppLayout({ children }) {
             {/* Desktop (xl+): language/currency in header + profile label */}
             <div className="hidden xl:flex items-center gap-2 pl-4 border-l border-gray-200 sm:gap-3">
               <div className="app-profile-avatar-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full aspect-square bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-semibold leading-none text-white">
-                {displayName.charAt(0)}
+                {(displayName || 'U').trim().charAt(0).toUpperCase()}
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-900">{displayName}</p>

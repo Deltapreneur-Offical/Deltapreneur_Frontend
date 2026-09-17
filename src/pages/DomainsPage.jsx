@@ -1160,15 +1160,15 @@ export default function DomainsPage() {
                   .domains-sync-layout .domain-search-card > .pr-9.space-y-2 > :not([hidden]) ~ :not([hidden]) {
                     margin-top: 0 !important;
                   }
-                  /* Price beside (1st Year); wrap suffix fully when the amount is long. */
+                  /* Price + /1st yr stay on one line so Add to Cart can align across cards. */
                   .domains-sync-layout .domain-search-card > .pr-9 > p.domain-card-price-line,
                   .domains-sync-layout .domain-search-card > .pr-9 > p.text-base,
                   .domains-sync-layout .domain-search-card .domain-search-card__price {
                     display: flex !important;
-                    flex-wrap: wrap !important;
+                    flex-wrap: nowrap !important;
                     align-items: baseline !important;
-                    column-gap: 0.25rem !important;
-                    row-gap: 0.15rem !important;
+                    column-gap: 0 !important;
+                    row-gap: 0 !important;
                     min-width: 0 !important;
                     max-width: 100% !important;
                     height: auto !important;
@@ -1179,11 +1179,11 @@ export default function DomainsPage() {
                     padding-bottom: 0.05rem !important;
                     font-size: 0.72rem !important;
                     line-height: 1.25 !important;
-                    white-space: normal !important;
-                    overflow: visible !important;
-                    text-overflow: clip !important;
+                    white-space: nowrap !important;
+                    overflow: hidden !important;
+                    text-overflow: ellipsis !important;
                     overflow-wrap: normal !important;
-                    word-break: normal !important;
+                    word-break: keep-all !important;
                     flex: 0 0 auto !important;
                   }
                   .domains-sync-layout .domain-search-card .domain-card-price-value,
@@ -1195,13 +1195,13 @@ export default function DomainsPage() {
                     overflow: visible !important;
                     text-overflow: clip !important;
                   }
-                  /* Never clip (1st Year) — wrap to next line instead. */
+                  /* Keep /1st yr attached to the amount. */
                   .domains-sync-layout .domain-search-card > .pr-9 > p .domain-card-year-suffix,
                   .domains-sync-layout .domain-search-card .domain-search-card__price > .domain-card-year-suffix {
-                    display: inline-block !important;
+                    display: inline !important;
                     flex: 0 0 auto !important;
                     margin-left: 0 !important;
-                    margin-top: 0.05rem !important;
+                    margin-top: 0 !important;
                     white-space: nowrap !important;
                     overflow: visible !important;
                     text-overflow: clip !important;
@@ -1217,7 +1217,7 @@ export default function DomainsPage() {
                     line-height: 1.25 !important;
                     color: #9ca3af !important;
                   }
-                  /* Little breathing room after (1st Year) before Renews at. */
+                  /* Little breathing room after the price line before Renews at. */
                   .domains-sync-layout .domain-search-card > .pr-9 > p.text-base + p,
                   .domains-sync-layout .domain-search-card > .pr-9 > .domain-card-gst-caption + p,
                   .domains-sync-layout .domain-search-card .domain-search-card__price + p,
@@ -1233,10 +1233,22 @@ export default function DomainsPage() {
                     width: 2rem !important;
                     height: 2rem !important;
                   }
-                  /* Keep Add to Cart close under renews — no large empty band above the button. */
+                  /* Delta cards: pin Add to Cart to the bottom. Listing cards stay tight. */
+                  .domains-sync-layout .domain-search-card:not(.domain-search-card--listing) > .mt-auto {
+                    margin-top: auto !important;
+                    margin-bottom: 0 !important;
+                    flex-shrink: 0 !important;
+                    padding-top: 0.75rem !important;
+                    padding-bottom: 0 !important;
+                    width: auto !important;
+                    max-width: 100% !important;
+                    min-width: 0 !important;
+                    box-sizing: border-box !important;
+                  }
+                  .domains-sync-layout .domain-search-card--listing > .mt-3,
+                  .domains-sync-layout .domain-search-card--listing > .pt-3,
                   .domains-sync-layout .domain-search-card > .mt-3,
-                  .domains-sync-layout .domain-search-card > .mt-3\\.5,
-                  .domains-sync-layout .domain-search-card > .mt-auto {
+                  .domains-sync-layout .domain-search-card > .mt-3\\.5 {
                     margin-top: 0.5rem !important;
                     margin-bottom: 0 !important;
                     flex-shrink: 0 !important;
@@ -1246,6 +1258,29 @@ export default function DomainsPage() {
                     max-width: 100% !important;
                     min-width: 0 !important;
                     box-sizing: border-box !important;
+                  }
+                  /*
+                   * Marketplace listing cards hug their footer so there is no empty
+                   * white band under Add to Cart / Put Auction. Delta cards keep the
+                   * shared 12rem height so Add to Cart stays aligned across that column.
+                   */
+                  .domains-sync-layout__cell--standard .domains-sync-layout__item {
+                    height: auto !important;
+                    max-height: none !important;
+                    align-items: flex-start;
+                  }
+                  .domains-sync-layout__cell--standard .domains-sync-layout__item > *,
+                  .domains-sync-layout .listing-card-glow-shell:has(.domain-search-card--listing) {
+                    height: auto !important;
+                    min-height: 0 !important;
+                    max-height: none !important;
+                    flex: 0 0 auto !important;
+                  }
+                  .domains-sync-layout .listing-card-glow-shell:has(.domain-search-card--listing) > *,
+                  .domains-sync-layout .domain-search-card--listing {
+                    height: auto !important;
+                    max-height: none !important;
+                    flex: 0 0 auto !important;
                   }
                   /* Add to Cart stays content-sized; In Cart + delete still fit inside the card. */
                   .domains-sync-layout .domain-search-card > .mt-3 > div,

@@ -81,11 +81,12 @@ describe('VentureListingCard homepage Ventures layout', () => {
     expect(queryByText('Ownership Liquidation')).not.toBeInTheDocument();
   });
 
-  it('hides offers and uses Offer Price only for homepage Ventures cards', () => {
+  it('hides offers and uses Offer only for homepage Ventures cards', () => {
     const { getByText, queryByText } = renderVentureCard({ homepageVentureContentOnly: true });
 
     expect(queryByText('3 Offers')).not.toBeInTheDocument();
-    expect(getByText(/Offer Price/i)).toBeInTheDocument();
+    expect(getByText('Offer')).toBeInTheDocument();
+    expect(queryByText(/Offer Price/i)).not.toBeInTheDocument();
     expect(queryByText(/Asking Price/i)).not.toBeInTheDocument();
   });
 
@@ -110,7 +111,7 @@ describe('VentureListingCard homepage Ventures layout', () => {
     expect(queryByText('Ecommerce')).not.toBeInTheDocument();
     expect(queryByText('Investment Seeking')).not.toBeInTheDocument();
     expect(queryByText('1 Applicant')).not.toBeInTheDocument();
-    expect(getByText(/Investment/i)).toBeInTheDocument();
+    expect(getByText('Apply')).toBeInTheDocument();
     expect(queryByText(/Offer Price/i)).not.toBeInTheDocument();
   });
 });

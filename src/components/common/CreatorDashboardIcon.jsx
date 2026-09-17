@@ -1,4 +1,4 @@
-import deltapreneursIcon from '../../assets/Deltapreneurs_icon.png';
+import deltapreneurFavicon from '../../assets/Deltapreneur_favicon.png';
 
 export default function CreatorDashboardIcon({ size = 24, className = '', strokeWidth: _ignored, ...props }) {
   return (
@@ -9,7 +9,7 @@ export default function CreatorDashboardIcon({ size = 24, className = '', stroke
       {...props}
     >
       <img
-        src={deltapreneursIcon}
+        src={deltapreneurFavicon}
         alt=""
         className="dashboard-creator-icon__img"
       />

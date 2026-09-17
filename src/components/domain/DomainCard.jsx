@@ -13,6 +13,17 @@ function positiveMoney(value) {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+function DomainPriceYearSuffix({ isPremium, className }) {
+  if (isPremium) {
+    return (
+      <span className={`domain-card-year-suffix ${className}`}>
+        /1<sup>st</sup> yr
+      </span>
+    );
+  }
+  return <span className={`domain-card-year-suffix ${className}`}>/yr</span>;
+}
+
 /**
  * Normalize any discovery-source item into the shared DomainCard shape.
  * Cart unit is always INR ex-GST (commission baked in). Display uses the
@@ -166,7 +177,7 @@ export default function DomainCard({
   const priceText =
     item.displayPriceInr != null ? formatDomainPrice(item.displayPriceInr) : null;
   const priceYearSuffix = item.isPremium
-    ? t('domainCardFirstYearSuffix', { defaultValue: ' (1st Year)' })
+    ? t('domainCardFirstYearSuffix', { defaultValue: '/1st yr' })
     : t('domainCardYearSuffix', { defaultValue: '/yr' });
   const priceTitle = priceText ? `${priceText}${priceYearSuffix}` : undefined;
   const renewalText =
@@ -186,7 +197,7 @@ export default function DomainCard({
   if (featured) {
     return (
       <div
-        className={`domain-search-card domain-search-card--featured relative rounded-2xl border p-4 sm:p-5 transition-all duration-200 ${
+        className={`domain-search-card domain-search-card--featured relative flex h-full min-h-0 flex-col rounded-2xl border p-4 sm:p-5 transition-all duration-200 ${
           item.available
             ? item.isPremium
               ? 'border-amber-300 ring-1 ring-amber-200/70 bg-gradient-to-br from-amber-50/50 via-white to-white shadow-[0_0_0_1px_rgba(251,191,36,0.2),0_8px_28px_rgba(180,83,9,0.1),0_0_24px_rgba(251,191,36,0.12)]'
@@ -205,7 +216,7 @@ export default function DomainCard({
             />
           </div>
         ) : null}
-        <div className="pr-10 space-y-2">
+        <div className="pr-10 space-y-2 flex-1 min-w-0">
           <div className={stackPremiumBadge && item.isPremium ? 'flex flex-col items-start gap-1' : 'flex flex-wrap items-center gap-2'}>
             {!hideAvailabilityBadge ? <StatusBadge status={item.status} /> : null}
             {item.isPremium ? <RegistryPremiumBadge /> : item.available ? <RegistryStandardBadge /> : null}
@@ -227,12 +238,12 @@ export default function DomainCard({
           {priceText ? (
             <>
               <p
-                className="domain-card-price-line text-xl sm:text-2xl font-extrabold text-gray-950 leading-none"
+                className="domain-card-price-line text-xl sm:text-2xl font-extrabold text-gray-950 leading-none whitespace-nowrap"
                 translate="no"
                 title={priceTitle}
               >
                 <span className="domain-card-price-value">{priceText}</span>
-                <span className="domain-card-year-suffix text-xs font-medium text-gray-400 ml-1.5">{priceYearSuffix}</span>
+                <DomainPriceYearSuffix isPremium={item.isPremium} className="text-xs font-medium text-gray-400" />
               </p>
               <GstIncludedCaption show={!hideGstCaption && item.gstIncluded} />
             </>
@@ -257,7 +268,7 @@ export default function DomainCard({
             </div>
           )}
         </div>
-        <div className="mt-3.5 flex flex-wrap items-center gap-2">
+        <div className="mt-auto pt-3.5 flex flex-wrap items-center gap-2">
           {cartProps ? (
             <AddToCartButton
               {...cartProps}
@@ -284,7 +295,7 @@ export default function DomainCard({
 
   return (
     <div
-      className={`domain-search-card relative flex flex-col border rounded-2xl p-4 hover:-translate-y-0.5 transition-all duration-200 ${
+      className={`domain-search-card relative flex h-full min-h-0 flex-col border rounded-2xl p-4 hover:-translate-y-0.5 transition-all duration-200 ${
         item.available
           ? item.isPremium
             ? 'border-amber-200 ring-1 ring-amber-100 bg-gradient-to-br from-amber-50/40 via-white to-white shadow-[0_0_0_1px_rgba(251,191,36,0.18),0_8px_24px_rgba(180,83,9,0.08),0_0_20px_rgba(251,191,36,0.1)] hover:shadow-[0_0_0_1px_rgba(251,191,36,0.28),0_10px_28px_rgba(180,83,9,0.12),0_0_28px_rgba(251,191,36,0.16)]'
@@ -303,7 +314,7 @@ export default function DomainCard({
           />
         </div>
       ) : null}
-      <div className="pr-9 space-y-1.5">
+      <div className="pr-9 space-y-1.5 flex-1 min-w-0">
         <div className={stackPremiumBadge && item.isPremium ? 'flex flex-col items-start gap-1' : 'flex flex-wrap items-center gap-1.5'}>
           {!hideAvailabilityBadge ? <StatusBadge status={item.status} /> : null}
           {item.isPremium ? <RegistryPremiumBadge /> : item.available ? <RegistryStandardBadge /> : null}
@@ -325,12 +336,12 @@ export default function DomainCard({
         {priceText ? (
           <>
             <p
-              className="domain-card-price-line text-base font-extrabold text-gray-950 leading-none pt-0.5"
+              className="domain-card-price-line text-base font-extrabold text-gray-950 leading-none pt-0.5 whitespace-nowrap"
               translate="no"
               title={priceTitle}
             >
               <span className="domain-card-price-value">{priceText}</span>
-              <span className="domain-card-year-suffix text-[11px] font-medium text-gray-400 ml-1">{priceYearSuffix}</span>
+              <DomainPriceYearSuffix isPremium={item.isPremium} className="text-[11px] font-medium text-gray-400" />
             </p>
             <GstIncludedCaption show={!hideGstCaption && item.gstIncluded} />
           </>
@@ -355,7 +366,7 @@ export default function DomainCard({
           </div>
         )}
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="mt-auto pt-3 flex flex-wrap items-center gap-2">
         {cartProps ? (
           <AddToCartButton
             {...cartProps}

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
-  ArrowLeft, ExternalLink, DollarSign, PieChart, Eye, Users, 
-  BarChart2, Target, AlertCircle, User, Mail, Phone, Briefcase, PlayCircle, MapPin
+  ArrowLeft, ExternalLink, Users, 
+  BarChart2, Target, AlertCircle, User, Mail, Phone, Briefcase, PlayCircle
 } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -11,6 +11,7 @@ import EditActionLabel from '../components/common/EditActionLabel';
 import CoVentureModal from '../components/venture/CoVentureModal';
 import VentureBidModal from '../components/venture/VentureBidModal';
 import VentureCompanyProfileSummary from '../components/venture/VentureCompanyProfileSummary';
+import VentureImageCtaButton from '../components/venture/VentureImageCtaButton';
 import VentureListingTypeBadge from '../components/listings/VentureListingTypeBadge';
 import { coVentureAPI, ventureAPI, ventureDealAPI, venturePitchAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -346,43 +347,31 @@ export default function VentureDetailPage() {
 
               {/* Price & Equity Cards */}
               {(sellerAsk.price || sellerAsk.equityLabel) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {sellerAsk.price ? (
-                    <div className="relative overflow-hidden rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50/50 p-6 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <DollarSign className="w-24 h-24 text-sky-600" />
+                    <div className="rounded-xl border border-sky-100 bg-gradient-to-br from-white to-sky-50/50 px-4 py-3 shadow-sm">
+                      <div className="flex items-center gap-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-sky-600 mb-1">
+                        {t('ventureDetailAskingPrice', 'Asking price')}
                       </div>
-                      <div className="relative">
-                        <div className="flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest text-sky-600 mb-2">
-                          <DollarSign className="w-4 h-4" />
-                          {t('ventureDetailAskingPrice', 'Asking price')}
-                        </div>
-                        <div className="text-3xl sm:text-4xl font-extrabold text-sky-950 tracking-tight">
-                          {formatVentureAskingPrice(sellerAsk.price, formatPrice)}
-                        </div>
+                      <div className="text-xl sm:text-2xl font-extrabold text-sky-950 tracking-tight leading-tight">
+                        {formatVentureAskingPrice(sellerAsk.price, formatPrice)}
                       </div>
                     </div>
                   ) : null}
                   
                   {sellerAsk.equityLabel ? (
-                    <div className="relative overflow-hidden rounded-2xl border border-purple-100 bg-gradient-to-br from-white to-purple-50/50 p-6 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <PieChart className="w-24 h-24 text-purple-600" />
+                    <div className="rounded-xl border border-purple-100 bg-gradient-to-br from-white to-purple-50/50 px-4 py-3 shadow-sm">
+                      <div className="flex items-center gap-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-purple-600 mb-1">
+                        {t('ventureDetailEquityOffered', 'Equity offered')}
                       </div>
-                      <div className="relative">
-                        <div className="flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest text-purple-600 mb-2">
-                          <PieChart className="w-4 h-4" />
-                          {t('ventureDetailEquityOffered', 'Equity offered')}
-                        </div>
-                        <div className="text-3xl sm:text-4xl font-extrabold text-purple-950 tracking-tight mb-1">
-                          {sellerAsk.equityLabel}
-                        </div>
-                        {sellerAsk.dealTypeLabel ? (
-                          <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-purple-100 text-purple-800 text-xs font-semibold">
-                            {sellerAsk.dealTypeLabel}
-                          </div>
-                        ) : null}
+                      <div className="text-xl sm:text-2xl font-extrabold text-purple-950 tracking-tight leading-tight">
+                        {sellerAsk.equityLabel}
                       </div>
+                      {sellerAsk.dealTypeLabel ? (
+                        <div className="inline-flex items-center mt-1.5 px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 text-[11px] font-semibold">
+                          {sellerAsk.dealTypeLabel}
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
@@ -509,6 +498,12 @@ export default function VentureDetailPage() {
               >
                 {t('ventureDetailContinuePurchase', 'Continue purchase')}
               </button>
+            ) : canSubmit && !hasApplied && (isCoVenture || !isFullAcquisition) ? (
+              <VentureImageCtaButton
+                kind={isCoVenture ? 'apply' : 'pitch'}
+                label={isCoVenture ? t('ventureDetailApplyPartner', 'Apply as Partner') : ctaLabel}
+                onClick={handleBuyerAction}
+              />
             ) : (
               <button
                 type="button"
@@ -516,9 +511,7 @@ export default function VentureDetailPage() {
                   hasApplied
                     ? 'w-full sm:w-auto px-6 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-[0.95rem] font-bold cursor-not-allowed shadow-sm'
                     : canSubmit
-                      ? isCoVenture
-                        ? 'w-full sm:w-auto px-8 py-3.5 bg-teal-600 hover:bg-teal-700 text-white rounded-full text-[0.95rem] font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border border-teal-500'
-                        : 'w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-[0.95rem] font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border border-indigo-500'
+                      ? 'w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-[0.95rem] font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border border-indigo-500'
                       : 'w-full sm:w-auto px-6 py-3 bg-gray-100 border border-gray-200 text-gray-400 rounded-full text-[0.95rem] font-bold cursor-not-allowed shadow-sm'
                 }
                 onClick={canSubmit && !hasApplied ? handleBuyerAction : undefined}
@@ -526,7 +519,7 @@ export default function VentureDetailPage() {
               >
                 {hasApplied
                   ? (isCoVenture ? t('listingCardApplied', 'Applied') : t('listingCardPitched', 'Submitted'))
-                  : (isCoVenture ? t('ventureDetailApplyPartner', 'Apply as Partner') : `${ctaLabel} →`)}
+                  : `${ctaLabel} →`}
               </button>
             )}
           </div>

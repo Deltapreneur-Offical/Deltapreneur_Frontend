@@ -451,7 +451,7 @@ export default function DomainListingCard({
 
     return (
       <div
-        className={`domain-search-card domain-search-card--listing relative flex h-full min-w-0 w-full flex-col border rounded-2xl p-4 sm:p-5 hover:-translate-y-0.5 transition-all duration-200 border-sky-200 ring-1 ring-sky-100 bg-gradient-to-br from-sky-50/40 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.2),0_8px_24px_rgba(2,132,199,0.08),0_0_20px_rgba(56,189,248,0.12)] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.3),0_10px_28px_rgba(2,132,199,0.12),0_0_28px_rgba(56,189,248,0.18)]${ownerMenuOpen ? ' is-owner-menu-open overflow-visible' : ' overflow-hidden'}`}
+        className={`domain-search-card domain-search-card--listing relative flex min-h-0 w-full flex-col border rounded-2xl p-4 sm:p-5 hover:-translate-y-0.5 transition-all duration-200 border-sky-200 ring-1 ring-sky-100 bg-gradient-to-br from-sky-50/40 via-white to-white shadow-[0_0_0_1px_rgba(125,211,252,0.2),0_8px_24px_rgba(2,132,199,0.08),0_0_20px_rgba(56,189,248,0.12)] hover:shadow-[0_0_0_1px_rgba(125,211,252,0.3),0_10px_28px_rgba(2,132,199,0.12),0_0_28px_rgba(56,189,248,0.18)]${ownerMenuOpen ? ' is-owner-menu-open overflow-visible' : ' overflow-hidden'}`}
         onClick={interactive ? handleCardClick : undefined}
         role={interactive ? 'button' : undefined}
         tabIndex={interactive ? 0 : undefined}
@@ -492,7 +492,7 @@ export default function DomainListingCard({
         </div>
 
         {/* Content: badges + domain + price — matches DomainCard structure */}
-        <div className="pr-9 min-w-0 flex-1 space-y-1.5">
+        <div className="pr-9 min-w-0 space-y-1.5">
           {/* Badges row — extra pb matches Premium card's renewal text spacing */}
           <div className="flex flex-wrap items-center gap-1.5 pb-1.5 min-w-0">
             {/* Marketplace cards (Home + Domains): ✦ DOMAIN only — no ✓ AVAILABLE */}
@@ -527,7 +527,7 @@ export default function DomainListingCard({
         </div>
 
         {/* Bottom: pencil | Put Auction (auction label gets remaining width) */}
-        <div className="mt-auto pt-3">
+        <div className="pt-3">
           {isOwner ? (
             (() => {
               const hasAdminActions = canUseAdminMenu;

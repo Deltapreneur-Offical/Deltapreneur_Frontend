@@ -132,8 +132,8 @@ export default function TechnologySection() {
         ) : null}
 
         {/* 2. Featured Technology Services Catalogue */}
-        <div>
-          <div className="flex items-center justify-between mb-6 px-4 sm:px-6 lg:px-8">
+        <div className="home-deltaos-services px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-6">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500/10 to-orange-600/10 px-3 py-1 text-xs font-semibold text-orange-600 mb-1 border border-orange-100">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -153,6 +153,7 @@ export default function TechnologySection() {
           </div>
 
           <HomeCardsNavRow
+            className="home-deltaos-services-nav"
             accent="technology"
             ariaLabel="Technology Register"
             viewAllTo="/technology"

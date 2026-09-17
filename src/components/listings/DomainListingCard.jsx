@@ -518,7 +518,7 @@ export default function DomainListingCard({
                 <span className="domain-search-card__price-value">{priceText}</span>
               </p>
               <p className="text-[11px] font-medium text-gray-400 leading-snug pt-0.5">
-                Renews at ₹{browseMode ? '1,159' : '1,430.18'}/yr
+                Renews at ₹1,159/yr
               </p>
             </>
           ) : (

@@ -1243,6 +1243,20 @@
   fill: #f9d9c8;
 }
 
+body.home-page-body .reg-mini-card__watermark polygon {
+  fill: #fdeee5;
+}
+
+body.home-page-body .reg-mini-card:hover .reg-mini-card__watermark,
+body.home-page-body .reg-mini-card:focus-visible .reg-mini-card__watermark {
+  opacity: 0.4;
+}
+
+body.home-page-body .reg-mini-card:hover .reg-mini-card__watermark polygon,
+body.home-page-body .reg-mini-card:focus-visible .reg-mini-card__watermark polygon {
+  fill: #f9d9c8;
+}
+
 .reg-mini-card:hover,
 .reg-mini-card:focus-visible {
   transform: translateY(-4px);

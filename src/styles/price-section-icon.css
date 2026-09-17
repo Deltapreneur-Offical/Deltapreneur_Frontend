@@ -204,3 +204,36 @@ body.home-page-body .home-auto-scroll-row__item:hover .home-preview-card-border-
 .venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible .price-section-v-icon {
   filter: brightness(0) saturate(100%) invert(57%) sepia(54%) saturate(681%) hue-rotate(130deg) brightness(98%) contrast(92%) !important;
 }
+
+/* Homepage Delta Ventures only: orange investment pill and play arrow. */
+body.home-page-body .home-coventures-section .home-preview-row .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-box,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-box,
+body.home-page-body .home-coventures-section .home-preview-row .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-box--coventure,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-box--coventure,
+body.home-page-body .home-coventures-section .home-preview-row .home-preview-card-border--coventure:hover .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-box,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .home-preview-card-border--coventure:hover .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-box,
+body.home-page-body .home-coventures-section .home-preview-row .home-preview-card-border--coventure:hover .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-box--coventure,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .home-preview-card-border--coventure:hover .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-box--coventure {
+  border: 1.5px solid #FF7A1A !important;
+  background: #FFFFFF !important;
+  background-image: none !important;
+  background-origin: border-box !important;
+  background-clip: border-box !important;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.10) !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-cta,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-cta:hover,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible {
+  color: #F97316 !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .price-section-v-icon,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure:hover .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .price-section-v-icon,
+body.home-page-body .home-coventures-section .home-preview-row__item:hover .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .price-section-v-icon,
+body.home-page-body .home-coventures-section .home-auto-scroll-row__item:hover .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .price-section-v-icon,
+body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content.venture-listing-card--coventure:hover .price-section-v-icon,
+body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-cta:hover .price-section-v-icon,
+body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible .price-section-v-icon {
+  filter: brightness(0) saturate(100%) invert(53%) sepia(94%) saturate(2542%) hue-rotate(349deg) brightness(101%) contrast(95%) !important;
+}

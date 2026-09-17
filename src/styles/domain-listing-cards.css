@@ -60,8 +60,7 @@
   font-family: 'Saira Stencil', sans-serif !important;
   font-size: 2.15rem;
   /* slightly smaller */
-  font-weight: 500;
-  /* less heavy */
+  font-weight: 700;
   letter-spacing: 0.6px;
   /* cleaner spacing */
   line-height: 1.2;
@@ -1738,7 +1737,7 @@
 .venture-listing-card__title {
   font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
   font-size: 1.0625rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.01em;
   color: #1e293b;
   line-height: 1.2;
@@ -2188,6 +2187,7 @@
 
 .domain-search-card--listing .domain-search-card__name {
   font-size: 1.1rem;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -26,11 +26,11 @@
 }
 
 .home-cards-nav-wrap--coventure {
-  --home-nav-accent: #0F766E;
-  --home-nav-accent-soft: #F0FDFA;
-  --home-nav-border: #5EEAD4;
-  --home-nav-hover-border: #14B8A6;
-  --home-nav-pulse: rgba(20, 184, 166, 0.45);
+  --home-nav-accent: #F97316;
+  --home-nav-accent-soft: #FFF7ED;
+  --home-nav-border: #FED7AA;
+  --home-nav-hover-border: #FF7A1A;
+  --home-nav-pulse: rgba(249, 115, 22, 0.45);
 }
 
 .home-cards-nav-wrap--auction {

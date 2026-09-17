@@ -109,12 +109,12 @@ export default function Home() {
 
 
 
-      <div className="home-hero-search-stack relative z-10 overflow-visible">
+      <div className="home-hero-search-stack relative z-0 overflow-visible">
         <HeroGlow />
       </div>
 
       {/* Sticky search bar — persists across all page sections while scrolling */}
-      <div className="hero-search-sticky-wrapper px-4 sm:px-6 md:px-8 lg:px-8">
+      <div className="hero-search-sticky-wrapper relative z-20 px-4 sm:px-6 md:px-8 lg:px-8">
         <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <div className="w-full">
             <DomainSearchBar embedded className="mt-7 sm:mt-8 lg:mt-3" />

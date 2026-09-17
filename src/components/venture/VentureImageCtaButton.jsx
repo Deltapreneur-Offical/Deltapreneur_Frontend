@@ -17,7 +17,7 @@ export default function VentureImageCtaButton({
   return (
     <button
       type="button"
-      className={`venture-image-cta ${className}`.trim()}
+      className={`venture-image-cta venture-image-cta--${kind === 'apply' ? 'apply' : 'pitch'} ${className}`.trim()}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
       aria-label={label}

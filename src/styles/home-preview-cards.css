@@ -2441,19 +2441,19 @@
   outline: none;
 }
 
-/* Delta Ventures — teal View All button */
+/* Delta Ventures — saffron View All button */
 .home-section-header--coventure .home-section-header__view-all {
-  background: #F0FDFA;
-  border-color: #14B8A6;
-  color: #0F766E;
+  background: #FFF7ED;
+  border-color: #FF7A1A;
+  color: #C2410C;
 }
 
 .home-section-header--coventure .home-section-header__view-all:hover,
 .home-section-header--coventure .home-section-header__view-all:focus-visible {
-  background: #CCFBF1;
-  border-color: #0F766E;
-  color: #115E59;
-  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.16);
+  background: #FFEDD5;
+  border-color: #F97316;
+  color: #9A3412;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.16);
   transform: translateY(-1px);
   outline: none;
 }
@@ -3695,13 +3695,17 @@
   width: auto;
   max-width: 100%;
   margin-bottom: 0;
+  transform: translateY(-0.12rem);
 }
 
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title-row,
 .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title-row {
   order: 2;
-  min-height: 0 !important;
+  height: 1.63rem !important;
+  min-height: 1.63rem !important;
+  max-height: 1.63rem !important;
   margin: 0;
+  overflow: hidden;
 }
 
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title,
@@ -3733,6 +3737,11 @@
   margin-top: 0.05rem;
 }
 
+.home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-value,
+.home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-value {
+  margin-top: 0.14rem;
+}
+
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row,
 .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row {
   order: 5;
@@ -3742,6 +3751,8 @@
   min-height: 2.38rem;
   max-height: 2.38rem;
   margin-top: 0;
+  box-sizing: border-box;
+  transform: translateY(-0.12rem);
 }
 
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__stats-footer,

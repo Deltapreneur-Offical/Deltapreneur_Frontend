@@ -9,20 +9,20 @@
    COOL PREMIUM THEME — shared tokens (matches finalized Domains styling)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Co-Ventures (Delta Ventures) — lime → mint green from brand swatch */
+/* Co-Ventures (Delta Ventures) — solid dark teal */
 .home-preview-card-border--coventure {
-  --home-card-border: #1ED891;
-  --home-card-border-hover: #1ED891;
-  --home-card-shadow: rgba(30, 216, 145, 0.12);
-  --home-card-shadow-hover: rgba(30, 216, 145, 0.20);
+  --home-card-border: #0F766E;
+  --home-card-border-hover: #0F766E;
+  --home-card-shadow: rgba(20, 184, 166, 0.12);
+  --home-card-shadow-hover: rgba(15, 118, 110, 0.20);
   --home-card-price-bg: #FFFFFF;
-  --home-card-price-border: #1ED891;
-  --home-card-price-border-hover: #1ED891;
-  --home-card-price-shadow-hover: rgba(30, 216, 145, 0.10);
+  --home-card-price-border: #14B8A6;
+  --home-card-price-border-hover: #14B8A6;
+  --home-card-price-shadow-hover: rgba(20, 184, 166, 0.10);
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
+    linear-gradient(#0F766E, #0F766E) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
 }
@@ -81,13 +81,13 @@
   color: #c2410c !important;
 }
 
-/* ─── 2. Co-Ventures (Delta Ventures) — lime-mint banner + white body ─── */
+/* ─── 2. Co-Ventures (Delta Ventures) — teal banner + white body ─── */
 .home-preview-card-border--coventure .venture-listing-card__cover-fallback {
-  background: linear-gradient(180deg, #F3FDE8 0%, #E7F9D6 100%) !important;
+  background: linear-gradient(180deg, #F0FDFA 0%, #CCFBF1 100%) !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card__cover-title-marquee.domain-listing-card__cover-fallback-domain {
-  color: #147A43 !important;
+  color: #0F766E !important;
   text-shadow: none !important;
 }
 
@@ -114,9 +114,9 @@
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__badges > span,
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__badges span {
-  border-color: #1ED891 !important;
-  background: #F3FDE8 !important;
-  color: #147A43 !important;
+  border-color: #14B8A6 !important;
+  background: #F0FDFA !important;
+  color: #0F766E !important;
   font-size: 0.65rem !important;
   padding: 0.2rem 0.6rem !important;
   height: 1.5rem !important;
@@ -133,28 +133,28 @@
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box--coventure {
-  border: 2px solid transparent !important;
+  border: 1px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
+    linear-gradient(#14B8A6, #14B8A6) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow: none !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta {
-  color: #1ED891 !important;
+  color: #14B8A6 !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:hover,
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible {
-  color: #147A43 !important;
+  color: #0F766E !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta,
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:hover,
 .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta:focus-visible {
-  color: #1ED891 !important;
+  color: #14B8A6 !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__metric--role {
@@ -162,14 +162,16 @@
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__equity-badge {
-  border-color: #1ED891 !important;
-  background: #F3FDE8 !important;
-  color: #147A43 !important;
+  border: 1px solid #14B8A6 !important;
+  border-color: #14B8A6 !important;
+  background: #F0FDFA !important;
+  color: #14B8A6 !important;
+  box-shadow: none !important;
 }
 
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__equity-badge-icon,
 .home-preview-card-border--coventure .venture-listing-card--coventure .venture-listing-card__equity-badge-value {
-  color: #147A43 !important;
+  color: #14B8A6 !important;
 }
 
 /* Equity badge size */
@@ -182,10 +184,10 @@
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
+    linear-gradient(#0F766E, #0F766E) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 12px 28px rgba(30, 216, 145, 0.20) !important;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.20) !important;
 }
 
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__body {
@@ -194,17 +196,18 @@
 
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box,
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box--coventure {
+  border: 1px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(90deg, #BEF38A 0%, #6EE68B 50%, #1ED891 100%) border-box !important;
+    linear-gradient(#14B8A6, #14B8A6) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 0 1px rgba(30, 216, 145, 0.22), 0 6px 16px rgba(30, 216, 145, 0.16) !important;
+  box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.22), 0 6px 16px rgba(15, 118, 110, 0.16) !important;
 }
 
 .home-preview-card-border--coventure:hover .venture-listing-card--coventure .venture-listing-card__equity-badge {
   background: #FFFFFF !important;
-  border-color: #1ED891 !important;
+  border-color: #14B8A6 !important;
 }
 
 /* ─── 3. Technologies — saffron premium (shell tokens only) ─── */

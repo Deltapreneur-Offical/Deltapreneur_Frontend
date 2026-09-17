@@ -106,6 +106,26 @@ describe('DomainListingCard marketplace owner footer', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  it('keeps the admin menu on the card when the page scroller moves', () => {
+    authMock.user = { id: 'admin-1', role: 'ADMIN' };
+    renderOwnerCard({
+      browseMode: false,
+      onEdit: vi.fn(),
+      onDelete: vi.fn(),
+      onPutForAuction: vi.fn(),
+    });
+
+    fireEvent.click(screen.getByTitle('Edit'));
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+
+    const scrollRoot = document.createElement('div');
+    scrollRoot.setAttribute('data-app-layout-scroll', '');
+    document.body.appendChild(scrollRoot);
+    fireEvent.scroll(scrollRoot);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    scrollRoot.remove();
+  });
+
   it('shows a single Your listing label on homepage browse cards', () => {
     authMock.user = { id: 'owner-1' };
     renderOwnerCard();

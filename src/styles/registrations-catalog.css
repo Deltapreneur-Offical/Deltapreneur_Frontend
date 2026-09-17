@@ -1236,10 +1236,24 @@
   overflow: hidden;
   pointer-events: none;
   user-select: none;
-  opacity: 0.4;
+  opacity: 0.16;
 }
 
 .reg-mini-card__watermark polygon {
+  fill: #f9d9c8;
+}
+
+body.home-page-body .reg-mini-card__watermark polygon {
+  fill: #fdeee5;
+}
+
+body.home-page-body .reg-mini-card:hover .reg-mini-card__watermark,
+body.home-page-body .reg-mini-card:focus-visible .reg-mini-card__watermark {
+  opacity: 0.4;
+}
+
+body.home-page-body .reg-mini-card:hover .reg-mini-card__watermark polygon,
+body.home-page-body .reg-mini-card:focus-visible .reg-mini-card__watermark polygon {
   fill: #f9d9c8;
 }
 
@@ -1253,7 +1267,7 @@
 
 .reg-mini-card:hover .reg-mini-card__watermark,
 .reg-mini-card:focus-visible .reg-mini-card__watermark {
-  opacity: 0.36;
+  opacity: 0.14;
 }
 
 .home-preview-row__item .reg-mini-card-wrapper,
@@ -1681,6 +1695,8 @@
   border: 1px solid #e2e8f0;
   background: #fff;
   color: #334155;
+  text-decoration: none;
+  box-sizing: border-box;
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
   transform: translateY(-50%);
   cursor: pointer;

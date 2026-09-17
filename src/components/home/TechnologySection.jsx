@@ -105,6 +105,7 @@ export default function TechnologySection() {
             <HomeCardsNavRow
               accent="technology"
               ariaLabel={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}
+              viewAllTo="/technology"
             >
               {Array.from({ length: 4 }).map((_, i) => (
                 <HomePreviewRowItem key={`software-skel-${i}`}>
@@ -119,8 +120,7 @@ export default function TechnologySection() {
             <HomeCardsNavRow
               accent="technology"
               ariaLabel={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}
-              hasMore={softwareReveal.hasMore}
-              onRevealMore={softwareReveal.revealMore}
+              viewAllTo="/technology"
             >
               {softwareReveal.visible.map((item) => (
                 <HomePreviewRowItem key={item.id}>
@@ -156,8 +156,7 @@ export default function TechnologySection() {
             className="home-deltaos-services-nav"
             accent="technology"
             ariaLabel="Technology Register"
-            hasMore={serviceReveal.hasMore}
-            onRevealMore={serviceReveal.revealMore}
+            viewAllTo="/technology"
           >
             {servicesLoading
               ? Array.from({ length: 4 }).map((_, i) => (

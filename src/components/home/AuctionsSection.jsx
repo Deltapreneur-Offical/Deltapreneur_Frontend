@@ -38,6 +38,7 @@ function AuctionPreviewCard({ auction, onView, likeState, onLike }) {
         onView={onView}
         likeState={likeState}
         onLike={onLike}
+        homepageAuctionContentOnly
       />
     </HomePreviewCardShell>
   );
@@ -287,7 +288,7 @@ export default function AuctionsSection() {
   const domainLikes = useLikes('DOMAIN', domainLikeItems);
   const communityLikes = useLikes('COMMUNITY', communityLikeItems);
   const softwareLikes = useLikes('SOFTWARE', softwareLikeItems);
-  const { visible, hasMore, revealMore } = useHomepageCardReveal(displayAuctions);
+  const { visible } = useHomepageCardReveal(displayAuctions);
 
   const getAuctionLike = useCallback((auction) => {
     const target = resolveHomeAuctionLikeTarget(auction);
@@ -316,7 +317,7 @@ export default function AuctionsSection() {
   }
 
   return (
-    <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
+    <section className="home-auctions-section bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader
           title={t('homeRegistryAuctions', { defaultValue: 'Auctions' })}
@@ -330,8 +331,7 @@ export default function AuctionsSection() {
           <HomeCardsNavRow
             accent="auction"
             ariaLabel={t('homeRegistryAuctions', { defaultValue: 'Auctions' })}
-            hasMore={hasMore}
-            onRevealMore={revealMore}
+            viewAllTo="/auctions"
           >
             {visible.map((auction) => (
               <HomePreviewRowItem key={`${auction.category}-${auction.id}`}>

@@ -366,6 +366,20 @@ body.app-layout-body .dash-card.card-glow-hover:hover {
     0 20px 44px rgba(15, 23, 42, 0.12) !important;
 }
 
+/* Delta Ventures marketplace cards — no hover border/ring */
+body.app-layout-body .venture-listing-grid .venture-listing-card--coventure.card-glow-hover:hover,
+body.app-layout-body .venture-listing-grid .venture-listing-card--coventure.card-glow-hover:hover:not(.creator-profile-card),
+body.app-layout-body .venture-listing-grid .venture-listing-card--coventure.card-glow-hover:hover:not(.creator-profile-card):not(.virtual-assistant-listing-card) {
+  border: none !important;
+  border-width: 0 !important;
+  border-color: transparent !important;
+  outline: none !important;
+  background: #F0FDFA !important;
+  background-color: #F0FDFA !important;
+  background-image: none !important;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.16) !important;
+}
+
 body.app-layout-body .dashboard-welcome-hero {
   background: linear-gradient(135deg, #C2410C 0%, #9A3412 52%, #7C2D12 100%) !important;
 }

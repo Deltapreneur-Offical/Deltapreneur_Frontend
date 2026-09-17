@@ -39,7 +39,7 @@ export default function VenturesSection() {
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', ventures);
-  const { visible, hasMore, revealMore } = useHomepageCardReveal(ventures);
+  const { visible } = useHomepageCardReveal(ventures);
 
   const handleViewDetails = (ventureId) => {
     navigateToListingDetail(navigate, 'venture', ventureId);
@@ -51,6 +51,7 @@ export default function VenturesSection() {
         venture={venture}
         browseMode
         compact
+        homepageVentureContentOnly
         likeState={getLike(venture.id)}
         onLike={() => toggleLike(venture.id)}
         onView={() => handleViewDetails(venture.id)}
@@ -70,7 +71,7 @@ export default function VenturesSection() {
   }
 
   return (
-    <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
+    <section className="home-ventures-section bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader
           title={t('homeVentureRegister', { defaultValue: 'Ventures' })}
@@ -84,8 +85,7 @@ export default function VenturesSection() {
           <HomeCardsNavRow
             accent="venture"
             ariaLabel={t('homeVentureRegister', { defaultValue: 'Ventures' })}
-            hasMore={hasMore}
-            onRevealMore={revealMore}
+            viewAllTo="/ventures?mode=venture"
           >
             {visible.map((venture) => (
               <HomePreviewRowItem key={venture.id}>

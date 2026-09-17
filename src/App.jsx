@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import lightFavicon from './assets/Deltapreneur_favicon_48.png';
 import darkFavicon from './assets/Deltapreneur_favicon_48.png';
 import { applyThemeFavicon } from './utils/applyThemeFavicon';
-import SiteGradientBorder from './components/common/SiteGradientBorder';
 import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
 import PageLoader from './components/common/PageLoader';
@@ -20,10 +19,10 @@ import WhatsAppFloatingButton from './components/common/WhatsAppFloatingButton';
 import Home from './pages/Home';
 import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
 
-/** Preserve ?linkedin=… query params when redirecting legacy /community URLs. */
+/** Preserve query + hash (e.g. #connect-linkedin) when redirecting legacy /community URLs. */
 function LegacyCommunityRedirect() {
-  const { search } = useLocation();
-  return <Navigate to={{ pathname: '/creator', search }} replace />;
+  const { search, hash } = useLocation();
+  return <Navigate to={{ pathname: '/creator', search, hash }} replace />;
 }
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -184,7 +183,6 @@ export default function App() {
         <AuthProvider>
           <CartProvider>
           <RoutePreloader />
-          <SiteGradientBorder />
           <CookieConsentBanner />
           <WhatsAppFloatingButton />
           <AppErrorBoundary>

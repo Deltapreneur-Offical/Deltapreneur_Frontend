@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
  * @param {string} [accent] - theme key matching card borders (domain, venture, …)
  * @param {boolean} [showViewAll=true] - hide View All for empty sections
  */
-export default function HomeSectionHeader({ title, to, accent, showViewAll = true }) {
+export default function HomeSectionHeader({ title, to, accent, showViewAll = true, extraActions = null }) {
   const { t } = useTranslation();
   const showLink = Boolean(to) && showViewAll !== false;
   const accentClass = accent ? ` home-section-header--${accent}` : '';
@@ -16,11 +16,16 @@ export default function HomeSectionHeader({ title, to, accent, showViewAll = tru
     <header className={`home-section-header${accentClass}`.trim()}>
       <div className="home-section-header__top">
         <h2 className="home-section-header__title text-xl sm:text-2xl font-bold text-gray-900">{title}</h2>
-        {showLink ? (
-          <Link to={to} className="home-section-header__view-all">
-            <span>{t('viewAll')}</span>
-            <ArrowRight className="home-section-header__view-all-icon" aria-hidden="true" />
-          </Link>
+        {extraActions || showLink ? (
+          <div className="home-section-header__actions">
+            {extraActions}
+            {showLink ? (
+              <Link to={to} className="home-section-header__view-all">
+                <span>{t('viewAll')}</span>
+                <ArrowRight className="home-section-header__view-all-icon" aria-hidden="true" />
+              </Link>
+            ) : null}
+          </div>
         ) : null}
       </div>
     </header>

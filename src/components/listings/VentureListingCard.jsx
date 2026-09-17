@@ -98,6 +98,9 @@ export default function VentureListingCard({
 
   compact = false,
 
+  homepageVentureContentOnly = false,
+  homepageDeltaVentureContentOnly = false,
+
   onView,
 
   onApply,
@@ -295,6 +298,9 @@ export default function VentureListingCard({
   const stop = (e) => e.stopPropagation();
 
   const interactive = Boolean(onView);
+  const homepageContentOnly = homepageVentureContentOnly || homepageDeltaVentureContentOnly;
+  const showCover = !homepageContentOnly;
+  const showBadges = !homepageContentOnly && (b.industry || sellerAsk.dealTypeLabel);
 
 
 
@@ -321,6 +327,76 @@ export default function VentureListingCard({
     if (e.target !== e.currentTarget) return;
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); onView(); }
   };
+
+  const renderShareControl = (className = '') => (
+    <div className={`domain-listing-card__share-container${className ? ` ${className}` : ''}`} ref={shareRef}>
+      <button
+        type="button"
+        className="domain-listing-card__share-btn flex items-center justify-center"
+        onClick={toggleShare}
+        title={t('listingCardShare')}
+      >
+        <Share2 size={18} strokeWidth={2} />
+      </button>
+      {shareOpen && createPortal(
+        <div
+          className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
+          style={{
+            top: `${coords.top}px`,
+            left: `${coords.left}px`,
+          }}
+          onClick={stop}
+        >
+          <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+          </div>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(linkedinShare)}
+          >
+            {t('listingCardLinkedIn')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(facebookShare)}
+          >
+            {t('listingCardFacebook')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(twitterShare)}
+          >
+            Twitter / X
+          </button>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(whatsappShare)}
+          >
+            WhatsApp
+          </button>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(gmailShare)}
+          >
+            Gmail
+          </button>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(emailShare)}
+          >
+            Email
+          </button>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
 
 
 
@@ -485,7 +561,7 @@ return (
 
           : 'venture-listing-card--venture'
 
-        } ${compact ? 'venture-listing-card--compact' : ''}${compact && browseMode ? ' venture-listing-card--home-preview' : ''} ${browseMode ? 'domain-listing-card--browse' : ''} ${interactive ? 'cursor-pointer' : ''}`}
+        } ${compact ? 'venture-listing-card--compact' : ''}${compact && browseMode ? ' venture-listing-card--home-preview' : ''}${homepageVentureContentOnly ? ' venture-listing-card--homepage-content' : ''}${homepageDeltaVentureContentOnly ? ' venture-listing-card--homepage-delta-content' : ''} ${browseMode ? 'domain-listing-card--browse' : ''} ${interactive ? 'cursor-pointer' : ''}`}
 
 
       onClick={interactive ? handleCardClick : undefined}
@@ -502,6 +578,7 @@ return (
 
     >
 
+      {showCover ? (
       <div className="domain-listing-card__cover">
 
         {ventureImage ? (
@@ -555,74 +632,9 @@ return (
           </div>
         )}
 
-        <div className="domain-listing-card__share-container" ref={shareRef}>
-          <button
-            type="button"
-            className="domain-listing-card__share-btn flex items-center justify-center"
-            onClick={toggleShare}
-            title={t('listingCardShare')}
-          >
-            <Share2 size={18} strokeWidth={2} />
-          </button>
-          {shareOpen && createPortal(
-            <div
-              className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
-              style={{
-                top: `${coords.top}px`,
-                left: `${coords.left}px`,
-              }}
-              onClick={stop}
-            >
-              <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
-              </div>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(linkedinShare)}
-              >
-                {t('listingCardLinkedIn')}
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(facebookShare)}
-              >
-                {t('listingCardFacebook')}
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(twitterShare)}
-              >
-                Twitter / X
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(whatsappShare)}
-              >
-                WhatsApp
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(gmailShare)}
-              >
-                Gmail
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(emailShare)}
-              >
-                Email
-              </button>
-            </div>,
-            document.body
-          )}
-        </div>
+        {renderShareControl()}
       </div>
+      ) : null}
 
       <div className={`domain-listing-card__body flex flex-col flex-1 ${compact && browseMode
           ? 'gap-2.5 p-3.5'
@@ -644,6 +656,7 @@ return (
 
           {/* Industry & Deal Type Badges */}
 
+          {showBadges ? (
           <div className="venture-listing-card__badges flex flex-wrap items-center gap-2 min-h-[1.5rem]">
 
             {b.industry && (
@@ -667,6 +680,7 @@ return (
             )}
 
           </div>
+          ) : null}
 
           {/* Brand Name & Status Dot */}
 
@@ -691,12 +705,17 @@ return (
 
             </h3>
 
-            {isGstinVerified ? (
-              <img
-                src={verifiedIcon}
-                alt="Verified"
-                className="domain-listing-card__verified-badge shrink-0"
-              />
+            {isGstinVerified || homepageContentOnly ? (
+            <div className="venture-listing-card__title-actions flex shrink-0 items-center gap-1.5">
+              {isGstinVerified ? (
+                <img
+                  src={verifiedIcon}
+                  alt="Verified"
+                  className="domain-listing-card__verified-badge shrink-0"
+                />
+              ) : null}
+              {homepageContentOnly ? renderShareControl('venture-listing-card__share-container--inline') : null}
+            </div>
             ) : null}
 
           </div>
@@ -741,25 +760,29 @@ return (
                 </div>
               ) : null}
 
+              {!homepageContentOnly ? (
               <div className="inline-flex items-center px-2 py-0.75 bg-slate-50 border border-slate-200 rounded-full text-slate-500 font-medium text-[10px] shrink-0">
                 <span className="text-slate-600 font-semibold">{formatInterestCountLabel(interestCount, isCoVenture)}</span>
               </div>
+              ) : null}
             </div>
           </div>
 
         </div>
 
-        <div className={`venture-listing-card__footer flex flex-col ${compact ? 'gap-1.5 mt-1.5' : 'gap-2 mt-1.5'}`}>
+        <div className={`venture-listing-card__footer mt-auto flex flex-col ${compact ? 'gap-1.5' : 'gap-2'}`}>
 
           {/* Price Box */}
 
           {showPriceBox && (
             <div className="venture-listing-card__price-block">
               {!isAuction && showPriceText ? (
-                <span className="venture-listing-card__price-label uppercase leading-none">
-                  {isHomePreview
-                    ? (isCoVenture ? t('listingCardInvestment', 'Investment') : t('listingCardAskingPrice', 'Asking Price'))
-                    : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
+                <span className={`venture-listing-card__price-label leading-none${homepageVentureContentOnly || (isHomePreview && isCoVenture) ? ' venture-listing-card__price-label--cta' : ' uppercase'}${homepageVentureContentOnly ? ' venture-listing-card__price-label--offer' : ''}${isHomePreview && isCoVenture ? ' venture-listing-card__price-label--apply' : ''}`}>
+                  {homepageVentureContentOnly
+                    ? t('listingCardOffer', 'Offer')
+                    : isHomePreview
+                      ? (isCoVenture ? t('listingCardApply', 'Apply') : t('listingCardAskingPrice', 'Asking Price'))
+                      : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
                 </span>
               ) : null}
 
@@ -822,6 +845,7 @@ return (
 
           {/* Stats Footer */}
 
+          {!homepageContentOnly ? (
           <ListingCardStatsFooter
 
             viewCount={venture.views || 0}
@@ -835,6 +859,7 @@ return (
             className="domain-listing-card__stats domain-listing-card__stats--split"
 
           />
+          ) : null}
 
 
 

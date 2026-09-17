@@ -39,7 +39,7 @@ export default function CoVenturesSection() {
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', ventures);
-  const { visible, hasMore, revealMore } = useHomepageCardReveal(ventures);
+  const { visible } = useHomepageCardReveal(ventures);
 
   const handleViewDetails = (ventureId) => {
     navigateToListingDetail(navigate, 'venture', ventureId);
@@ -53,6 +53,7 @@ export default function CoVenturesSection() {
         venture={venture}
         browseMode
         compact
+        homepageDeltaVentureContentOnly
         likeState={getLike(venture.id)}
         onLike={() => toggleLike(venture.id)}
         onView={() => handleViewDetails(venture.id)}
@@ -72,7 +73,7 @@ export default function CoVenturesSection() {
   }
 
   return (
-    <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
+    <section className="home-coventures-section bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <HomeSectionHeader
           title={sectionTitle}
@@ -85,7 +86,7 @@ export default function CoVenturesSection() {
             {t('noCoVenturesAvailable', { defaultValue: 'No co-ventures are available yet.' })}
           </p>
         ) : (
-          <HomeCardsNavRow accent="coventure" ariaLabel={sectionTitle} hasMore={hasMore} onRevealMore={revealMore}>
+          <HomeCardsNavRow accent="coventure" ariaLabel={sectionTitle} viewAllTo="/ventures?mode=co-venture">
             {visible.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
                 {renderCoVentureCard(venture)}

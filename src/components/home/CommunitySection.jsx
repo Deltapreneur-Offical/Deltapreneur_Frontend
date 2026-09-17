@@ -1,25 +1,30 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { communityAPI } from '../../api/services';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { useLikes } from '../../hooks/useLikes';
-import { isCreatorProfileVisible } from '../../utils/creatorProfile';
+import { hasLinkedInAccount, isCreatorProfileVisible, unwrapCreatorProfile } from '../../utils/creatorProfile';
 import { HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
+import { useAuth } from '../../context/AuthContext';
 import CommunityListingCard from '../listings/CommunityListingCard';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomeCardsNavRow from './HomeCardsNavRow';
 import { HomePreviewRowItem } from './HomePreviewRow';
+import DeltapreneurShowcaseHint from './DeltapreneurShowcaseHint';
 
 export default function CommunitySection() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [myProfile, setMyProfile] = useState(null);
+  const [myProfileReady, setMyProfileReady] = useState(false);
 
   useEffect(() => {
     const fetchCommunities = async () => {
@@ -42,6 +47,38 @@ export default function CommunitySection() {
     fetchCommunities();
   }, []);
 
+  useEffect(() => {
+    if (authLoading) {
+      setMyProfileReady(false);
+      return undefined;
+    }
+
+    const userId = user?.id ?? user?.userId;
+    if (!userId) {
+      setMyProfile(null);
+      setMyProfileReady(true);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setMyProfileReady(false);
+    communityAPI.getMy()
+      .then((res) => {
+        if (cancelled) return;
+        setMyProfile(unwrapCreatorProfile(res?.data) || unwrapCreatorProfile(res?.data?.data) || null);
+      })
+      .catch(() => {
+        if (!cancelled) setMyProfile(null);
+      })
+      .finally(() => {
+        if (!cancelled) setMyProfileReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user?.id, user?.userId]);
+
   const previewCommunities = useMemo(
     () => {
       const seen = new Set();
@@ -57,7 +94,8 @@ export default function CommunitySection() {
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', previewCommunities);
-  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewCommunities);
+  const { visible } = useHomepageCardReveal(previewCommunities);
+  const hasCompletedLinkedInSignup = hasLinkedInAccount(myProfile);
 
   const handleViewProfile = (communityId) => {
     navigateToListingDetail(navigate, 'community', communityId);
@@ -75,6 +113,19 @@ export default function CommunitySection() {
     </HomePreviewCardShell>
   );
 
+  const headerAction = !myProfileReady
+    ? null
+    : hasCompletedLinkedInSignup
+      ? <DeltapreneurShowcaseHint />
+      : (
+        <Link
+          to="/creator#connect-linkedin"
+          className="home-section-header__signup"
+        >
+          {t('signUp', { defaultValue: 'Sign Up' })}
+        </Link>
+      );
+
   if (loading) {
     return <HomeSectionCardSkeleton title="Deltapreneurs" to="/community" accent="community" compact />;
   }
@@ -86,12 +137,13 @@ export default function CommunitySection() {
           title="Deltapreneurs"
           to="/community"
           accent="community"
-          showViewAll={previewCommunities.length > 0}
+          showViewAll
+          extraActions={headerAction}
         />
         {previewCommunities.length === 0 ? (
           <p className="home-section-empty text-center text-gray-500">{t('noDisruptors')}</p>
         ) : (
-          <HomeCardsNavRow accent="community" ariaLabel="Deltapreneurs" hasMore={hasMore} onRevealMore={revealMore}>
+          <HomeCardsNavRow accent="community" ariaLabel="Deltapreneurs" viewAllTo="/community">
             {visible.map((item) => (
               <HomePreviewRowItem key={item.id}>
                 {renderCommunityCard(item)}

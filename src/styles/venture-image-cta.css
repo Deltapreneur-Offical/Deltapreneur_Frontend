@@ -1,0 +1,37 @@
+.venture-image-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  line-height: 0;
+  transition: transform 0.18s ease, opacity 0.18s ease, filter 0.18s ease;
+}
+
+.venture-image-cta:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+.venture-image-cta:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.28);
+  border-radius: 999px;
+}
+
+.venture-image-cta:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  filter: grayscale(0.15);
+}
+
+.venture-image-cta__img {
+  display: block;
+  height: 3.15rem;
+  width: auto;
+  max-width: min(16rem, 100%);
+  object-fit: contain;
+}

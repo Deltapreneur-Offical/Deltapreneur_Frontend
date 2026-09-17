@@ -26,11 +26,11 @@
 }
 
 .home-cards-nav-wrap--coventure {
-  --home-nav-accent: #147A43;
-  --home-nav-accent-soft: #F3FDE8;
-  --home-nav-border: #BEF38A;
-  --home-nav-hover-border: #1ED891;
-  --home-nav-pulse: rgba(30, 216, 145, 0.45);
+  --home-nav-accent: #F97316;
+  --home-nav-accent-soft: #FFF7ED;
+  --home-nav-border: #FED7AA;
+  --home-nav-hover-border: #FF7A1A;
+  --home-nav-pulse: rgba(249, 115, 22, 0.45);
 }
 
 .home-cards-nav-wrap--auction {
@@ -82,8 +82,9 @@
 .home-domains-section .home-preview-row__item,
 .home-domains-section .home-preview-row__card,
 .home-domains-section .home-preview-row__card > div:not(.home-preview-card-shell) {
-  min-height: 0 !important;
-  height: auto !important;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Domains + Delta Domains only: fit 5 cards across the visible row on desktop. */
@@ -111,7 +112,7 @@
 }
 
 .home-domains-section .domain-search-card {
-  height: auto !important;
+  height: 100% !important;
   min-height: 0 !important;
   max-width: 100%;
   flex: 1 1 auto;
@@ -150,6 +151,8 @@
   border: 1px solid var(--home-nav-border);
   background: #fff;
   color: var(--home-nav-accent);
+  text-decoration: none;
+  box-sizing: border-box;
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
   transform: translateY(-50%);
   cursor: pointer;

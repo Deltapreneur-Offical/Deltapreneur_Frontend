@@ -113,7 +113,7 @@ const BADGE_TONE_CLASS = {
   },
 };
 
-export default function HomeAuctionPreviewCard({ auction, onView }) {
+export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctionContentOnly = false }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
@@ -255,10 +255,89 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
     onView?.();
   };
 
+  const renderFeaturedBadge = (className = '') => (
+    isFeatured ? (
+      <span className={`home-auction-preview-card__featured-badge${className ? ` ${className}` : ''}`}>
+        <Sparkles size={11} aria-hidden />
+        {t('homeAuctionFeatured', { defaultValue: 'Featured' })}
+      </span>
+    ) : null
+  );
+
+  const renderShareControl = (className = '') => (
+    <div className={`domain-listing-card__share-container${className ? ` ${className}` : ''}`} ref={shareRef}>
+      <button
+        type="button"
+        className="domain-listing-card__share-btn"
+        onClick={toggleShare}
+        title={t('listingCardShare')}
+      >
+        <Share2 size={18} strokeWidth={2} />
+      </button>
+      {shareOpen && createPortal(
+        <div
+          className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
+          style={{
+            top: `${coords.top}px`,
+            left: `${coords.left}px`,
+          }}
+          onClick={stop}
+        >
+          <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+          </div>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(linkedinShare)}
+          >
+            {t('listingCardLinkedIn')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(facebookShare)}
+          >
+            {t('listingCardFacebook')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(twitterShare)}
+          >
+            Twitter / X
+          </button>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(whatsappShare)}
+          >
+            {t('listingCardWhatsApp')}
+          </button>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(gmailShare)}
+          >
+            Gmail
+          </button>
+          <button
+            type="button"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+            onClick={() => handleShare(emailShare)}
+          >
+            Email
+          </button>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+
   return (
     <article
       ref={cardRef}
-      className={`domain-listing-card domain-listing-card--browse home-preview-browse-card home-auction-preview-card home-auction-preview-card--home-preview ${categoryClass} relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl bg-white border border-[#BAE6FD] hover:border-[#38BDF8] shadow-[0_8px_24px_rgba(56,189,248,0.15)] hover:shadow-[0_12px_28px_rgba(56,189,248,0.22)] transition-all duration-200`}
+      className={`domain-listing-card domain-listing-card--browse home-preview-browse-card home-auction-preview-card home-auction-preview-card--home-preview${homepageAuctionContentOnly ? ' home-auction-preview-card--homepage-content' : ''} ${categoryClass} relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl bg-white border border-[#BAE6FD] hover:border-[#38BDF8] shadow-[0_8px_24px_rgba(56,189,248,0.15)] hover:shadow-[0_12px_28px_rgba(56,189,248,0.22)] transition-all duration-200`}
       onClick={handleView}
       role="button"
       tabIndex={0}
@@ -270,113 +349,44 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
         }
       }}
     >
-      <div className="domain-listing-card__cover home-auction-preview-card__cover">
-        {coverImage && !isCarouselClone ? (
-          <img
-            src={coverImage}
-            alt={title}
-            className="domain-listing-card__cover-img"
-            loading="lazy"
-            decoding="async"
-            onError={() => setImgFailed(true)}
-          />
-        ) : (
-          <div
-            className="home-auction-preview-card__cover-fallback relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden p-2 bg-gradient-to-br from-[#38BDF8] via-[#0284C7] to-[#0369A1] opacity-95"
-            aria-hidden
-          >
-            <div className="home-auction-preview-card__cover-content">
-              <div className="listing-card-cover-logo-slot" aria-hidden />
-              <span
-                className="domain-listing-card__cover-fallback-domain home-auction-preview-card__cover-title-marquee"
-                style={{
-                  whiteSpace: 'nowrap',
-                  display: 'block',
-                  width: '100%',
-                  overflow: 'hidden',
-                }}
-              >
-                <OverflowMarqueeText text={title || ''} />
-              </span>
-            </div>
-          </div>
-        )}
-        <div className="home-auction-preview-card__top-left-badges">
-          {isFeatured ? (
-            <span className="home-auction-preview-card__featured-badge">
-              <Sparkles size={11} aria-hidden />
-              {t('homeAuctionFeatured', { defaultValue: 'Featured' })}
-            </span>
-          ) : null}
-        </div>
-        <div className="domain-listing-card__share-container" ref={shareRef}>
-          <button
-            type="button"
-            className="domain-listing-card__share-btn"
-            onClick={toggleShare}
-            title={t('listingCardShare')}
-          >
-            <Share2 size={18} strokeWidth={2} />
-          </button>
-          {shareOpen && createPortal(
+      {!homepageAuctionContentOnly ? (
+        <div className="domain-listing-card__cover home-auction-preview-card__cover">
+          {coverImage && !isCarouselClone ? (
+            <img
+              src={coverImage}
+              alt={title}
+              className="domain-listing-card__cover-img"
+              loading="lazy"
+              decoding="async"
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
             <div
-              className="fixed z-[9999] w-[200px] bg-white border border-slate-100 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_8px_10px_-6px_rgba(0,0,0,0.05)] overflow-hidden text-gray-900"
-              style={{
-                top: `${coords.top}px`,
-                left: `${coords.left}px`,
-              }}
-              onClick={stop}
+              className="home-auction-preview-card__cover-fallback relative flex flex-col items-center justify-center w-full h-full text-center overflow-hidden p-2 bg-gradient-to-br from-[#38BDF8] via-[#0284C7] to-[#0369A1] opacity-95"
+              aria-hidden
             >
-              <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Share via</span>
+              <div className="home-auction-preview-card__cover-content">
+                <div className="listing-card-cover-logo-slot" aria-hidden />
+                <span
+                  className="domain-listing-card__cover-fallback-domain home-auction-preview-card__cover-title-marquee"
+                  style={{
+                    whiteSpace: 'nowrap',
+                    display: 'block',
+                    width: '100%',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <OverflowMarqueeText text={title || ''} />
+                </span>
               </div>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(linkedinShare)}
-              >
-                {t('listingCardLinkedIn')}
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(facebookShare)}
-              >
-                {t('listingCardFacebook')}
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(twitterShare)}
-              >
-                Twitter / X
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(whatsappShare)}
-              >
-                {t('listingCardWhatsApp')}
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(gmailShare)}
-              >
-                Gmail
-              </button>
-              <button
-                type="button"
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-                onClick={() => handleShare(emailShare)}
-              >
-                Email
-              </button>
-            </div>,
-            document.body
+            </div>
           )}
+          <div className="home-auction-preview-card__top-left-badges">
+            {renderFeaturedBadge()}
+          </div>
+          {renderShareControl()}
         </div>
-      </div>
+      ) : null}
 
       <CreatorPreviewModal
         profile={auction?.community}
@@ -391,6 +401,13 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
 
       <div className="domain-listing-card__body home-auction-preview-card__body flex flex-col flex-1 gap-1.5 p-3">
         <div className="home-auction-preview-card__content flex flex-col flex-1 gap-1.5">
+          {homepageAuctionContentOnly ? (
+            <div className="home-auction-preview-card__homepage-topline">
+              {renderFeaturedBadge('home-auction-preview-card__featured-badge--inline')}
+              {renderShareControl('home-auction-preview-card__share-container--inline')}
+            </div>
+          ) : null}
+
           <div className="home-auction-preview-card__ends-in-row">
             <span className="home-auction-preview-card__ends-in-compact">
               <Clock size={10} className="home-auction-preview-card__ends-in-icon shrink-0" aria-hidden />
@@ -416,7 +433,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             </div>
           </div>
 
-          {listerName ? (
+          {!homepageAuctionContentOnly && listerName ? (
             <p className="home-auction-preview-card__creator" title={listerName}>
               {t('auctionDetailListedBy', { defaultValue: 'Listed by' })}{' '}
               <span className="home-auction-preview-card__creator-name inline-block max-w-[65%] align-bottom font-semibold text-slate-900">
@@ -425,7 +442,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             </p>
           ) : null}
 
-          {categoryBadges.length > 0 ? (
+          {!homepageAuctionContentOnly && categoryBadges.length > 0 ? (
             <div className="venture-listing-card__badges home-auction-preview-card__badges flex flex-wrap gap-1">
               {categoryBadges.map((badge) => (
                 <span
@@ -439,7 +456,7 @@ export default function HomeAuctionPreviewCard({ auction, onView }) {
             </div>
           ) : null}
 
-          {descriptionFromData ? (
+          {!homepageAuctionContentOnly && descriptionFromData ? (
             <p
               className="home-auction-preview-card__detail text-slate-500"
               title={descriptionFromData}

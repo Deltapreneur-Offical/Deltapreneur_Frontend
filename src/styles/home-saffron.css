@@ -1026,7 +1026,8 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture .v
 
 body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge) {
   border-color: #FCD34D !important;
-  background: #FFFBEB !important;
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
   background-image: none !important;
   --tw-ring-color: rgba(252, 211, 77, 0.58) !important;
   box-shadow:
@@ -1036,11 +1037,12 @@ body.home-page-body .home-domains-section .domain-search-card:has(.registry-prem
 
 body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge):hover,
 body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge):focus-visible {
-  border-color: #D99A00 !important;
-  background: #FFFBEB !important;
+  border-color: #F59E0B !important;
+  background: #FFFBF5 !important;
+  background-color: #FFFBF5 !important;
   background-image: none !important;
   box-shadow:
-    0 0 0 1px rgba(252, 211, 77, 0.38),
+    0 0 0 1px rgba(245, 158, 11, 0.38),
     0 10px 28px rgba(217, 154, 0, 0.12) !important;
 }
 

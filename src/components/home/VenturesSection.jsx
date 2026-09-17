@@ -13,6 +13,8 @@ import HomeCardsNavRow from './HomeCardsNavRow';
 import { HomePreviewRowItem } from './HomePreviewRow';
 import VentureListingCard from '../listings/VentureListingCard';
 import '../../styles/domain-listing-cards.css';
+/* After domain-listing-cards so homepage blue pill borders win over saffron defaults. */
+import '../../styles/home-saffron.css';
 
 export default function VenturesSection() {
   const { t } = useTranslation();

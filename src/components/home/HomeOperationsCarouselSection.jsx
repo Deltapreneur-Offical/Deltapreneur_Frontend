@@ -18,6 +18,8 @@ import { HOMEPAGE_PREVIEW_LIMIT } from '../../utils/homepageListings';
 import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import OperationsRequestModal from '../operations/OperationsRequestModal';
 import OperationsRequestSuccess from '../operations/OperationsRequestSuccess';
+import '../../styles/domain-listing-cards.css';
+import '../../styles/home-saffron.css';
 
 /**
  * Homepage Operations carousel section (Virtual Assistance or Compliance).

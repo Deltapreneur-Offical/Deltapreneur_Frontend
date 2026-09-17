@@ -2366,6 +2366,24 @@ body.app-layout-body .venture-listing-grid--page .venture-listing-card--coventur
   z-index: 21;
 }
 
+/* Homepage Ventures + DeltaOp: force blue pill border at rest.
+   Loaded with listing cards so this beats late saffron gradient rules. */
+body.home-page-body .home-ventures-section .venture-listing-card .domain-listing-card__price-box,
+body.home-page-body .home-ventures-section .venture-listing-card .domain-listing-card__price-box--venture,
+body.home-page-body .home-ventures-section .venture-listing-card--venture .domain-listing-card__price-box,
+body.home-page-body .home-ventures-section .venture-listing-card--venture .domain-listing-card__price-box--venture,
+body.home-page-body .home-preview-card-border--assistance .va-listing-card__compensation,
+body.home-page-body .home-preview-card-border--assistance .domain-listing-card__price-box.va-listing-card__compensation,
+body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation {
+  border: 1.5px solid transparent !important;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(#1E88FF, #1E88FF) border-box !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+}
+
 
 
 

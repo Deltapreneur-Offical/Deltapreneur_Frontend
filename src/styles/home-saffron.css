@@ -1167,6 +1167,8 @@ body.home-page-body .home-ventures-section .venture-listing-card__price-value--c
 body.home-page-body .home-coventures-section .venture-listing-card__price-value--compact {
   font-size: 1.2rem !important;
   font-weight: 700 !important;
+}
+
 /* Homepage DeltaOp cards only - cohesive blue operator card treatment. */
 body.home-page-body .home-preview-card-border--assistance,
 body.home-page-body .home-preview-card-border--assistance:hover,

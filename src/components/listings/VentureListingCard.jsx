@@ -770,18 +770,18 @@ return (
 
         </div>
 
-        <div className={`venture-listing-card__footer flex flex-col ${compact ? 'gap-1.5 mt-1.5' : 'gap-2 mt-1.5'}`}>
+        <div className={`venture-listing-card__footer mt-auto flex flex-col ${compact ? 'gap-1.5' : 'gap-2'}`}>
 
           {/* Price Box */}
 
           {showPriceBox && (
             <div className="venture-listing-card__price-block">
               {!isAuction && showPriceText ? (
-                <span className="venture-listing-card__price-label uppercase leading-none">
+                <span className={`venture-listing-card__price-label leading-none${homepageVentureContentOnly || (isHomePreview && isCoVenture) ? ' venture-listing-card__price-label--cta' : ' uppercase'}${homepageVentureContentOnly ? ' venture-listing-card__price-label--offer' : ''}${isHomePreview && isCoVenture ? ' venture-listing-card__price-label--apply' : ''}`}>
                   {homepageVentureContentOnly
-                    ? t('listingCardOfferPrice', 'Offer Price')
+                    ? t('listingCardOffer', 'Offer')
                     : isHomePreview
-                      ? (isCoVenture ? t('listingCardInvestment', 'Investment') : t('listingCardAskingPrice', 'Asking Price'))
+                      ? (isCoVenture ? t('listingCardApply', 'Apply') : t('listingCardAskingPrice', 'Asking Price'))
                       : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
                 </span>
               ) : null}

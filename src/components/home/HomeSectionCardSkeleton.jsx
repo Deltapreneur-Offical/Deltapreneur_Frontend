@@ -16,9 +16,13 @@ export default function HomeSectionCardSkeleton({
   reserveOnly = false,
   count = SKELETON_COUNT,
 }) {
+  const sectionClassName = `bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible${
+    variant === 'auction' ? ' home-auctions-section' : ''
+  }`;
+
   if (reserveOnly) {
     return (
-      <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
+      <section className={sectionClassName}>
         <div className="w-full">
           {!hideHeader && title ? (
             <HomeSectionHeader title={title} to={to} accent={accent} showViewAll={Boolean(to)} />
@@ -40,7 +44,7 @@ export default function HomeSectionCardSkeleton({
   ));
 
   return (
-    <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
+    <section className={sectionClassName}>
       <div className="w-full">
         {!hideHeader && title ? (
           <HomeSectionHeader title={title} to={to} accent={accent} showViewAll={Boolean(to)} />

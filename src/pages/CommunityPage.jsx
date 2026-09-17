@@ -339,6 +339,17 @@ export default function CommunityPage() {
 
   const showEmptyCreators = !loading && profilesForDisplay.length === 0 && !effectiveMyProfile;
 
+  useEffect(() => {
+    if (loading) return;
+    if (window.location.hash !== '#connect-linkedin') return;
+    const el = document.getElementById('connect-linkedin');
+    if (!el) return;
+    const frame = window.requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [loading, effectiveMyProfile]);
+
   // ── Handle LinkedIn redirect back ─────────────────────────────────────────
   useEffect(() => {
     const status = searchParams.get('linkedin');
@@ -740,7 +751,7 @@ export default function CommunityPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="inline-flex items-center gap-2">
+                  <div className="inline-flex items-center gap-2" id="connect-linkedin">
                     <LinkedInConnectInfoTooltip />
                     <button
                       className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"

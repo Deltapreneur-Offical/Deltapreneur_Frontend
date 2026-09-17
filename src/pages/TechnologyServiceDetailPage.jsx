@@ -35,6 +35,9 @@ import {
   Zap,
 } from 'lucide-react';
 
+const TECH_SUBSCRIBE_FIELD =
+  'tech-subscribe-modal__field w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-slate-900 caret-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500';
+
 const ICON_MAP = {
   Cpu,
   Layout,
@@ -602,7 +605,7 @@ export default function TechnologyServiceDetailPage() {
       {purchasingPlan && (
         <AppOverlay>
 <div className="fixed inset-0 z-[11000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl relative border border-gray-100">
+          <div className="tech-subscribe-modal bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl relative border border-gray-100">
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               Confirm Subscription
             </h3>
@@ -620,7 +623,7 @@ export default function TechnologyServiceDetailPage() {
                   value={providerInputs.aiTools || ''}
                   onChange={(e) => setProviderField('aiTools', e.target.value)}
                   placeholder="e.g. content-marketing-suite"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
               </div>
             )}
@@ -633,7 +636,7 @@ export default function TechnologyServiceDetailPage() {
                 <select
                   value={providerInputs.storagePlan || ''}
                   onChange={(e) => setProviderField('storagePlan', e.target.value)}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 >
                   <option value="">Select storage plan</option>
                   {['50gb', '100gb', '200gb', '500gb', '1tb', '2tb'].map((option) => (
@@ -653,7 +656,7 @@ export default function TechnologyServiceDetailPage() {
                   value={providerInputs.companyName || ''}
                   onChange={(e) => setProviderField('companyName', e.target.value)}
                   placeholder="e.g. Acme Private Limited"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
               </div>
             )}
@@ -669,7 +672,7 @@ export default function TechnologyServiceDetailPage() {
                     value={providerInputs.subdomain || ''}
                     onChange={(e) => setProviderField('subdomain', e.target.value)}
                     placeholder="e.g. mybusiness"
-                    className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className={TECH_SUBSCRIBE_FIELD}
                   />
                 </div>
                 <input
@@ -677,7 +680,7 @@ export default function TechnologyServiceDetailPage() {
                   value={providerInputs.businessName || ''}
                   onChange={(e) => setProviderField('businessName', e.target.value)}
                   placeholder="Business name"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
               </div>
             )}
@@ -695,7 +698,7 @@ export default function TechnologyServiceDetailPage() {
                     setInputError(null);
                   }}
                   placeholder="e.g. 415"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Your Business Phone number will be assigned to this area code.
@@ -716,7 +719,7 @@ export default function TechnologyServiceDetailPage() {
                     setInputError(null);
                   }}
                   placeholder="e.g. example.com"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   This domain will be used to create your hosting account (e.g. example.com → cpanel username 'example').
@@ -731,14 +734,14 @@ export default function TechnologyServiceDetailPage() {
                   value={providerInputs.serviceId || ''}
                   onChange={(e) => setProviderField('serviceId', e.target.value)}
                   placeholder="SMM service ID"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
                 <input
                   type="url"
                   value={providerInputs.link || ''}
                   onChange={(e) => setProviderField('link', e.target.value)}
                   placeholder="Social link"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
                 <input
                   type="number"
@@ -746,7 +749,7 @@ export default function TechnologyServiceDetailPage() {
                   value={providerInputs.quantity || ''}
                   onChange={(e) => setProviderField('quantity', e.target.value)}
                   placeholder="Quantity"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
               </div>
             )}
@@ -761,7 +764,7 @@ export default function TechnologyServiceDetailPage() {
                   value={providerInputs.packageCode || ''}
                   onChange={(e) => setProviderField('packageCode', e.target.value)}
                   placeholder="e.g. global-5gb"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
               </div>
             )}
@@ -773,28 +776,28 @@ export default function TechnologyServiceDetailPage() {
                   value={providerInputs.pluginName || ''}
                   onChange={(e) => setProviderField('pluginName', e.target.value)}
                   placeholder="Plugin name"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
                 <input
                   type="text"
                   value={providerInputs.author || ''}
                   onChange={(e) => setProviderField('author', e.target.value)}
                   placeholder="Author"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
                 <input
                   type="text"
                   value={providerInputs.description || ''}
                   onChange={(e) => setProviderField('description', e.target.value)}
                   placeholder="Description"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
                 <input
                   type="url"
                   value={providerInputs.logoUrl || ''}
                   onChange={(e) => setProviderField('logoUrl', e.target.value)}
                   placeholder="Logo URL"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className={TECH_SUBSCRIBE_FIELD}
                 />
               </div>
             )}

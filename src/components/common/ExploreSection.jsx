@@ -15,11 +15,13 @@ const HomeRegistrationsSection = lazy(() => import('../home/HomeRegistrationsSec
 const CommunitySection = lazy(() => import('../home/CommunitySection'));
 const FeedbackSection = lazy(() => import('../home/FeedbackSection'));
 
-function IndependentSection({ title, to, variant = 'browse', compact = false, children }) {
+function IndependentSection({ title, to, variant = 'browse', compact = false, accent, children }) {
+  const sectionAccent = accent || (variant === 'auction' ? 'auction' : undefined);
   const reserved = (
     <HomeSectionCardSkeleton
       title={title}
       to={to}
+      accent={sectionAccent}
       variant={variant}
       compact={compact}
       reserveOnly
@@ -29,6 +31,7 @@ function IndependentSection({ title, to, variant = 'browse', compact = false, ch
     <HomeSectionCardSkeleton
       title={title}
       to={to}
+      accent={sectionAccent}
       variant={variant}
       compact={compact}
     />

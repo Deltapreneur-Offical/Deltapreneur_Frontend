@@ -115,6 +115,7 @@ export default function FeaturedVirtualAssistantsListing({
   onHireProfile,
   loadingFallback = null,
   revealInPages = false,
+  viewAllTo,
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -125,7 +126,7 @@ export default function FeaturedVirtualAssistantsListing({
   const cards = externalCards ?? internal.cards;
   const loading = externalLoading ?? internal.loading;
   const count = cards.length;
-  const { visible, hasMore, revealMore } = useHomepageCardReveal(cards);
+  const { visible } = useHomepageCardReveal(cards);
   const rendered = revealInPages ? visible : cards;
   // Dedicated like bucket — do not reuse COMMUNITY (Creators) likes.
   const { toggle: toggleLike, get: getLike } = useLikes('VIRTUAL_ASSISTANT', cards);
@@ -175,8 +176,7 @@ export default function FeaturedVirtualAssistantsListing({
       accent="assistance"
       className="home-va-auto-scroll-row"
       ariaLabel={ariaLabel || 'Featured Virtual Assistants'}
-      hasMore={revealInPages && hasMore}
-      onRevealMore={revealInPages ? revealMore : undefined}
+      viewAllTo={viewAllTo}
     >
       {rendered.map((profile, index) => (
         <HomePreviewRowItem key={cardKey(profile, index)}>

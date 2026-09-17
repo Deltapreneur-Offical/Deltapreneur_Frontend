@@ -150,6 +150,8 @@
   border: 1px solid var(--home-nav-border);
   background: #fff;
   color: var(--home-nav-accent);
+  text-decoration: none;
+  box-sizing: border-box;
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
   transform: translateY(-50%);
   cursor: pointer;

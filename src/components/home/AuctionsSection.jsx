@@ -288,7 +288,7 @@ export default function AuctionsSection() {
   const domainLikes = useLikes('DOMAIN', domainLikeItems);
   const communityLikes = useLikes('COMMUNITY', communityLikeItems);
   const softwareLikes = useLikes('SOFTWARE', softwareLikeItems);
-  const { visible, hasMore, revealMore } = useHomepageCardReveal(displayAuctions);
+  const { visible } = useHomepageCardReveal(displayAuctions);
 
   const getAuctionLike = useCallback((auction) => {
     const target = resolveHomeAuctionLikeTarget(auction);
@@ -331,8 +331,7 @@ export default function AuctionsSection() {
           <HomeCardsNavRow
             accent="auction"
             ariaLabel={t('homeRegistryAuctions', { defaultValue: 'Auctions' })}
-            hasMore={hasMore}
-            onRevealMore={revealMore}
+            viewAllTo="/auctions"
           >
             {visible.map((auction) => (
               <HomePreviewRowItem key={`${auction.category}-${auction.id}`}>

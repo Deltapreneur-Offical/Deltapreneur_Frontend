@@ -57,7 +57,7 @@ export default function CommunitySection() {
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', previewCommunities);
-  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewCommunities);
+  const { visible } = useHomepageCardReveal(previewCommunities);
 
   const handleViewProfile = (communityId) => {
     navigateToListingDetail(navigate, 'community', communityId);
@@ -91,7 +91,7 @@ export default function CommunitySection() {
         {previewCommunities.length === 0 ? (
           <p className="home-section-empty text-center text-gray-500">{t('noDisruptors')}</p>
         ) : (
-          <HomeCardsNavRow accent="community" ariaLabel="Deltapreneurs" hasMore={hasMore} onRevealMore={revealMore}>
+          <HomeCardsNavRow accent="community" ariaLabel="Deltapreneurs" viewAllTo="/community">
             {visible.map((item) => (
               <HomePreviewRowItem key={item.id}>
                 {renderCommunityCard(item)}

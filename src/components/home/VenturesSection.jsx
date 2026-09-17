@@ -39,7 +39,7 @@ export default function VenturesSection() {
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', ventures);
-  const { visible, hasMore, revealMore } = useHomepageCardReveal(ventures);
+  const { visible } = useHomepageCardReveal(ventures);
 
   const handleViewDetails = (ventureId) => {
     navigateToListingDetail(navigate, 'venture', ventureId);
@@ -85,8 +85,7 @@ export default function VenturesSection() {
           <HomeCardsNavRow
             accent="venture"
             ariaLabel={t('homeVentureRegister', { defaultValue: 'Ventures' })}
-            hasMore={hasMore}
-            onRevealMore={revealMore}
+            viewAllTo="/ventures?mode=venture"
           >
             {visible.map((venture) => (
               <HomePreviewRowItem key={venture.id}>

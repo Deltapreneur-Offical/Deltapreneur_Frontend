@@ -82,8 +82,9 @@
 .home-domains-section .home-preview-row__item,
 .home-domains-section .home-preview-row__card,
 .home-domains-section .home-preview-row__card > div:not(.home-preview-card-shell) {
-  min-height: 0 !important;
-  height: auto !important;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Domains + Delta Domains only: fit 5 cards across the visible row on desktop. */
@@ -111,7 +112,7 @@
 }
 
 .home-domains-section .domain-search-card {
-  height: auto !important;
+  height: 100% !important;
   min-height: 0 !important;
   max-width: 100%;
   flex: 1 1 auto;

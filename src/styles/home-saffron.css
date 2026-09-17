@@ -652,3 +652,9 @@ body.home-page-body .creator-profile-card.community-listing-card:not(.virtual-as
   line-height: 1 !important;
   letter-spacing: normal !important;
 }
+
+body.home-page-body .home-ventures-section .venture-listing-card__price-value--compact,
+body.home-page-body .home-coventures-section .venture-listing-card__price-value--compact {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+}

@@ -19,10 +19,10 @@ import WhatsAppFloatingButton from './components/common/WhatsAppFloatingButton';
 import Home from './pages/Home';
 import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
 
-/** Preserve ?linkedin=… query params when redirecting legacy /community URLs. */
+/** Preserve query + hash (e.g. #connect-linkedin) when redirecting legacy /community URLs. */
 function LegacyCommunityRedirect() {
-  const { search } = useLocation();
-  return <Navigate to={{ pathname: '/creator', search }} replace />;
+  const { search, hash } = useLocation();
+  return <Navigate to={{ pathname: '/creator', search, hash }} replace />;
 }
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));

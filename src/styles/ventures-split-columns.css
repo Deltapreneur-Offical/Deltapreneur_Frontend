@@ -404,13 +404,23 @@
 
 .domains-sync-layout .listing-card-glow-shell {
   display: flex;
-  flex: 1 1 0%;
+  flex: 0 0 auto;
   min-width: 0;
+  height: auto;
+  align-self: stretch;
+}
+
+.domains-sync-layout .listing-card-glow-shell:has(.domain-search-card:not(.domain-search-card--listing)) {
   height: 100%;
+  flex: 1 1 0%;
 }
 
 .domains-sync-layout .listing-card-glow-shell > * {
   width: 100%;
+}
+
+.domains-sync-layout .domain-search-card--listing {
+  height: auto;
 }
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact {
@@ -439,7 +449,7 @@
 }
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .domain-listing-card__body {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -483,8 +493,13 @@
 
 .ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .venture-listing-card__footer {
   flex: 0 0 auto;
-  margin-top: 0.35rem;
+  margin-top: auto;
   gap: 0.35rem;
+}
+
+.ventures-split__body .listing-card-glow-shell > .venture-listing-card--compact .domain-listing-card__actions {
+  width: 100%;
+  margin-top: 0.25rem;
 }
 
 .ventures-split__empty {

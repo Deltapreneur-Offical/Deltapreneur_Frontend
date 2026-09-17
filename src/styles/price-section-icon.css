@@ -15,6 +15,13 @@
   user-select: none;
 }
 
+/* Listing price CTAs — the PNG is 253×294; never let it paint at intrinsic size */
+.domain-listing-card__price-cta .price-section-v-icon,
+.domain-listing-card__price-cta-icon.price-section-v-icon {
+  max-width: 2.4rem !important;
+  max-height: 2.55rem !important;
+}
+
 .domain-listing-card__price-cta:has(.price-section-v-icon),
 .tech-service-card__price-arrow:has(.price-section-v-icon),
 .reg-mini-card__price-arrow:has(.price-section-v-icon),

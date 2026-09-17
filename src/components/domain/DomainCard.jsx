@@ -140,6 +140,8 @@ export default function DomainCard({
   hideDomainTypeLabel = false,
   /** Delta/Showcase cards: hide the GST included caption. */
   hideGstCaption = false,
+  /** Optional fixed renewal caption (e.g. Showcase ₹1,159) — skips API-formatted renewal. */
+  renewalPriceLabel = null,
   className = '',
   /** { shareType, originalQuery } — enables the Share & Earn button on this card. */
   shareContext = null,
@@ -170,7 +172,8 @@ export default function DomainCard({
     : t('domainCardYearSuffix', { defaultValue: '/yr' });
   const priceTitle = priceText ? `${priceText}${priceYearSuffix}` : undefined;
   const renewalText =
-    item.renewalDisplayPriceInr != null ? formatDomainPrice(item.renewalDisplayPriceInr) : null;
+    renewalPriceLabel
+    ?? (item.renewalDisplayPriceInr != null ? formatDomainPrice(item.renewalDisplayPriceInr) : null);
 
   // [RENEWAL_PRICE_DEBUG] Log the value actually rendered for premium domains.
   if (item.isPremium) {

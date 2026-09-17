@@ -1084,8 +1084,8 @@ export default function DomainsPage() {
                     display: flex;
                     min-width: 0;
                     width: min(100%, var(--domains-sync-card-size));
-                    /* Dashboard-only: one shared height for Delta + Domains (keep uniform card size). */
-                    --domains-sync-card-h: 12rem;
+                    /* Dashboard-only: shared height for Domain + Delta cards. */
+                    --domains-sync-card-h: 11.35rem;
                     height: var(--domains-sync-card-h) !important;
                     max-height: var(--domains-sync-card-h) !important;
                     align-items: stretch;
@@ -1099,10 +1099,10 @@ export default function DomainsPage() {
                   .domains-sync-layout .listing-card-glow-shell {
                     width: 100% !important;
                     max-width: var(--domains-sync-card-size) !important;
-                    height: var(--domains-sync-card-h, 11.25rem) !important;
-                    min-height: var(--domains-sync-card-h, 11.25rem) !important;
-                    max-height: var(--domains-sync-card-h, 11.25rem) !important;
-                    flex: 0 0 var(--domains-sync-card-h, 11.25rem) !important;
+                    height: var(--domains-sync-card-h, 11.35rem) !important;
+                    min-height: var(--domains-sync-card-h, 11.35rem) !important;
+                    max-height: var(--domains-sync-card-h, 11.35rem) !important;
+                    flex: 0 0 var(--domains-sync-card-h, 11.35rem) !important;
                     display: flex !important;
                     flex-direction: column !important;
                     /* No shell inset — card stays full width; overflow visible so border/ring/shadow are not clipped. */
@@ -1134,7 +1134,7 @@ export default function DomainsPage() {
                     flex-direction: column !important;
                     justify-content: flex-start !important;
                     box-sizing: border-box !important;
-                    padding: 0.65rem 0.85rem 0.4rem !important;
+                    padding: 0.6rem 0.85rem 0.55rem !important;
                     overflow: hidden !important;
                   }
                   .domains-sync-layout .domain-search-card > .pr-9 {
@@ -1149,6 +1149,28 @@ export default function DomainsPage() {
                   .domains-sync-layout .domain-search-card > .pr-9.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]),
                   .domains-sync-layout .domain-search-card > .pr-9.space-y-2 > :not([hidden]) ~ :not([hidden]) {
                     margin-top: 0 !important;
+                  }
+                  /* Dashboard-only: show full domain name; wrap to next line (no ellipsis). Home untouched. */
+                  .domains-sync-layout .domain-search-card .domain-search-card__name,
+                  .domains-sync-layout .domain-search-card > .pr-9 > h2,
+                  .domains-sync-layout .domain-search-card > .pr-9 > h3,
+                  .domains-sync-layout .domain-search-card h2,
+                  .domains-sync-layout .domain-search-card h3 {
+                    white-space: normal !important;
+                    overflow: visible !important;
+                    text-overflow: clip !important;
+                    overflow-wrap: normal !important;
+                    word-break: normal !important;
+                    max-width: 100% !important;
+                    height: auto !important;
+                    max-height: none !important;
+                  }
+                  /* Keep the TLD (.com / .in / …) intact — wrap the whole extension, never split "m". */
+                  .domains-sync-layout .domain-search-card .domain-search-card__name > span:last-child,
+                  .domains-sync-layout .domain-search-card h2 > span:last-child,
+                  .domains-sync-layout .domain-search-card h3 > span:last-child {
+                    white-space: nowrap !important;
+                    display: inline !important;
                   }
                   /* Price beside (1st Year); wrap suffix fully when the amount is long. */
                   .domains-sync-layout .domain-search-card > .pr-9 > p.domain-card-price-line,
@@ -1218,16 +1240,21 @@ export default function DomainsPage() {
                     white-space: normal !important;
                     overflow: visible !important;
                   }
+                  /* Domains column only: nudge Renews at a little lower under the price. Delta untouched. */
+                  .domains-sync-layout__cell--standard .domain-search-card .domain-search-card__price + p {
+                    margin-top: 0.65rem !important;
+                    padding-top: 0 !important;
+                  }
                   .domains-sync-layout .domain-search-card .absolute.top-2\\.5.right-2\\.5 button,
                   .domains-sync-layout .domain-search-card .absolute.top-2\\.5.right-2\\.5 [role='button'] {
                     width: 2rem !important;
                     height: 2rem !important;
                   }
-                  /* Keep Add to Cart close under renews — no large empty band above the button. */
+                  /* Pin Add to Cart to the same bottom edge — closer under renews. */
                   .domains-sync-layout .domain-search-card > .mt-3,
                   .domains-sync-layout .domain-search-card > .mt-3\\.5,
                   .domains-sync-layout .domain-search-card > .mt-auto {
-                    margin-top: 0.5rem !important;
+                    margin-top: auto !important;
                     margin-bottom: 0 !important;
                     flex-shrink: 0 !important;
                     padding-top: 0 !important;

@@ -28,6 +28,7 @@ export default function ShowcaseDomainCard({ item, shareContext = null, stackPre
       hideAvailabilityBadge
       hideDomainTypeLabel
       hideGstCaption
+      renewalPriceLabel="₹1,159"
       item={{
         domain: fullDomain,
         name: item.name,

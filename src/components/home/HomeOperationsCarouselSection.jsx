@@ -86,7 +86,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const title = section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel });
   const accent = isAssistanceSection ? 'assistance' : 'operations';
   const viewAllPath = operationsPathForSection(sectionId);
-  const { visible: visibleServices, hasMore: servicesHasMore, revealMore: revealMoreServices } = useHomepageCardReveal(services);
+  const { visible: visibleServices } = useHomepageCardReveal(services);
 
   const openServiceRequest = (service) => {
     operationsAPI.get(service.id)
@@ -135,7 +135,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
             cards={vaFeatured.cards.slice(0, HOMEPAGE_PREVIEW_LIMIT)}
             loading={false}
             ariaLabel={title}
-            revealInPages
+            viewAllTo={viewAllPath}
           />
         </div>
       </section>
@@ -253,7 +253,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
             {t('operationsHomeEmpty', { defaultValue: 'No services available yet.' })}
           </p>
         ) : (
-          <HomeCardsNavRow accent="operations" ariaLabel={title} hasMore={servicesHasMore} onRevealMore={revealMoreServices}>
+          <HomeCardsNavRow accent="operations" ariaLabel={title} viewAllTo={viewAllPath}>
             {visibleServices.map((service) => (
               <HomePreviewRowItem key={service.id}>
                 {renderServiceCard(service)}

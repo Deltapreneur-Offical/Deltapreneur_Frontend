@@ -1,4 +1,5 @@
 import { Children, useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import HomePreviewRow from './HomePreviewRow';
 import '../../styles/home-cards-nav.css';
@@ -10,8 +11,10 @@ function readRowOverflow(el) {
 
 /**
  * Homepage card strip with left/right paging — same control as Delta Registrations.
- * Side arrows stay visible whenever the row has more than one card.
+ * Left arrow scrolls the visible cards. Right arrow goes to the section View All
+ * page when viewAllTo is set; otherwise it pages/reveals more cards.
  * @param {string} [accent] section theme: domain | venture | coventure | auction | technology | operations | community | assistance
+ * @param {string} [viewAllTo] react-router path for the right-arrow control
  */
 export default function HomeCardsNavRow({
   children,
@@ -21,11 +24,13 @@ export default function HomeCardsNavRow({
   rowClassName = '',
   hasMore = false,
   onRevealMore,
+  viewAllTo,
 }) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const itemCount = Children.toArray(children).length;
-  const showArrows = itemCount > 1 || hasMore;
+  const showPrev = itemCount > 1 || hasMore;
+  const showNext = showPrev || Boolean(viewAllTo);
   const prevItemCountRef = useRef(itemCount);
   const wrapRef = useRef(null);
   const scrollTargetRef = useRef(null);
@@ -232,13 +237,13 @@ export default function HomeCardsNavRow({
       className={[
         'home-cards-nav-wrap',
         `home-cards-nav-wrap--${accent}`,
-        showArrows ? '' : 'home-cards-nav-wrap--no-overflow',
+        showNext ? '' : 'home-cards-nav-wrap--no-overflow',
         className,
       ].filter(Boolean).join(' ')}
       role="region"
       aria-label={ariaLabel}
     >
-      {showArrows ? (
+      {showPrev ? (
         <button
           type="button"
           className="home-cards-nav home-cards-nav--prev"
@@ -252,16 +257,26 @@ export default function HomeCardsNavRow({
       <HomePreviewRow className={`home-cards-nav-row${rowClassName ? ` ${rowClassName}` : ''}`}>
         {children}
       </HomePreviewRow>
-      {showArrows ? (
-        <button
-          type="button"
-          className="home-cards-nav home-cards-nav--next"
-          onClick={handleNext}
-          disabled={!canScrollRight && !hasMore}
-          aria-label="Scroll cards right"
-        >
-          <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
-        </button>
+      {showNext ? (
+        viewAllTo ? (
+          <Link
+            to={viewAllTo}
+            className="home-cards-nav home-cards-nav--next"
+            aria-label="View all"
+          >
+            <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className="home-cards-nav home-cards-nav--next"
+            onClick={handleNext}
+            disabled={!canScrollRight && !hasMore}
+            aria-label="Scroll cards right"
+          >
+            <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
+          </button>
+        )
       ) : null}
     </div>
   );

@@ -43,7 +43,6 @@ export default function HomeRegistrationsSection() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [copiedSlug, setCopiedSlug] = useState(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
   const { categories: allCategories, fetched } = usePublicHubRegistrarCategories();
   const rowWrapRef = useRef(null);
   const suppressCardClickRef = useRef(false);
@@ -66,7 +65,7 @@ export default function HomeRegistrationsSection() {
       ));
     return matched.slice(0, REGISTRATIONS_HOME_PREVIEW_LIMIT);
   }, [categoryFilter, allCategories]);
-  const { visible: visibleCategories, hasMore: categoriesHasMore, revealMore: revealMoreCategories } = useHomepageCardReveal(
+  const { visible: visibleCategories } = useHomepageCardReveal(
     filteredCategories,
     { pageSize: REGISTRATIONS_HOME_VISIBLE, previewLimit: REGISTRATIONS_HOME_PREVIEW_LIMIT },
   );
@@ -99,7 +98,6 @@ export default function HomeRegistrationsSection() {
         if (navFlagsRef.current.overflow || navFlagsRef.current.left || navFlagsRef.current.right) {
           navFlagsRef.current = { left: false, right: false, overflow: false };
           setCanScrollLeft(false);
-          setCanScrollRight(false);
         }
         return;
       }
@@ -111,7 +109,6 @@ export default function HomeRegistrationsSection() {
       if (prev.left !== left || prev.right !== right || prev.overflow !== overflows) {
         navFlagsRef.current = { left, right, overflow: overflows };
         setCanScrollLeft(left);
-        setCanScrollRight(right);
       }
 
       if (wrap) {
@@ -138,19 +135,7 @@ export default function HomeRegistrationsSection() {
     scrollTargetRef.current = next;
     el.scrollTo({ left: next, behavior: 'smooth' });
     setCanScrollLeft(next > 2);
-    setCanScrollRight(next < maxScroll - 2);
   }, [getPreviewRow, getPageStep]);
-
-  const handleNextCards = useCallback(() => {
-    const el = getPreviewRow();
-    const maxScroll = el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0;
-    const atEnd = !el || maxScroll <= 2 || el.scrollLeft >= maxScroll - 2;
-    if (atEnd && categoriesHasMore) {
-      revealMoreCategories();
-      return;
-    }
-    scrollCards(1);
-  }, [getPreviewRow, categoriesHasMore, revealMoreCategories, scrollCards]);
 
   useEffect(() => {
     const count = visibleCategories.length;
@@ -446,10 +431,10 @@ export default function HomeRegistrationsSection() {
           <p className="home-section-empty text-center text-gray-500">{t('regCatalogEmpty', { defaultValue: 'No category found. Check back soon, we are working on it.' })}</p>
         ) : (
           <div
-            className={`reg-cards-row-wrap${visibleCategories.length > 1 || categoriesHasMore ? '' : ' reg-cards-row-wrap--no-overflow'}`}
+            className={`reg-cards-row-wrap${visibleCategories.length > 0 ? '' : ' reg-cards-row-wrap--no-overflow'}`}
             ref={rowWrapRef}
           >
-            {visibleCategories.length > 1 || categoriesHasMore ? (
+            {visibleCategories.length > 1 ? (
               <button
                 type="button"
                 className="reg-cards-nav reg-cards-nav--prev"
@@ -467,16 +452,14 @@ export default function HomeRegistrationsSection() {
                 </HomePreviewRowItem>
               ))}
             </HomePreviewRow>
-            {visibleCategories.length > 1 || categoriesHasMore ? (
-              <button
-                type="button"
+            {visibleCategories.length > 0 ? (
+              <Link
+                to={REGISTRATIONS_PAGE_PATH}
                 className="reg-cards-nav reg-cards-nav--next"
-                onClick={handleNextCards}
-                disabled={!canScrollRight && !categoriesHasMore}
-                aria-label="Scroll registration cards right"
+                aria-label="View all"
               >
                 <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
-              </button>
+              </Link>
             ) : null}
           </div>
         )}

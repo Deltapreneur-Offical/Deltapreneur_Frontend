@@ -74,6 +74,9 @@
 /* Homepage domain / premium cards — compact, content-sized (not 355px-tall) */
 .home-domains-section .home-preview-row {
   align-items: stretch;
+  --home-domains-visible: 5;
+  --home-domains-gap: 1rem;
+  gap: var(--home-domains-gap) !important;
 }
 
 .home-domains-section .home-preview-row__item,
@@ -83,27 +86,27 @@
   height: auto !important;
 }
 
-/* Domains + Delta Domains only: slightly narrower so cards read less stretched / more square.
-   Does not affect other home carousels or Domains dashboard cards. */
+/* Domains + Delta Domains only: fit 5 cards across the visible row on desktop. */
 .home-domains-section .home-preview-row .home-preview-row__item {
-  width: min(14.5rem, 100%) !important;
+  width: 14.5rem !important;
+  max-width: 14.5rem !important;
+  flex: 0 0 14.5rem !important;
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 1024px) {
   .home-domains-section .home-preview-row .home-preview-row__item {
-    width: min(14.5rem, calc((100% - 1.25rem) / 2)) !important;
+    /* Exactly 5 cards + 4 gaps fill the row */
+    width: calc((100% - (4 * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    max-width: calc((100% - (4 * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    flex: 0 0 calc((100% - (4 * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
   }
 }
 
-@media (min-width: 1024px) and (max-width: 1199px) {
+@media (max-width: 639px) {
   .home-domains-section .home-preview-row .home-preview-row__item {
-    width: min(14.5rem, calc((100% - 2 * 1.25rem) / 3)) !important;
-  }
-}
-
-@media (min-width: 1200px) {
-  .home-domains-section .home-preview-row .home-preview-row__item {
-    width: min(14.5rem, calc((100% - 3 * 1.25rem) / 4)) !important;
+    width: min(14.5rem, 100%) !important;
+    max-width: min(14.5rem, 100%) !important;
+    flex: 0 0 min(14.5rem, 100%) !important;
   }
 }
 
@@ -117,6 +120,11 @@
 
 .home-domains-section .domain-search-card > *:last-child {
   margin-top: auto;
+}
+
+/* Home Delta Domains only — hide GST caption; leave price / renews / CTA unchanged. */
+.home-domains-section .domain-card-gst-caption {
+  display: none !important;
 }
 
 .home-cards-nav-row--dragging {
@@ -142,6 +150,8 @@
   border: 1px solid var(--home-nav-border);
   background: #fff;
   color: var(--home-nav-accent);
+  text-decoration: none;
+  box-sizing: border-box;
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
   transform: translateY(-50%);
   cursor: pointer;

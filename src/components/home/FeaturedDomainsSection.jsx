@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { domainAPI } from '../../api/services';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
-import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
+import {
+  DOMAINS_HOME_PREVIEW_LIMIT,
+  DOMAINS_HOME_VISIBLE,
+  useHomepageCardReveal,
+} from '../../utils/homepageCardReveal';
 import { isOpenProviderShowcaseRow } from '../../utils/homepageListings';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
 import { isListingOwner } from '../../utils/listingVisibility';
@@ -36,7 +40,7 @@ export default function FeaturedDomainsSection() {
         const rows = await fetchHomepageSectionPreview(
           (params) => domainAPI.getAll(params),
           'domain',
-          undefined,
+          DOMAINS_HOME_PREVIEW_LIMIT,
           {
             featuredQuery: { include_showcase: false },
             fillCatalog: false,
@@ -58,7 +62,10 @@ export default function FeaturedDomainsSection() {
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', previewDomains);
-  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewDomains);
+  const { visible } = useHomepageCardReveal(previewDomains, {
+    pageSize: DOMAINS_HOME_VISIBLE,
+    previewLimit: DOMAINS_HOME_PREVIEW_LIMIT,
+  });
 
   const handleViewDetails = (domainId) => {
     navigateToListingDetail(navigate, 'domain', domainId);
@@ -74,8 +81,8 @@ export default function FeaturedDomainsSection() {
           showViewAll={!loading && previewDomains.length > 0}
         />
         {loading ? (
-          <HomeCardsNavRow accent="domain" ariaLabel={title}>
-            {Array.from({ length: 4 }).map((_, i) => (
+          <HomeCardsNavRow accent="domain" ariaLabel={title} viewAllTo="/domains">
+            {Array.from({ length: DOMAINS_HOME_VISIBLE }).map((_, i) => (
               <HomePreviewRowItem key={i}>
                 <HomePreviewCardSkeleton variant="browse" />
               </HomePreviewRowItem>
@@ -84,7 +91,7 @@ export default function FeaturedDomainsSection() {
         ) : previewDomains.length === 0 ? (
           <p className="home-section-empty text-center text-gray-500">{t('noDomains')}</p>
         ) : (
-          <HomeCardsNavRow accent="domain" ariaLabel={title} hasMore={hasMore} onRevealMore={revealMore}>
+          <HomeCardsNavRow accent="domain" ariaLabel={title} viewAllTo="/domains">
             {visible.map((domain) => (
               <HomePreviewRowItem key={domain.id}>
                 <DomainListingCard

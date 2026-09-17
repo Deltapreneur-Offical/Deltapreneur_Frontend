@@ -1695,6 +1695,8 @@ body.home-page-body .reg-mini-card:focus-visible .reg-mini-card__watermark polyg
   border: 1px solid #e2e8f0;
   background: #fff;
   color: #334155;
+  text-decoration: none;
+  box-sizing: border-box;
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
   transform: translateY(-50%);
   cursor: pointer;

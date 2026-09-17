@@ -204,3 +204,42 @@ body.home-page-body .tech-service-card:hover .tech-service-card__icon,
 .tech-service-card--home > * {
   z-index: 1;
 }
+
+/* HomeCardsNavRow: avoid translateZ clipping the first card at the scrollport. */
+.home-cards-nav-wrap .home-preview-row.home-cards-nav-row .tech-service-card--home {
+  transform: none;
+}
+
+/*
+ * Home DeltaOs featured-services carousel only:
+ * Keep the track’s first card fully inside the arrow gutter (same layout as
+ * other HomeCardsNavRow sections) — no negative margins/transforms.
+ */
+.home-deltaos-services-nav.home-cards-nav-wrap {
+  padding-inline: 3.15rem !important;
+  box-sizing: border-box;
+}
+
+.home-deltaos-services-nav .home-preview-row.home-cards-nav-row {
+  /* Keep first card fully inside the overflow-x track (flush edges clip the border). */
+  padding-inline-start: 0.75rem !important;
+  padding-inline-end: 0.75rem !important;
+  box-sizing: border-box;
+}
+
+.home-deltaos-services-nav .home-preview-row__item:first-child {
+  margin-left: 0 !important;
+  scroll-margin-inline-start: 0;
+}
+
+.home-deltaos-services-nav .tech-service-card--home {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767px) {
+  .home-deltaos-services-nav.home-cards-nav-wrap {
+    padding-inline: 2.7rem !important;
+  }
+}

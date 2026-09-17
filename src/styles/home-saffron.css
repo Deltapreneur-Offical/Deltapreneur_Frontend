@@ -316,11 +316,18 @@ body.home-page-body .home-nav-dropdown-link[data-active='true'] {
   color: var(--home-saffron-text) !important;
 }
 
+body.home-page-body .tld-price-marquee-mask {
+  position: relative;
+  z-index: 5;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
+}
+
 body.home-page-body .tld-price-marquee-pill,
 body.home-page-body .tld-price-marquee-skeleton-pill {
-  border-color: rgba(253, 186, 116, 0.95) !important;
-  background: rgba(255, 247, 237, 0.95) !important;
-  box-shadow: 0 1px 2px rgba(255, 153, 51, 0.1) !important;
+  border-color: rgba(255, 153, 0, 0.55) !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(255, 153, 0, 0.14) !important;
 }
 
 body.home-page-body .tld-price-marquee-pill__tld,
@@ -491,63 +498,63 @@ body.home-page-body .home-preview-card-border--domain .domain-listing-card.card-
 
 /* Homepage Domains cards - regular domain listings use blue; Delta Domains stay amber. */
 body.home-page-body .home-domains-section .home-cards-nav-wrap--domain {
-  --home-nav-accent: #2563EB;
+  --home-nav-accent: #45d8ff;
   --home-nav-accent-soft: #EFF6FF;
-  --home-nav-border: #BFDBFE;
-  --home-nav-hover-border: #60A5FA;
-  --home-nav-pulse: rgba(96, 165, 250, 0.45);
+  --home-nav-border: #c8edfd;
+  --home-nav-hover-border: #45d8ff;
+  --home-nav-pulse: rgba(69, 216, 255, 0.45);
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing {
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   background: #FFFFFF !important;
   background-image: none !important;
-  --tw-ring-color: rgba(147, 197, 253, 0.5) !important;
+  --tw-ring-color: rgba(69, 216, 255, 0.5) !important;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.24),
-    0 8px 24px rgba(59, 130, 246, 0.07) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.24),
+    0 8px 24px rgba(69, 216, 255, 0.07) !important;
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing:hover,
 body.home-page-body .home-domains-section .domain-search-card--listing:focus-visible {
-  border-color: #60A5FA !important;
+  border-color: #45d8ff !important;
   background: #F8FBFF !important;
   background-image: none !important;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.34),
-    0 10px 28px rgba(59, 130, 246, 0.1) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.34),
+    0 10px 28px rgba(69, 216, 255, 0.1) !important;
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing .text-sky-700,
 body.home-page-body .home-domains-section .domain-search-card--listing .text-sky-800\/80,
 body.home-page-body .home-domains-section .domain-search-card--listing .domain-card-standard-label,
 body.home-page-body .home-domains-section .domain-search-card--listing .domain-card-standard-tld {
-  color: #2563EB !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing .registry-standard-badge {
-  border-color: #BFDBFE !important;
+  border-color: #c8edfd !important;
   background: #EFF6FF !important;
   background-image: none !important;
-  color: #2563EB !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.1) !important;
+  color: #45d8ff !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.1) !important;
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing .registry-standard-badge__diamond {
-  color: #2563EB !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing > .absolute button {
-  border-color: #BFDBFE !important;
+  border-color: #c8edfd !important;
   background: rgba(255, 255, 255, 0.92) !important;
-  color: #3B82F6 !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing > .absolute button:hover,
 body.home-page-body .home-domains-section .domain-search-card--listing > .absolute button:focus-visible {
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   background: #EFF6FF !important;
-  color: #2563EB !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing > .mt-auto .inline-flex > button:first-child {
@@ -567,39 +574,39 @@ body.home-page-body .home-domains-section .domain-search-card--listing > .mt-aut
 body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture,
 body.home-page-body .home-auctions-section .home-cards-nav-wrap--auction,
 body.home-page-body .home-cards-nav-wrap--assistance {
-  --home-nav-accent: #2563EB;
+  --home-nav-accent: #45d8ff;
   --home-nav-accent-soft: #EFF6FF;
-  --home-nav-border: #BFDBFE;
-  --home-nav-hover-border: #60A5FA;
-  --home-nav-pulse: rgba(96, 165, 250, 0.45);
+  --home-nav-border: #c8edfd;
+  --home-nav-hover-border: #45d8ff;
+  --home-nav-pulse: rgba(69, 216, 255, 0.45);
 }
 
 body.home-page-body .home-preview-card-border--venture,
 body.home-page-body .home-preview-card-border--auction,
 body.home-page-body .home-preview-card-border--assistance {
-  --home-card-border: #93C5FD;
-  --home-card-border-hover: #60A5FA;
-  --home-card-shadow: rgba(59, 130, 246, 0.07);
-  --home-card-shadow-hover: rgba(59, 130, 246, 0.10);
+  --home-card-border: #45d8ff;
+  --home-card-border-hover: #45d8ff;
+  --home-card-shadow: rgba(69, 216, 255, 0.07);
+  --home-card-shadow-hover: rgba(69, 216, 255, 0.10);
   --home-card-price-bg: #FFFFFF;
-  --home-card-price-border: #1E88FF;
-  --home-card-price-border-hover: #1E88FF;
-  --home-card-price-shadow-hover: rgba(59, 130, 246, 0.10);
+  --home-card-price-border: #45d8ff;
+  --home-card-price-border-hover: #45d8ff;
+  --home-card-price-shadow-hover: rgba(69, 216, 255, 0.10);
   background: #F8FBFF !important;
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.24),
-    0 8px 24px rgba(59, 130, 246, 0.07) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.24),
+    0 8px 24px rgba(69, 216, 255, 0.07) !important;
 }
 
 body.home-page-body .home-preview-card-border--venture:hover,
 body.home-page-body .home-preview-card-border--auction:hover,
 body.home-page-body .home-preview-card-border--assistance:hover {
   background: #F8FBFF !important;
-  border-color: #60A5FA !important;
+  border-color: #45d8ff !important;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.34),
-    0 10px 28px rgba(59, 130, 246, 0.10) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.34),
+    0 10px 28px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-preview-card-border--venture .home-preview-card-border__inner,
@@ -636,10 +643,10 @@ body.home-page-body .home-preview-card-border--auction .venture-listing-card__ba
 body.home-page-body .home-preview-card-border--auction .home-auction-preview-card__featured-badge,
 body.home-page-body .home-preview-card-border--assistance .creator-profile-card__badge,
 body.home-page-body .home-preview-card-border--assistance .skill-pill:not(.skill-pill--more) {
-  border-color: #BFDBFE !important;
+  border-color: #c8edfd !important;
   background: #EFF6FF !important;
   background-image: none !important;
-  color: #2563EB !important;
+  color: #45d8ff !important;
   box-shadow: none !important;
 }
 
@@ -652,10 +659,10 @@ body.home-page-body .home-preview-card-border--assistance .va-listing-card__comp
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#1E88FF, #1E88FF) border-box !important;
+    linear-gradient(#45d8ff, #45d8ff) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-preview-card-border--venture .domain-listing-card__price-cta,
@@ -669,13 +676,13 @@ body.home-page-body .home-preview-card-border--auction .home-auction-preview-car
 body.home-page-body .home-preview-card-border--assistance .domain-listing-card__price-cta,
 body.home-page-body .home-preview-card-border--assistance .creator-expected-rate__cta,
 body.home-page-body .home-preview-card-border--assistance .creator-expected-rate__value {
-  color: #2563EB !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-preview-card-border--venture .price-section-v-icon,
 body.home-page-body .home-preview-card-border--auction .price-section-v-icon,
 body.home-page-body .home-preview-card-border--assistance .price-section-v-icon {
-  filter: brightness(0) saturate(100%) invert(35%) sepia(92%) saturate(1946%) hue-rotate(211deg) brightness(94%) contrast(94%) !important;
+  filter: brightness(0) saturate(100%) invert(78%) sepia(58%) saturate(1842%) hue-rotate(147deg) brightness(103%) contrast(101%) !important;
 }
 
 body.home-page-body .home-preview-card-border--venture .domain-listing-card__price-cta:hover,
@@ -690,33 +697,33 @@ body.home-page-body .home-preview-card-border--assistance .domain-listing-card__
 body.home-page-body .home-preview-card-border--assistance .domain-listing-card__price-cta:focus-visible,
 body.home-page-body .home-preview-card-border--assistance .creator-expected-rate__cta:hover,
 body.home-page-body .home-preview-card-border--assistance .creator-expected-rate__cta:focus-visible {
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   background: #EFF6FF !important;
-  color: #1D4ED8 !important;
+  color: #45d8ff !important;
 }
 
 /* Homepage Auctions only - match the blue/white card reference. */
 body.home-page-body .home-auctions-section .home-preview-card-border--auction,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within {
-  --home-card-border: #93C5FD;
-  --home-card-border-hover: #60A5FA;
-  --home-card-shadow: rgba(59, 130, 246, 0.07);
-  --home-card-shadow-hover: rgba(59, 130, 246, 0.10);
+  --home-card-border: #45d8ff;
+  --home-card-border-hover: #45d8ff;
+  --home-card-shadow: rgba(69, 216, 255, 0.07);
+  --home-card-shadow-hover: rgba(69, 216, 255, 0.10);
   background: #FFFFFF !important;
   background-image: none !important;
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.24),
-    0 8px 24px rgba(59, 130, 246, 0.07) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.24),
+    0 8px 24px rgba(69, 216, 255, 0.07) !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within {
-  border-color: #60A5FA !important;
+  border-color: #45d8ff !important;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.34),
-    0 10px 28px rgba(59, 130, 246, 0.10) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.34),
+    0 10px 28px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-preview-card-border__inner,
@@ -765,33 +772,33 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__featured-badge,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__featured-badge--inline {
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   background: rgba(255, 255, 255, 0.78) !important;
   background-image: none !important;
-  color: #1E88FF !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.08) !important;
+  color: #45d8ff !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.08) !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .domain-listing-card__share-btn {
-  border-color: #BFDBFE !important;
+  border-color: #c8edfd !important;
   background: rgba(255, 255, 255, 0.92) !important;
   background-image: none !important;
-  color: #1E88FF !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  color: #45d8ff !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:hover,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:focus-visible,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .domain-listing-card__share-btn:hover,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .domain-listing-card__share-btn:focus-visible {
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   background: #F8FBFF !important;
-  color: #1E88FF !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__title {
-  color: #0B73E8 !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__current-bid {
@@ -807,22 +814,22 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__current-bid-value {
-  color: #0B73E8 !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__ends-in-icon,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__live-bid-icon,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__total-bids-icon {
-  color: #0B73E8 !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__metrics-row,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover .home-auction-preview-card__metrics-row,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content:hover .home-auction-preview-card__metrics-row {
-  border: 1.5px solid #1E88FF !important;
+  border: 1.5px solid #45d8ff !important;
   background: #FFFFFF !important;
   background-image: none !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__live-bid-value,
@@ -831,7 +838,7 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__total-bids-label,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__countdown-num,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__countdown--static {
-  color: #0F3476 !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__nav-cta,
@@ -841,7 +848,7 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
   border-color: transparent !important;
   background: transparent !important;
   background-image: none !important;
-  color: #1E88FF !important;
+  color: #45d8ff !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -850,39 +857,39 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover .home-auction-preview-card__nav-cta .price-section-v-icon,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__nav-cta:hover .price-section-v-icon,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__nav-cta:focus-visible .price-section-v-icon {
-  filter: brightness(0) saturate(100%) invert(47%) sepia(97%) saturate(1910%) hue-rotate(190deg) brightness(101%) contrast(103%) !important;
+  filter: brightness(0) saturate(100%) invert(78%) sepia(58%) saturate(1842%) hue-rotate(147deg) brightness(103%) contrast(101%) !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__stats-footer {
-  border-top-color: #BFDBFE !important;
+  border-top-color: #c8edfd !important;
 }
 
 /* Homepage Ventures only - keep every state in the blue card theme. */
 body.home-page-body .home-ventures-section .home-preview-card-border--venture,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:focus-within {
-  --home-card-border: #93C5FD;
-  --home-card-border-hover: #60A5FA;
-  --home-card-shadow: rgba(59, 130, 246, 0.07);
-  --home-card-shadow-hover: rgba(59, 130, 246, 0.10);
+  --home-card-border: #45d8ff;
+  --home-card-border-hover: #45d8ff;
+  --home-card-shadow: rgba(69, 216, 255, 0.07);
+  --home-card-shadow-hover: rgba(69, 216, 255, 0.10);
   --home-card-price-bg: #FFFFFF;
-  --home-card-price-border: #1E88FF;
-  --home-card-price-border-hover: #1E88FF;
-  --home-card-price-shadow-hover: rgba(59, 130, 246, 0.10);
+  --home-card-price-border: #45d8ff;
+  --home-card-price-border-hover: #45d8ff;
+  --home-card-price-shadow-hover: rgba(69, 216, 255, 0.10);
   background: #FFFFFF !important;
   background-image: none !important;
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.24),
-    0 8px 24px rgba(59, 130, 246, 0.07) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.24),
+    0 8px 24px rgba(69, 216, 255, 0.07) !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:focus-within {
-  border-color: #60A5FA !important;
+  border-color: #45d8ff !important;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.34),
-    0 10px 28px rgba(59, 130, 246, 0.10) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.34),
+    0 10px 28px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .home-preview-card-border__inner,
@@ -899,36 +906,36 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture .d
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title--compact,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .venture-listing-card__title--compact {
-  color: #0070E0 !important;
+  color: #45d8ff !important;
   font-weight: 700 !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__badge,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__badges span,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__metric--premium {
-  border-color: #BFDBFE !important;
+  border-color: #c8edfd !important;
   background: #EFF6FF !important;
   background-image: none !important;
-  color: #1E88FF !important;
+  color: #45d8ff !important;
   box-shadow: none !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card__equity-badge,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:hover .venture-listing-card__equity-badge {
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   background: rgba(255, 255, 255, 0.72) !important;
   background-image: none !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-icon,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-value {
-  color: #1E88FF !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-label {
-  color: #1E88FF !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__price-label {
@@ -950,15 +957,15 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture .v
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#1E88FF, #1E88FF) border-box !important;
+    linear-gradient(#45d8ff, #45d8ff) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__price-value--compact,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-value {
-  color: #0F3476 !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-cta,
@@ -970,7 +977,7 @@ body.home-page-body .home-ventures-section .home-auto-scroll-row .home-preview-c
   border-color: transparent !important;
   background: transparent !important;
   background-image: none !important;
-  color: #1E88FF !important;
+  color: #45d8ff !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -979,25 +986,25 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture .p
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .price-section-v-icon,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-cta:hover .price-section-v-icon,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-cta:focus-visible .price-section-v-icon {
-  filter: brightness(0) saturate(100%) invert(47%) sepia(97%) saturate(1910%) hue-rotate(190deg) brightness(101%) contrast(103%) !important;
+  filter: brightness(0) saturate(100%) invert(78%) sepia(58%) saturate(1842%) hue-rotate(147deg) brightness(103%) contrast(101%) !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__share-btn {
-  border-color: #BFDBFE !important;
+  border-color: #c8edfd !important;
   background: rgba(255, 255, 255, 0.92) !important;
   background-image: none !important;
-  color: #1E88FF !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  color: #45d8ff !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__share-container--inline .domain-listing-card__share-btn:focus-visible,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__share-btn:hover,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__share-btn:focus-visible {
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   background: #F8FBFF !important;
-  color: #1E88FF !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__body-watermark polygon,
@@ -1020,10 +1027,10 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture .h
     from 0deg,
     transparent 0deg,
     transparent 72%,
-    rgba(96, 165, 250, 0.42) 80%,
-    #60A5FA 87%,
-    #2563EB 93%,
-    rgba(37, 99, 235, 0.32) 98%,
+    rgba(69, 216, 255, 0.42) 80%,
+    #45d8ff 87%,
+    #45d8ff 93%,
+    rgba(69, 216, 255, 0.32) 98%,
     transparent 100%
   ) !important;
 }
@@ -1142,10 +1149,10 @@ body.home-page-body .home-preview-card-border--assistance .home-feature-card-bea
     from 0deg,
     transparent 0deg,
     transparent 72%,
-    rgba(96, 165, 250, 0.42) 80%,
-    #60A5FA 87%,
-    #2563EB 93%,
-    rgba(37, 99, 235, 0.32) 98%,
+    rgba(69, 216, 255, 0.42) 80%,
+    #45d8ff 87%,
+    #45d8ff 93%,
+    rgba(69, 216, 255, 0.32) 98%,
     transparent 100%
   ) !important;
 }
@@ -1190,24 +1197,24 @@ body.home-page-body .home-coventures-section .venture-listing-card__price-value-
 body.home-page-body .home-preview-card-border--assistance,
 body.home-page-body .home-preview-card-border--assistance:hover,
 body.home-page-body .home-preview-card-border--assistance:focus-within {
-  --home-card-border: #93C5FD;
-  --home-card-border-hover: #60A5FA;
-  --home-card-shadow: rgba(59, 130, 246, 0.07);
-  --home-card-shadow-hover: rgba(59, 130, 246, 0.10);
+  --home-card-border: #45d8ff;
+  --home-card-border-hover: #45d8ff;
+  --home-card-shadow: rgba(69, 216, 255, 0.07);
+  --home-card-shadow-hover: rgba(69, 216, 255, 0.10);
   background: #FFFFFF !important;
   background-image: none !important;
-  border-color: #93C5FD !important;
+  border-color: #45d8ff !important;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.24),
-    0 8px 24px rgba(59, 130, 246, 0.07) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.24),
+    0 8px 24px rgba(69, 216, 255, 0.07) !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance:hover,
 body.home-page-body .home-preview-card-border--assistance:focus-within {
-  border-color: #60A5FA !important;
+  border-color: #45d8ff !important;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.34),
-    0 10px 28px rgba(59, 130, 246, 0.10) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.34),
+    0 10px 28px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .home-preview-card-border__inner,
@@ -1255,23 +1262,23 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
   object-fit: cover;
   object-position: center;
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.70),
-    0 8px 18px rgba(59, 130, 246, 0.12) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.70),
+    0 8px 18px rgba(69, 216, 255, 0.12) !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__cover .creator-profile-card__avatar--fallback {
   background: #EFF6FF !important;
-  color: #1E40AF !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .domain-listing-card__share-btn,
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .domain-listing-card__share-btn:hover,
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .domain-listing-card__share-btn:focus-visible {
-  border-color: #BFDBFE !important;
+  border-color: #c8edfd !important;
   background: rgba(255, 255, 255, 0.92) !important;
   background-image: none !important;
-  color: #1E88FF !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  color: #45d8ff !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__title-block {
@@ -1284,10 +1291,10 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .creator-profile-card__badge {
-  border-color: #BFDBFE !important;
+  border-color: #c8edfd !important;
   background: #EFF6FF !important;
   background-image: none !important;
-  color: #2563EB !important;
+  color: #45d8ff !important;
   box-shadow: none !important;
 }
 
@@ -1305,7 +1312,7 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .stat-icon {
-  color: #2563EB !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .stat-value {
@@ -1328,10 +1335,10 @@ body.home-page-body .home-auto-scroll-row .home-preview-card-shell:has(.virtual-
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#1E88FF, #1E88FF) border-box !important;
+    linear-gradient(#45d8ff, #45d8ff) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation-label {
@@ -1339,7 +1346,7 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-value {
-  color: #0F3476 !important;
+  color: #45d8ff !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation-period {
@@ -1353,7 +1360,7 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
   border-color: transparent !important;
   background: transparent !important;
   background-image: none !important;
-  color: #1E88FF !important;
+  color: #45d8ff !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -1362,7 +1369,7 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card:hover .va-listing-card__compensation .price-section-v-icon,
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover .price-section-v-icon,
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible .price-section-v-icon {
-  filter: brightness(0) saturate(100%) invert(47%) sepia(97%) saturate(1910%) hue-rotate(190deg) brightness(101%) contrast(103%) !important;
+  filter: brightness(0) saturate(100%) invert(78%) sepia(58%) saturate(1842%) hue-rotate(147deg) brightness(103%) contrast(101%) !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .domain-listing-card__stats.listing-card-stats-footer {
@@ -1618,12 +1625,12 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#60A5FA, #60A5FA) border-box !important;
+    linear-gradient(#45d8ff, #45d8ff) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow:
-    0 0 0 1px rgba(96, 165, 250, 0.35),
-    0 0 14px rgba(59, 130, 246, 0.28) !important;
+    0 0 0 1px rgba(69, 216, 255, 0.35),
+    0 0 14px rgba(69, 216, 255, 0.28) !important;
 }
 
 /* Saffron / non-blue cards — saffron pill ring on hover */

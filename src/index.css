@@ -7946,56 +7946,95 @@ body.home-page-body {
   --home-topbar-height: 2.85rem;
   --home-main-nav-height: 3.55rem;
   --home-nav-stack-height: calc(var(--home-topbar-height) + var(--home-main-nav-height));
-  --home-hero-glow-hue: 32;
-  animation: home-hero-glow-hue-rotate 12s ease-in-out infinite;
-}
-
-body.home-page-body.is-scrolling {
-  animation: none;
 }
 
 body.home-page-body.is-scrolling .cb-overflow-marquee__track,
 body.home-page-body.is-scrolling .home-feature-card-beam-spinner,
-body.home-page-body.is-scrolling .tld-price-marquee-track--auto {
+body.home-page-body.is-scrolling .tld-price-marquee-track--auto,
+body.home-page-body.is-scrolling .glow-layer,
+body.home-page-body.is-scrolling .glow-layer::before,
+body.home-page-body.is-scrolling .glow-layer::after {
   animation-play-state: paused !important;
 }
 
-@property --home-hero-glow-hue {
-  syntax: '<number>';
-  initial-value: 32;
-  inherits: true;
+@keyframes home-hero-glow-orange {
+  0%,
+  38% { opacity: 1; }
+  48%,
+  90% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
-@keyframes home-hero-glow-hue-rotate {
-  0% { --home-hero-glow-hue: 32; }
-  25% { --home-hero-glow-hue: 38; }
-  50% { --home-hero-glow-hue: 26; }
-  75% { --home-hero-glow-hue: 22; }
-  100% { --home-hero-glow-hue: 32; }
+@keyframes home-hero-glow-blue {
+  0%,
+  48% { opacity: 0; }
+  58%,
+  80% { opacity: 1; }
+  90%,
+  100% { opacity: 0; }
+}
+
+.hero-glow-section {
+  overflow: visible;
+}
+
+.home-hero-search-stack {
+  isolation: isolate;
+  z-index: 0;
+}
+
+.hero-search-sticky-wrapper {
+  isolation: isolate;
+  z-index: 20;
+  background: transparent;
+}
+
+.hero-glow-section .glow-layer {
+  z-index: 0;
+  width: 100%;
+  height: min(15.5rem, 34vh);
+  overflow: visible;
+  background: none;
+}
+
+.hero-glow-section .glow-layer::before,
+.hero-glow-section .glow-layer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-glow-section .glow-layer::before {
+  background: radial-gradient(
+    ellipse 90% 75% at 22% 32%,
+    color-mix(in srgb, #ff9900 72%, transparent) 0%,
+    color-mix(in srgb, #ff9900 42%, transparent) 38%,
+    color-mix(in srgb, #ff9900 16%, transparent) 68%,
+    transparent 86%
+  );
+  animation: home-hero-glow-orange 72s linear infinite;
+}
+
+.hero-glow-section .glow-layer::after {
+  background: radial-gradient(
+    ellipse 90% 75% at 22% 32%,
+    color-mix(in srgb, #45d8ff 72%, transparent) 0%,
+    color-mix(in srgb, #45d8ff 42%, transparent) 38%,
+    color-mix(in srgb, #45d8ff 16%, transparent) 68%,
+    transparent 86%
+  );
+  animation: home-hero-glow-blue 72s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.home-page-body {
+  .hero-glow-section .glow-layer::before,
+  .hero-glow-section .glow-layer::after {
     animation: none;
-    --home-hero-glow-hue: 32;
   }
-}
 
-/* Shared hero / reserved-space glow fill (one formula, one hue) */
-.glow-layer {
-  background: radial-gradient(
-    ellipse 90% 80% at 22% 0%,
-    hsl(var(--home-hero-glow-hue, 32), 92%, 62%, 0.38) 0%,
-    hsl(var(--home-hero-glow-hue, 32), 86%, 60%, 0.2) 40%,
-    hsl(var(--home-hero-glow-hue, 32), 80%, 58%, 0.1) 65%,
-    transparent 82%
-  );
-}
-
-@supports (-webkit-touch-callout: none) {
-  body.home-page-body {
-    animation: none;
-    --home-hero-glow-hue: 32;
+  .hero-glow-section .glow-layer::after {
+    opacity: 0;
   }
 }
 
@@ -8013,6 +8052,7 @@ body.home-page-body.is-scrolling .tld-price-marquee-track--auto {
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  background: #ffffff;
 }
 
 /* ── Top nav: fixed height (never expands for the large main-nav logo) ───── */

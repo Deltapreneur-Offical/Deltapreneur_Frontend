@@ -33,6 +33,7 @@ import AIDomainLoader from '../ai-domains/AIDomainLoader';
 import RegistrarDomainLoader from './RegistrarDomainLoader';
 import DomainExtensionsLoader from './DomainExtensionsLoader';
 import PriceSectionIcon from './PriceSectionIcon';
+import priceSectionV from '../../assets/pricesectionV.png';
 import {
   heroSearchStackEnter,
   heroSubmitHover,
@@ -277,7 +278,30 @@ function BrandSearchSubmitButton({ label }) {
       className="brand-search-submit"
       {...motionProps}
     >
-      <PriceSectionIcon className="brand-search-submit-icon" />
+      <span
+        className="brand-search-arrow"
+        style={{ '--search-arrow-mask': `url(${priceSectionV})` }}
+        aria-hidden="true"
+      >
+        <PriceSectionIcon className="brand-search-submit-icon" />
+        <svg
+          className="brand-search-arrow-tail"
+          viewBox="0 0 253 294"
+          preserveAspectRatio="none"
+          focusable="false"
+        >
+          <path
+            className="brand-search-arrow-tail-glow"
+            d="M20 3 H26 L244 140 V149 L26 286 H20 Q12 286 12 278 V11 Q12 3 20 3 Z"
+            pathLength="100"
+          />
+          <path
+            className="brand-search-arrow-tail-head"
+            d="M20 3 H26 L244 140 V149 L26 286 H20 Q12 286 12 278 V11 Q12 3 20 3 Z"
+            pathLength="100"
+          />
+        </svg>
+      </span>
     </ButtonTag>
   );
 }
@@ -1271,10 +1295,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       onMouseEnter={onSearchFrameInteract}
       onFocusCapture={onSearchFrameInteract}
     >
-      <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-stretch rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-5"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-stretch rounded-full border bg-white py-0 pl-4 pr-0 sm:pl-5"
       >
         <input
           type="text"
@@ -1297,10 +1320,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       onMouseEnter={onSearchFrameInteract}
       onFocusCapture={onSearchFrameInteract}
     >
-      <span className="brand-lightning-tail" aria-hidden="true" />
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-stretch rounded-full border bg-white py-0 pl-4 pr-0 transition-all duration-300 sm:pl-6"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-stretch rounded-full border bg-white py-0 pl-4 pr-0 sm:pl-6"
       >
         <input
           type="text"
@@ -1329,7 +1351,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               </div>
 
               {searchMode === 'new' && (
-                <div className="flex-1 min-w-0 overflow-hidden">
+                <div className="relative z-30 flex-1 min-w-0 overflow-hidden">
                   <TldPriceMarquee />
                 </div>
               )}
@@ -1361,7 +1383,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             </div>
 
             {searchMode === 'new' && (
-              <div className="mt-2 w-full overflow-hidden">
+              <div className="relative z-30 mt-2 w-full overflow-hidden">
                 <TldPriceMarquee />
               </div>
             )}
@@ -1674,21 +1696,60 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       </div>
 
       <style>{`
+        @property --search-tail-top {
+          syntax: '<angle>';
+          inherits: false;
+          initial-value: 0deg;
+        }
+
+        @property --search-tail-bottom {
+          syntax: '<angle>';
+          inherits: false;
+          initial-value: 180deg;
+        }
+
         .brand-search-shell {
-          border: 3px solid rgba(252, 106, 9, 0.8);
-          box-shadow: 0 0 0 1px rgba(252, 106, 9, 0.14);
-          background: #ffffff;
+          --search-tail-top: 0deg;
+          --search-tail-bottom: 180deg;
+          border: 3px solid transparent;
+          background:
+            linear-gradient(#ffffff, #ffffff) padding-box,
+            conic-gradient(
+              from var(--search-tail-top),
+              #ffffff 0deg,
+              #fb923c 11deg,
+              transparent 24deg,
+              transparent 360deg
+            ) border-box,
+            conic-gradient(
+              from var(--search-tail-bottom),
+              #ffffff 0deg,
+              #fdba74 11deg,
+              transparent 24deg,
+              transparent 360deg
+            ) border-box,
+            linear-gradient(#fc6a09, #fc6a09) border-box;
+          box-shadow: none;
           overflow: hidden;
-          transition: border-color 0.22s ease, box-shadow 0.22s ease;
+          transition:
+            --search-tail-top 1.75s ease-in-out,
+            --search-tail-bottom 1.75s ease-in-out;
         }
 
         .brand-search-frame:hover .brand-search-shell,
-        .brand-search-shell:hover,
-        .brand-search-shell:focus-within {
-          border-color: #fc6a09;
-          box-shadow:
-            0 0 0 3px rgba(252, 106, 9, 0.22),
-            0 10px 28px -10px rgba(249, 115, 22, 0.45);
+        .brand-search-shell:hover {
+          --search-tail-top: 180deg;
+          --search-tail-bottom: 360deg;
+          box-shadow: 0 10px 28px -10px rgba(249, 115, 22, 0.35);
+        }
+
+        .brand-search-shell.search-glow-focus {
+          box-shadow: none;
+        }
+
+        .brand-search-frame:hover .brand-search-shell.search-glow-focus,
+        .brand-search-shell.search-glow-focus:hover {
+          box-shadow: 0 10px 28px -10px rgba(249, 115, 22, 0.35);
         }
 
         .brand-search-divider {
@@ -1719,18 +1780,29 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
 
         .brand-search-submit:hover,
         .brand-search-submit:focus-visible {
-          opacity: 0.88;
           outline: none;
         }
 
-        .brand-search-submit .price-section-v-icon,
-        .brand-search-submit .brand-search-submit-icon {
+        .brand-search-arrow {
           position: absolute;
           top: -5px;
           right: 0.78rem;
           bottom: -5px;
           left: auto;
-          height: calc(100% + 10px) !important;
+          height: calc(100% + 10px);
+          width: auto;
+          display: block;
+          pointer-events: none;
+        }
+
+        .brand-search-submit:has(.brand-search-arrow) .brand-search-arrow .price-section-v-icon,
+        .brand-search-submit:has(.brand-search-arrow) .brand-search-arrow .brand-search-submit-icon {
+          position: relative !important;
+          top: auto !important;
+          right: auto !important;
+          bottom: auto !important;
+          left: auto !important;
+          height: 100% !important;
           width: auto !important;
           max-width: none !important;
           max-height: none !important;
@@ -1738,8 +1810,52 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           padding: 0 !important;
           transform: none !important;
           object-fit: fill !important;
-          object-position: center right !important;
-          aspect-ratio: auto;
+          object-position: center !important;
+        }
+
+        .brand-search-arrow-tail {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          overflow: visible;
+          pointer-events: none;
+          -webkit-mask-image: var(--search-arrow-mask);
+          -webkit-mask-size: 100% 100%;
+          -webkit-mask-repeat: no-repeat;
+          mask-image: var(--search-arrow-mask);
+          mask-size: 100% 100%;
+          mask-repeat: no-repeat;
+        }
+
+        .brand-search-arrow-tail-glow,
+        .brand-search-arrow-tail-head {
+          fill: none;
+          stroke-linejoin: round;
+          stroke-linecap: round;
+          vector-effect: non-scaling-stroke;
+          transition: stroke-dashoffset 1.75s ease-in-out;
+        }
+
+        .brand-search-arrow-tail-glow {
+          stroke: #fb923c;
+          stroke-width: 3px;
+          stroke-dasharray: 20 30 20 30;
+          stroke-dashoffset: 0;
+        }
+
+        .brand-search-arrow-tail-head {
+          stroke: #ffffff;
+          stroke-width: 2.2px;
+          stroke-dasharray: 11 39 11 39;
+          stroke-dashoffset: 0;
+        }
+
+        .brand-search-frame:hover .brand-search-arrow-tail-glow,
+        .brand-search-frame:hover .brand-search-arrow-tail-head,
+        .brand-search-shell:hover .brand-search-arrow-tail-glow,
+        .brand-search-shell:hover .brand-search-arrow-tail-head {
+          stroke-dashoffset: -100;
         }
 
         /* Thick orange/red border comet — search bar + pills */
@@ -1799,7 +1915,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         }
 
         .brand-lightning-host--ring > .brand-lightning-tail {
-          /* Hairline ring — no leftover fill/shade on the control */
           inset: -1px;
           padding: 1px;
           background: transparent;
@@ -1822,19 +1937,18 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           aspect-ratio: 1;
           transform: translate(-50%, -50%) rotate(0deg);
           opacity: 0;
-          /* Soft purple comet — no hard white tip that can flash at the end */
           background: conic-gradient(
             from 0deg,
             transparent 0deg,
             transparent 200deg,
-            rgba(124, 58, 237, 0.15) 235deg,
-            rgba(147, 51, 234, 0.45) 270deg,
-            rgba(168, 85, 247, 0.75) 300deg,
-            rgba(192, 132, 252, 0.9) 325deg,
-            rgba(167, 139, 250, 0.55) 345deg,
+            rgba(249, 115, 22, 0.2) 235deg,
+            rgba(255, 255, 255, 0.55) 270deg,
+            #ffffff 300deg,
+            rgba(251, 146, 60, 0.85) 325deg,
+            rgba(249, 115, 22, 0.4) 345deg,
             transparent 360deg
           );
-          filter: drop-shadow(0 0 4px rgba(147, 51, 234, 0.55));
+          filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.65));
         }
 
         .brand-lightning-host.brand-lightning-tail--play > .brand-lightning-tail {
@@ -1845,20 +1959,11 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           animation: brand-lightning-border-orbit 2.2s cubic-bezier(0.33, 0, 0.2, 1) forwards;
         }
 
-        /* Whole layer eases out so nothing snaps or leaves a tint */
         @keyframes brand-lightning-veil {
-          0% {
-            opacity: 0;
-          }
-          12% {
-            opacity: 1;
-          }
-          62% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 0;
-          }
+          0% { opacity: 0; }
+          12% { opacity: 1; }
+          62% { opacity: 1; }
+          100% { opacity: 0; }
         }
 
         @keyframes brand-lightning-border-orbit {
@@ -1866,16 +1971,16 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             transform: translate(-50%, -50%) rotate(0deg);
             opacity: 0;
           }
-          10% {
-            opacity: 1;
-          }
-          58% {
-            opacity: 0.95;
-          }
+          10% { opacity: 1; }
+          58% { opacity: 0.95; }
           100% {
             transform: translate(-50%, -50%) rotate(360deg);
             opacity: 0;
           }
+        }
+
+        .brand-search-frame > .brand-lightning-tail {
+          display: none;
         }
 
         @media (prefers-reduced-motion: reduce) {

@@ -74,6 +74,18 @@
   object-fit: fill !important;
 }
 
+.brand-search-submit:has(.brand-search-arrow) .price-section-v-icon {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  height: 100% !important;
+  width: auto !important;
+  margin: 0 !important;
+  object-fit: fill !important;
+}
+
 /* DeltaOs / Delta Registrars / Delta Registrations — same slot as venture */
 .tech-service-card__price-arrow,
 .home-operations-preview-card__cta,

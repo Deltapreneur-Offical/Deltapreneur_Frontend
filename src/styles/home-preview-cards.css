@@ -2148,10 +2148,10 @@
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#1E88FF, #1E88FF) border-box !important;
+    linear-gradient(#45d8ff, #45d8ff) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 /* Homepage DeltaOp: blue compensation pill at rest (override saffron). */
@@ -2164,10 +2164,10 @@
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#1E88FF, #1E88FF) border-box !important;
+    linear-gradient(#45d8ff, #45d8ff) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 /* Homepage Ventures: blue offer pill at rest (not saffron). */
@@ -2180,10 +2180,10 @@
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#1E88FF, #1E88FF) border-box !important;
+    linear-gradient(#45d8ff, #45d8ff) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 /* Homepage DeltaOp: blue compensation pill at rest (not saffron). */
@@ -2196,10 +2196,10 @@
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#1E88FF, #1E88FF) border-box !important;
+    linear-gradient(#45d8ff, #45d8ff) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
+  box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 .home-preview-row .home-preview-card-shell:has(.venture-listing-card--coventure) .domain-listing-card__price-box,

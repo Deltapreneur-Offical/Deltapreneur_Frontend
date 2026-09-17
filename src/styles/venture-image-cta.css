@@ -1,25 +1,77 @@
 .venture-image-cta {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 0;
+  margin: 0.25rem 0.3rem;
   padding: 0;
   border: none;
   background: transparent;
   cursor: pointer;
   line-height: 0;
-  transition: transform 0.18s ease, opacity 0.18s ease, filter 0.18s ease;
+  border-radius: 999px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.venture-image-cta:hover:not(:disabled) {
+.venture-image-cta::before {
+  content: '';
+  position: absolute;
+  inset: -2px -4px;
+  z-index: -1;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(90deg, #f97316 0%, #fb923c 45%, #38bdf8 100%);
+  filter: blur(5px);
+  transition: opacity 0.2s ease;
+}
+
+.venture-image-cta--apply::before {
+  background: linear-gradient(90deg, #38bdf8 0%, #60a5fa 45%, #f97316 100%);
+}
+
+.venture-image-cta::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: 2;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  border: 2px solid #e8e8ec;
+  background: none;
+  box-shadow: none;
+  transition: opacity 0.2s ease;
+}
+
+.venture-image-cta:hover:not(:disabled),
+.venture-image-cta:focus-visible {
   transform: translateY(-1px);
-  filter: brightness(1.03);
+  box-shadow:
+    0 0 5px 1px rgba(249, 115, 22, 0.28),
+    0 0 8px 2px rgba(56, 189, 248, 0.22);
+}
+
+.venture-image-cta--apply:hover:not(:disabled),
+.venture-image-cta--apply:focus-visible {
+  box-shadow:
+    0 0 5px 1px rgba(56, 189, 248, 0.28),
+    0 0 8px 2px rgba(249, 115, 22, 0.2);
+}
+
+.venture-image-cta:hover:not(:disabled)::before,
+.venture-image-cta:focus-visible::before {
+  opacity: 0.7;
+}
+
+.venture-image-cta:hover:not(:disabled)::after,
+.venture-image-cta:focus-visible::after {
+  opacity: 1;
 }
 
 .venture-image-cta:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.28);
-  border-radius: 999px;
 }
 
 .venture-image-cta:disabled {
@@ -29,9 +81,12 @@
 }
 
 .venture-image-cta__img {
+  position: relative;
+  z-index: 1;
   display: block;
   height: 3.15rem;
   width: auto;
   max-width: min(16rem, 100%);
   object-fit: contain;
+  border-radius: 999px;
 }

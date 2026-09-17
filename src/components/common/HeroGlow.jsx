@@ -13,8 +13,8 @@ export default function HeroGlow() {
   );
 
   return (
-    <section className="hero-glow-section relative overflow-y-visible border-b-0 bg-transparent px-4 pb-2 pt-5 sm:px-6 sm:pt-6 md:px-8 md:pt-7 lg:px-8 lg:pt-7">
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-x-hidden glow-layer" aria-hidden />
+    <section className="hero-glow-section relative overflow-visible border-b-0 bg-transparent px-4 pb-2 pt-5 sm:px-6 sm:pt-6 md:px-8 md:pt-7 lg:px-8 lg:pt-7">
+      <div className="pointer-events-none absolute left-0 right-0 top-0 z-0 glow-layer" aria-hidden />
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="flex w-full max-w-[920px] flex-col items-start text-left">

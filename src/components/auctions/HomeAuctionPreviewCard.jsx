@@ -479,34 +479,36 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
           </div>
 
           {/* Current Bid + action arrow */}
-          <div className="home-auction-preview-card__metrics-row">
-            <div className="home-auction-preview-card__live-bid min-w-0 flex-1">
+          <div className="home-auction-preview-card__price-section">
+            <span className="home-auction-preview-card__live-bid-label">
+              {currentBidLabel}
+            </span>
+            <div className="home-auction-preview-card__metrics-row">
+              <div className="home-auction-preview-card__live-bid min-w-0 flex-1">
               <Gavel
                 size={14}
                 strokeWidth={2.25}
                 className="home-auction-preview-card__live-bid-icon shrink-0"
                 aria-hidden
               />
-              <div className="home-auction-preview-card__live-bid-copy min-w-0">
-                <span className="home-auction-preview-card__live-bid-label">
-                  {currentBidLabel}
-                </span>
+                <div className="home-auction-preview-card__live-bid-copy min-w-0">
                 <span
                   className={`home-auction-preview-card__live-bid-value currency-display${totalBids <= 0 ? ' home-auction-preview-card__live-bid-value--nil' : ''}`}
                 >
                   {bidDisplay}
                 </span>
+                </div>
               </div>
-            </div>
 
-            <button
-              type="button"
-              className="home-auction-preview-card__nav-cta"
-              aria-label={t('listingCardViewDetails', { defaultValue: 'View details' })}
-              onClick={handleArrowClick}
-            >
-              <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
-            </button>
+              <button
+                type="button"
+                className="home-auction-preview-card__nav-cta"
+                aria-label={t('listingCardViewDetails', { defaultValue: 'View details' })}
+                onClick={handleArrowClick}
+              >
+                <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
+              </button>
+            </div>
           </div>
         </div>
 

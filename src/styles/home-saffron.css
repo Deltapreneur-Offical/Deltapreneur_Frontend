@@ -536,12 +536,12 @@ body.home-page-body .home-domains-section .domain-search-card--listing .registry
   border-color: #c8edfd !important;
   background: #EFF6FF !important;
   background-image: none !important;
-  color: #45d8ff !important;
-  box-shadow: 0 0 10px rgba(69, 216, 255, 0.1) !important;
+  color: #075985 !important;
+  box-shadow: none !important;
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing .registry-standard-badge__diamond {
-  color: #45d8ff !important;
+  color: #075985 !important;
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing > .absolute button {
@@ -749,13 +749,13 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content:active .home-auction-preview-card__body::before {
   content: '';
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 70%;
+  inset: 0 auto 32% 0;
+  width: 52%;
   z-index: 0;
   pointer-events: none;
   background: #F3F8FF !important;
   clip-path: polygon(0 4%, 0 96%, 100% 50%);
-  opacity: 0.72;
+  opacity: 0.42;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__content,
@@ -798,7 +798,8 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .d
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__title {
-  color: #45d8ff !important;
+  color: #0b9fd0 !important;
+  font-weight: 800 !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__current-bid {
@@ -833,7 +834,10 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__live-bid-value,
-body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__live-bid-value--nil,
+body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__live-bid-value--nil {
+  color: #0f172a !important;
+}
+
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__total-bids-count,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__total-bids-label,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__countdown-num,
@@ -905,8 +909,10 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture .d
 
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title--compact,
-body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .venture-listing-card__title--compact {
-  color: #45d8ff !important;
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .venture-listing-card__title--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain {
+  color: #0b9fd0 !important;
   font-weight: 700 !important;
 }
 
@@ -1342,15 +1348,15 @@ body.home-page-body .home-auto-scroll-row .home-preview-card-shell:has(.virtual-
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation-label {
-  color: #64748B !important;
+  color: #334155 !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-value {
-  color: #45d8ff !important;
+  color: #0f172a !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation-period {
-  color: #64748B !important;
+  color: #475569 !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
@@ -1667,4 +1673,88 @@ body.home-page-body .home-preview-card-border:not(.home-preview-card-border--ven
   box-shadow:
     0 0 0 1px rgba(249, 115, 22, 0.28),
     0 0 14px rgba(249, 115, 22, 0.26) !important;
+}
+
+/* Keep homepage auction cards on the main-branch layout. */
+body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__body::before,
+body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover .home-auction-preview-card__body::before,
+body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content:hover .home-auction-preview-card__body::before,
+body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content:focus-visible .home-auction-preview-card__body::before,
+body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content:active .home-auction-preview-card__body::before {
+  inset: 0 auto 0 0;
+  width: 70%;
+  opacity: 0.72;
+}
+
+body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row,
+body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row {
+  order: 5;
+  width: 100%;
+  height: 2.38rem;
+  min-height: 2.38rem;
+  max-height: 2.38rem;
+  margin-top: 0;
+  transform: translateY(-0.12rem);
+  align-items: stretch;
+}
+
+body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section,
+body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section {
+  order: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  width: 100%;
+}
+
+body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section > .home-auction-preview-card__live-bid-label,
+body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section > .home-auction-preview-card__live-bid-label {
+  display: block;
+  padding-left: 0.2rem;
+  line-height: 1;
+}
+
+body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title,
+body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title {
+  font-weight: 700 !important;
+}
+
+body.home-page-body .home-auctions-section .home-auction-preview-card__live-bid {
+  gap: 0.4375rem;
+}
+
+body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-icon,
+body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-icon {
+  display: block !important;
+}
+
+body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-copy,
+body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-copy {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-value,
+body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-value {
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+body.home-page-body .home-auctions-section .home-auction-preview-card__nav-cta,
+body.home-page-body .home-auctions-section .home-auction-preview-card__nav-cta:hover {
+  flex: 0 0 2.35rem !important;
+  width: 2.35rem !important;
+  min-width: 2.35rem !important;
+  max-width: 2.35rem !important;
+}
+
+body.home-page-body .home-auctions-section .home-preview-card-border--auction,
+body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-preview-card-border__inner {
+  overflow: hidden !important;
+  border-radius: 1.5rem !important;
+}
+
+body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) {
+  aspect-ratio: 1.12 / 1 !important;
 }

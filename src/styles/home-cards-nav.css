@@ -10,7 +10,7 @@
   min-width: 0;
   overflow: visible;
   /* Keep arrows in the side gutter so they never sit on cards */
-  padding-inline: 3.15rem;
+  padding-inline: 3.5rem;
 }
 
 .home-cards-nav-wrap--domain,
@@ -58,6 +58,8 @@
   justify-content: flex-start !important;
   scroll-snap-type: none !important;
   scroll-behavior: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .home-cards-nav-wrap .home-preview-row.home-cards-nav-row .home-preview-row__item {
@@ -241,7 +243,7 @@
 
 @media (max-width: 767px) {
   .home-cards-nav-wrap {
-    padding-inline: 2.7rem;
+    padding-inline: 3.15rem;
   }
 
   .home-cards-nav-wrap--no-overflow {

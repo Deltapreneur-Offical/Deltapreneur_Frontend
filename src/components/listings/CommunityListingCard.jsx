@@ -80,6 +80,8 @@ export default function CommunityListingCard({
   likeState,
   onLike,
   skipVisibilityCheck = false,
+  priceLabelOutside = false,
+  hideStatsFooter = false,
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -233,22 +235,25 @@ export default function CommunityListingCard({
           <CreatorExpectedRateCard
             profile={profile}
             variant="domain"
+            labelOutside={priceLabelOutside}
             onView={interactive && !onHire ? () => onView() : undefined}
             onHire={interactive && onHire ? () => onHire() : undefined}
             hireLabel={onHire ? 'Hire virtual assistant' : undefined}
           />
 
-          <ListingCardStatsFooter
-            viewCount={viewCount}
-            likeState={{
-              liked: likeState?.liked,
-              count: Number.isFinite(vaLikeCount) ? vaLikeCount : 0,
-            }}
-            onLike={onLike}
-            likesFirst
-            showCta={false}
-            className="domain-listing-card__stats domain-listing-card__stats--split"
-          />
+          {!hideStatsFooter ? (
+            <ListingCardStatsFooter
+              viewCount={viewCount}
+              likeState={{
+                liked: likeState?.liked,
+                count: Number.isFinite(vaLikeCount) ? vaLikeCount : 0,
+              }}
+              onLike={onLike}
+              likesFirst
+              showCta={false}
+              className="domain-listing-card__stats domain-listing-card__stats--split"
+            />
+          ) : null}
         </div>
       </article>
     );
@@ -335,22 +340,25 @@ export default function CommunityListingCard({
         <CreatorExpectedRateCard
           profile={profile}
           variant="domain"
+          labelOutside={priceLabelOutside}
           onView={interactive && !onHire ? () => onView() : undefined}
           onHire={interactive && onHire ? () => onHire() : undefined}
           hireLabel={onHire ? 'Hire virtual assistant' : undefined}
         />
 
-        <ListingCardStatsFooter
-          viewCount={viewCount}
-          likeState={{
-            liked: likeState?.liked,
-            count: Number(likeState?.count ?? 0),
-          }}
-          onLike={onLike}
-          likesFirst
-          showCta={false}
-          className="domain-listing-card__stats domain-listing-card__stats--split"
-        />
+        {!hideStatsFooter ? (
+          <ListingCardStatsFooter
+            viewCount={viewCount}
+            likeState={{
+              liked: likeState?.liked,
+              count: Number(likeState?.count ?? 0),
+            }}
+            onLike={onLike}
+            likesFirst
+            showCta={false}
+            className="domain-listing-card__stats domain-listing-card__stats--split"
+          />
+        ) : null}
       </div>
     </article>
   );

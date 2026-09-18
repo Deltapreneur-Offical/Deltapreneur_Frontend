@@ -33,7 +33,9 @@ export default function BrandNavLogo({
           height={height}
           decoding="async"
           loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
+          /* React 18 only supports the lowercase native attribute; camelCase
+             `fetchPriority` triggers a DOM-prop warning until React 19. */
+          {...(priority ? { fetchpriority: 'high' } : {})}
           className={`${base} home-nav-logo-img--default`.trim()}
         />
       </picture>

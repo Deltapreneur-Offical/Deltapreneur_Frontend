@@ -668,14 +668,16 @@ export default function CommunityPage() {
           </>
         ) : (
           <>
-            <ListingBackLink />
             {/* ── Header ── */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+            <div className="flex items-start justify-between gap-4 mb-4">
               <div>
                 <h1 className="font-display text-3xl font-semibold text-gray-900 m-0">{t('communityTitle')}</h1>
                 <p className="text-gray-600 mt-1">{t('communityDesc')}</p>
               </div>
-              <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+              <ListingBackLink className="!mb-0 shrink-0" />
+            </div>
+
+            <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3 mb-6">
                 {hasOwnedCreatorProfile ? (
                   <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3">
                     {/* Auction status / button */}
@@ -752,7 +754,6 @@ export default function CommunityPage() {
                   </div>
                 ) : (
                   <div className="inline-flex items-center gap-2" id="connect-linkedin">
-                    <LinkedInConnectInfoTooltip />
                     <button
                       className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
                       onClick={handleConnectLinkedIn}
@@ -762,9 +763,9 @@ export default function CommunityPage() {
                         ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
                         : <><LinkedInIcon /> Connect with LinkedIn</>}
                     </button>
+                    <LinkedInConnectInfoTooltip />
                   </div>
                 )}
-              </div>
             </div>
 
             {/* Search Bar */}

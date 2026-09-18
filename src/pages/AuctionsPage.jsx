@@ -611,7 +611,6 @@ export default function AuctionsPage() {
 
   return (
     <AppLayout>
-      <ListingBackLink to="/" />
       <div className="auctions-page">
         <div className="auctions-page-toolbar !overflow-visible">
           <div className="auctions-page-toolbar-top">
@@ -632,6 +631,7 @@ export default function AuctionsPage() {
                 <p className="text-gray-600">{heroSubtitle}</p>
               </div>
             </div>
+            <ListingBackLink to="/" className="!mb-0 ml-auto shrink-0" />
           </div>
 
           <div className="auctions-page-view-tabs" role="tablist" aria-label="Auction views">

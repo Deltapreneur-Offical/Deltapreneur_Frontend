@@ -263,8 +263,7 @@ export default function VenturesPage() {
           }
         }
       `}</style>
-      <ListingBackLink />
-      <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between min-w-0">
+      <div className="mb-2 flex items-start justify-between gap-4 min-w-0">
         <div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 m-0">
             {listingModeFilter === 'CO_VENTURE'
@@ -285,10 +284,12 @@ export default function VenturesPage() {
                 })}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <VentureListingQuickActions />
-          {user ? <PayoutSettingsButton className="btn-glow btn-glow-sm" /> : null}
-        </div>
+        <ListingBackLink className="!mb-0 shrink-0" />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 shrink-0 mb-4">
+        <VentureListingQuickActions />
+        {user ? <PayoutSettingsButton className="btn-glow btn-glow-sm" /> : null}
       </div>
 
       {user ? <PayoutProfileBanner context="venture" className="mb-4" /> : null}

@@ -1372,7 +1372,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               {mobileSearchForm}
             </div>
 
-            <div className="mt-3 flex w-full min-w-0 max-w-full justify-center pb-2 overflow-visible">
+            <div className="mt-3 flex w-full min-w-0 max-w-full justify-start pb-2 overflow-visible">
               <BrandSearchTabs
                 searchMode={searchMode}
                 onTabChange={handleTabChange}
@@ -1810,12 +1810,15 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         }
 
         @media (max-width: 639px) {
+          /* Fluid width — fills the content rail on phones and small tablets
+             alike, so headline, search bar, tabs and marquee share one left
+             edge instead of leaving dead space at larger mobile widths. */
           .brand-search-frame,
           .brand-search-shell,
           .brand-search-tabs-mobile,
           .tld-price-marquee-mask {
-            width: min(100%, 20.5rem) !important;
-            max-width: 20.5rem !important;
+            width: min(100%, 34rem) !important;
+            max-width: 34rem !important;
             min-width: 0 !important;
           }
 

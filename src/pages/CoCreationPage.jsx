@@ -287,8 +287,7 @@ export default function CoCreationPage() {
           </>
         ) : (
           <>
-            <ListingBackLink />
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+            <div className="flex items-start justify-between gap-4 mb-4">
               <div>
                 <div className="flex items-center gap-3 mb-1">
                   {/* <img src={''} alt="Technology" className="w-10 h-10 object-contain" /> */}
@@ -296,7 +295,10 @@ export default function CoCreationPage() {
                 </div>
                 <p className="text-gray-600">{t('buyAndSellSoftware')}</p>
               </div>
-              <div className="flex gap-2 md:gap-3 flex-wrap">
+              <ListingBackLink className="!mb-0 shrink-0" />
+            </div>
+
+            <div className="flex gap-2 md:gap-3 flex-wrap mb-6">
                 {user ? (
                   <PayoutSettingsButton className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" />
                 ) : null}
@@ -312,7 +314,6 @@ export default function CoCreationPage() {
                 }}>
                   <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listTechnology')}</span>
                 </button>
-              </div>
             </div>
 
             <div className="flex gap-2 mb-6">
@@ -1987,8 +1988,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                         </span>
                       ) : (
                         <>
-                          <button className="btn-glow flex-1 py-3 text-sm font-semibold justify-center cursor-pointer" onClick={() => setShowPricing(true)}>Buy Now →</button>
-                          <AddToCartButton productType="TECHNOLOGY" productId={d.id} size="md" />
+                          <button className="btn-glow flex-1 py-3 text-sm font-semibold justify-center whitespace-nowrap cursor-pointer" onClick={() => setShowPricing(true)}>Buy Now →</button>
                         </>
                       )
                     )}
@@ -2000,7 +2000,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, onEdit, onAuction,
                       🟢 On Live Auction
                     </button>
                   )}
-                  <button className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200 focus-visible:bg-gray-200 cursor-pointer" onClick={onClose}>Close</button>
+                  <button className="btn-glow btn-glow-sm flex-1 py-3 text-sm font-semibold justify-center whitespace-nowrap bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200 focus-visible:bg-gray-200 cursor-pointer" onClick={onClose}>Close</button>
                 </>
               ) : (
                 <div className="flex gap-3 w-full">

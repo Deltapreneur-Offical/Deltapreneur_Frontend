@@ -49,10 +49,12 @@ export default function HeroGlow() {
         }
 
         @media (max-width: 639px) {
+          /* Fluid: match the search-bar rail (34rem cap) so the headline and
+             hero widgets stay on one shared left edge at every phone width. */
           .hero-text-stack,
           .hero-headline {
-            width: min(100%, 20.5rem) !important;
-            max-width: 20.5rem !important;
+            width: min(100%, 34rem) !important;
+            max-width: 34rem !important;
           }
 
           .hero-headline {

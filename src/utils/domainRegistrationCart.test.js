@@ -55,6 +55,18 @@ describe('domainRegistrationCartProps (showcase routing)', () => {
     expect(props.metadata.pricePerYear).toBe(575);
   });
 
+  it('carries provider base separately for normal-domain commission pricing', () => {
+    const props = domainRegistrationCartProps({
+      domain: 'example.com',
+      registrationPriceInr: 1150,
+      providerUnitPriceInr: 1000,
+      providerPeriodTotalInr: 1000,
+    });
+    expect(props.metadata.price).toBe(1150);
+    expect(props.metadata.providerUnitPriceInr).toBe(1000);
+    expect(props.metadata.providerPeriodTotalInr).toBe(1000);
+  });
+
   it('ignores GST-only aliases when the ex-GST unit is missing', () => {
     const props = domainRegistrationCartProps({
       domain: 'example.in',

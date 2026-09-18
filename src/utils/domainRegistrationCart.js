@@ -18,7 +18,7 @@ export function domainToProductId(domain) {
 /**
  * Build cart metadata. Price is always INR (ex-GST **1-year** selling price with commission baked in).
  * Registration period is selected later in Cart/Checkout — do not bake min-period into line price here.
- * @param {{ domain: string, tld?: string, registrationPriceInr?: number, unitPrice?: number, registrationPrice?: number, period?: number, minPeriodYears?: number, isPremium?: boolean, premiumProvider?: string }} item
+ * @param {{ domain: string, tld?: string, registrationPriceInr?: number, unitPrice?: number, registrationPrice?: number, providerUnitPriceInr?: number, providerPeriodTotalInr?: number, period?: number, minPeriodYears?: number, isPremium?: boolean, premiumProvider?: string }} item
  */
 export function domainRegistrationCartMetadata(item) {
   const domain = String(item.domain || '').toLowerCase().trim();
@@ -48,6 +48,14 @@ export function domainRegistrationCartMetadata(item) {
     isPremium,
     registryTier: isPremium ? 'premium' : 'standard',
   };
+  const providerUnitPriceInr = Number(item.providerUnitPriceInr ?? 0);
+  if (Number.isFinite(providerUnitPriceInr) && providerUnitPriceInr > 0) {
+    meta.providerUnitPriceInr = providerUnitPriceInr;
+  }
+  const providerPeriodTotalInr = Number(item.providerPeriodTotalInr ?? 0);
+  if (Number.isFinite(providerPeriodTotalInr) && providerPeriodTotalInr > 0) {
+    meta.providerPeriodTotalInr = providerPeriodTotalInr;
+  }
   // Aftermarket (Afternic/Sedo) origin — backend revalidation/confirm uses this
   // to route through the aftermarket/managed-acquisition path (never GetPrice).
   if (item.premiumProvider) {

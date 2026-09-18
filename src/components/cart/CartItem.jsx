@@ -37,6 +37,10 @@ const TYPE_META = {
 /** Standard registration period options (years). Filtered by each TLD's minPeriodYears. */
 export const DOMAIN_REGISTRATION_PERIOD_OPTIONS = [1, 2, 3, 5, 10];
 
+function roundMoney(amount) {
+  return Math.round(Number(amount || 0) * 100) / 100;
+}
+
 export default function CartItem({
   item,
   onRemove,
@@ -59,11 +63,21 @@ export default function CartItem({
   const isRemoving = removingId === item.id;
   const isDomainReg = item.productType === 'DOMAIN_REGISTRATION';
   const isDomainListing = item.productType === 'DOMAIN_LISTING';
+  const isOnlineDomainRegistration = isDomainReg
+    && item.metadata?.isManagedAcquisition !== true;
   const listingDisplayTotal = isDomainListing && Number(item.metadata?.buyerPayableInr) > 0
     ? Number(item.metadata.buyerPayableInr)
       + (Number(item.addonAmount) || 0)
       + (Number(item.coBrotherFee) || 0)
     : null;
+  const domainRegistrationDisplayTotal = isOnlineDomainRegistration
+    ? roundMoney((Number(item.lineTotal) || 0) * 1.18)
+    : null;
+  const itemDisplayTotal = listingDisplayTotal != null
+    ? listingDisplayTotal
+    : domainRegistrationDisplayTotal != null
+      ? domainRegistrationDisplayTotal
+      : item.lineTotal;
   const minPeriod = Math.max(1, Number(item.metadata?.minPeriodYears || 1));
   const registrationTld = (() => {
     const fromMeta = String(item.metadata?.tld || '').replace(/^\./, '').toLowerCase();
@@ -215,7 +229,7 @@ export default function CartItem({
             isPeriodUpdating ? 'text-indigo-400 animate-pulse' : 'text-gray-900'
           }`}
         >
-          {formatMoney(listingDisplayTotal != null ? listingDisplayTotal : item.lineTotal)}
+          {formatMoney(itemDisplayTotal)}
         </span>
         <button
           type="button"

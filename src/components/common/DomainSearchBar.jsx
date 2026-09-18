@@ -1297,7 +1297,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     >
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-stretch rounded-full border bg-white py-0 pl-4 pr-0 sm:pl-5"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-row items-stretch rounded-full border py-0 pl-4 pr-0 sm:pl-5"
       >
         <input
           type="text"
@@ -1322,7 +1322,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     >
       <form
         onSubmit={handleSearch}
-        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-stretch rounded-full border bg-white py-0 pl-4 pr-0 sm:pl-6"
+        className="search-glow-focus brand-search-shell relative z-[1] flex w-full flex-1 flex-row items-stretch rounded-full border py-0 pl-4 pr-0 sm:pl-6"
       >
         <input
           type="text"
@@ -1696,60 +1696,27 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       </div>
 
       <style>{`
-        @property --search-tail-top {
-          syntax: '<angle>';
-          inherits: false;
-          initial-value: 0deg;
-        }
-
-        @property --search-tail-bottom {
-          syntax: '<angle>';
-          inherits: false;
-          initial-value: 180deg;
-        }
-
         .brand-search-shell {
-          --search-tail-top: 0deg;
-          --search-tail-bottom: 180deg;
-          border: 3px solid transparent;
-          background:
-            linear-gradient(#ffffff, #ffffff) padding-box,
-            conic-gradient(
-              from var(--search-tail-top),
-              #ffffff 0deg,
-              #fb923c 11deg,
-              transparent 24deg,
-              transparent 360deg
-            ) border-box,
-            conic-gradient(
-              from var(--search-tail-bottom),
-              #ffffff 0deg,
-              #fdba74 11deg,
-              transparent 24deg,
-              transparent 360deg
-            ) border-box,
-            linear-gradient(#fc6a09, #fc6a09) border-box;
+          border: 3px solid #fc6a09;
+          background: #ffffff;
           box-shadow: none;
           overflow: hidden;
-          transition:
-            --search-tail-top 1.75s ease-in-out,
-            --search-tail-bottom 1.75s ease-in-out;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .brand-search-frame:hover .brand-search-shell,
-        .brand-search-shell:hover {
-          --search-tail-top: 180deg;
-          --search-tail-bottom: 360deg;
-          box-shadow: 0 10px 28px -10px rgba(249, 115, 22, 0.35);
+        .brand-search-shell:hover,
+        .brand-search-shell:focus-within {
+          background: #ffffff;
+          border-color: #ff9900;
+          box-shadow: 0 0 0 1px rgba(255, 153, 0, 0.55);
         }
 
-        .brand-search-shell.search-glow-focus {
-          box-shadow: none;
-        }
-
+        .brand-search-shell.search-glow-focus,
         .brand-search-frame:hover .brand-search-shell.search-glow-focus,
-        .brand-search-shell.search-glow-focus:hover {
-          box-shadow: 0 10px 28px -10px rgba(249, 115, 22, 0.35);
+        .brand-search-shell.search-glow-focus:hover,
+        .brand-search-shell.search-glow-focus:focus-within {
+          box-shadow: none;
         }
 
         .brand-search-divider {
@@ -1828,34 +1795,8 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           mask-repeat: no-repeat;
         }
 
-        .brand-search-arrow-tail-glow,
-        .brand-search-arrow-tail-head {
-          fill: none;
-          stroke-linejoin: round;
-          stroke-linecap: round;
-          vector-effect: non-scaling-stroke;
-          transition: stroke-dashoffset 1.75s ease-in-out;
-        }
-
-        .brand-search-arrow-tail-glow {
-          stroke: #fb923c;
-          stroke-width: 3px;
-          stroke-dasharray: 20 30 20 30;
-          stroke-dashoffset: 0;
-        }
-
-        .brand-search-arrow-tail-head {
-          stroke: #ffffff;
-          stroke-width: 2.2px;
-          stroke-dasharray: 11 39 11 39;
-          stroke-dashoffset: 0;
-        }
-
-        .brand-search-frame:hover .brand-search-arrow-tail-glow,
-        .brand-search-frame:hover .brand-search-arrow-tail-head,
-        .brand-search-shell:hover .brand-search-arrow-tail-glow,
-        .brand-search-shell:hover .brand-search-arrow-tail-head {
-          stroke-dashoffset: -100;
+        .brand-search-arrow-tail {
+          display: none;
         }
 
         /* Thick orange/red border comet — search bar + pills */
@@ -2095,19 +2036,9 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           }
         }
 
-        .search-glow-focus {
-          box-shadow:
-            0 10px 30px -12px rgba(249, 115, 22, 0.25),
-            0 0 0 1px rgba(239, 68, 68, 0.1),
-            0 0 24px -10px rgba(249, 115, 22, 0.3);
-        }
-
-        .search-glow-focus:hover,
-        .search-glow-focus:focus-within {
-          box-shadow:
-            0 12px 34px -12px rgba(249, 115, 22, 0.35),
-            0 0 0 1px rgba(239, 68, 68, 0.15),
-            0 0 28px -9px rgba(249, 115, 22, 0.4);
+        .brand-search-shell.search-glow-focus:hover,
+        .brand-search-shell.search-glow-focus:focus-within {
+          box-shadow: none;
         }
       `}</style>
     </div>

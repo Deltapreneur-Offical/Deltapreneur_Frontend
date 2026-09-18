@@ -111,12 +111,15 @@
   margin: -1.5px 0.62rem -1.5px 0 !important;
 }
 
-.home-auction-preview-card__nav-cta .price-section-v-icon {
+.home-auction-preview-card__nav-cta .price-section-v-icon,
+.home-auction-preview-card__nav-cta .domain-listing-card__price-cta-icon {
   height: calc(100% + 3px) !important;
   width: auto !important;
-  max-width: 2.15rem !important;
-  max-height: 2.6rem !important;
-  margin: -1.5px 0.45rem -1.5px 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: -1.5px 0.62rem -1.5px 0 !important;
+  object-fit: contain !important;
+  object-position: center !important;
 }
 
 /*

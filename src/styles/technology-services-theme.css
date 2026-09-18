@@ -216,7 +216,7 @@ body.home-page-body .tech-service-card:hover .tech-service-card__icon,
  * other HomeCardsNavRow sections) — no negative margins/transforms.
  */
 .home-deltaos-services-nav.home-cards-nav-wrap {
-  padding-inline: 3.15rem !important;
+  padding-inline: 3.5rem !important;
   box-sizing: border-box;
 }
 
@@ -235,11 +235,22 @@ body.home-page-body .tech-service-card:hover .tech-service-card__icon,
 .home-deltaos-services-nav .tech-service-card--home {
   width: 100%;
   max-width: 100%;
+  height: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-deltaos-services-nav .tech-service-card--home > div:not(.tech-service-card__accent-glow):not(.tech-service-card__footer) {
+  flex: 1 1 auto;
+}
+
+.home-deltaos-services-nav .tech-service-card--home h3 {
+  min-height: 2.55em;
 }
 
 @media (max-width: 767px) {
   .home-deltaos-services-nav.home-cards-nav-wrap {
-    padding-inline: 2.7rem !important;
+    padding-inline: 3.15rem !important;
   }
 }

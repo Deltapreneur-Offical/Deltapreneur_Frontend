@@ -6,6 +6,52 @@
   gap: 1.75rem;
 }
 
+/* ── Below lg: 2-across auction card grid (2×2) ──
+   Half-width cards need tighter padding/type so badges, the 3-column
+   info row, and the Place Bid CTA all stay inside the card. Phones
+   (≤639px) and tablets (640–1023px) both get two columns; the old
+   single-column tablet range stretched full-width cards. */
+@media (max-width: 1023px) {
+  .auctions-page .cb-mobile-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .auctions-page .cb-mobile-card-grid > * {
+    padding: 0.875rem !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .auctions-page .cb-mobile-card-grid h3 {
+    font-size: 1rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .auctions-page .cb-mobile-card-grid .font-display {
+    font-size: 0.875rem !important;
+  }
+
+  /* Domain card: keep the LIVE pill from crowding the badge row */
+  .auctions-page .cb-mobile-card-grid > div > div.absolute {
+    top: 0.75rem !important;
+    right: 0.75rem !important;
+  }
+
+  /* Software card: shrink the 5.5rem thumbnail so text fits beside it */
+  .auctions-page .cb-mobile-card-grid img[class*="w-[5.5rem]"] {
+    width: 3.5rem !important;
+    height: 3.5rem !important;
+  }
+
+  /* Creator card: pill is smaller on mobile — trim the reserved space */
+  .auctions-page .cb-mobile-card-grid .pr-20 {
+    padding-right: 3.25rem !important;
+  }
+}
+
 /* ── Toolbar card ── */
 .auctions-page-toolbar {
   position: relative;

@@ -506,7 +506,6 @@ export default function DomainsPage() {
           </>
         ) : (
           <>
-            <ListingBackLink />
 
             {/* ── Visual polish: subtle background, refined header, tabs, filter, cards ── */}
             <style>{`
@@ -727,7 +726,7 @@ export default function DomainsPage() {
 
             <div className="domains-page-wrap">
             <div className="domains-header-area">
-            <div ref={domainListRef} className="scroll-mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 min-w-0">
+            <div ref={domainListRef} className="scroll-mt-20 flex items-start justify-between gap-4 min-w-0">
               <div className="min-w-0 w-full md:w-auto">
                 <h1 className="font-display text-3xl font-bold text-gray-900 m-0 inline-flex items-center gap-2.5">
                   <span className="domains-header-icon">
@@ -740,7 +739,10 @@ export default function DomainsPage() {
                 </h1>
                 <p className="text-gray-500 mt-1.5 text-sm">{t('buyAndSellDomains')}</p>
               </div>
-              <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end md:w-auto md:gap-3">
+              <ListingBackLink className="!mb-0 shrink-0" />
+            </div>
+
+            <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end md:w-auto md:gap-3 mt-3">
                 <Link
                   className="btn-glow btn-glow-sm !px-3 !py-2 flex w-full min-w-0 items-center justify-center gap-1.5 text-center text-xs leading-tight sm:w-auto sm:flex-none md:text-sm"
                   to="/settings/payouts"
@@ -778,7 +780,6 @@ export default function DomainsPage() {
                   <Plus className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
                   <span className="truncate">{t('listDomain')}</span>
                 </button>
-              </div>
             </div>
             </div>{/* domains-header-area */}
 

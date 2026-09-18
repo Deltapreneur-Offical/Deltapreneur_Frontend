@@ -3875,7 +3875,7 @@
   overflow: visible;
 }
 
-/* Homepage Auctions mobile: one full card between nav arrows; no horizontal clip. */
+/* Homepage Auctions mobile only (<768): one full card between nav arrows. */
 @media (max-width: 767px) {
   /* Slide = full track width (inside arrow gutters). Card scales to fit — never 100vw. */
   .home-auctions-section .home-preview-row__item:has(.home-auction-preview-card--homepage-content),
@@ -3889,6 +3889,7 @@
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
+    min-width: 0 !important;
   }
 
   .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) {
@@ -3896,6 +3897,29 @@
     aspect-ratio: 1.05 / 1;
     width: min(18rem, 100%) !important;
     max-width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+/* Homepage Auctions iPad / tablet (768–1023): two cards like Ventures — not one centered card. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .home-auctions-section .home-preview-row__item:has(.home-auction-preview-card--homepage-content),
+  .home-auctions-section .home-auto-scroll-row__item:has(.home-auction-preview-card--homepage-content),
+  .home-auctions-section .home-preview-row .home-preview-row__item:has(.home-auction-preview-card--homepage-content),
+  .home-auctions-section .home-auto-scroll-row .home-auto-scroll-row__item:has(.home-auction-preview-card--homepage-content) {
+    width: min(17.25rem, calc((100% - 1rem) / 2)) !important;
+    max-width: min(17.25rem, calc((100% - 1rem) / 2)) !important;
+    flex: 0 0 min(17.25rem, calc((100% - 1rem) / 2)) !important;
+    box-sizing: border-box !important;
+    align-items: stretch !important;
+    min-width: 0 !important;
+  }
+
+  .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) {
+    aspect-ratio: 1.12 / 1;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 }
 
@@ -4158,11 +4182,10 @@
 }
 
 /*
- * Homepage Auctions mobile (narrow phones): fit Current Bid pill + Bids inside the
- * existing aspect-ratio card. Placed AFTER base homepage-content rules so cascade wins.
- * Do not use absolute positioning; tighten gaps instead of clipping with overflow.
+ * Homepage Auctions mobile + tablet (≤1023px): fit Current Bid pill fully inside the card.
+ * Card count: phones = 1 (rules above); iPad Mini 768–1023 = 2 (rules above). Desktop untouched.
  */
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .domain-listing-card__body,
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .domain-listing-card__body {
     position: relative !important;
@@ -4171,6 +4194,9 @@
     overflow: visible !important;
     justify-content: flex-start !important;
     min-height: 0 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__content,
@@ -4179,6 +4205,8 @@
     gap: 0.18rem !important;
     overflow: visible !important;
     min-height: 0 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
     flex: 0 0 auto !important;
     justify-content: flex-start !important;
   }
@@ -4253,10 +4281,12 @@
     bottom: auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     margin-top: 0.1rem !important;
     gap: 0.1rem !important;
     flex: 0 0 auto !important;
     z-index: auto !important;
+    box-sizing: border-box !important;
   }
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-label,
@@ -4269,15 +4299,25 @@
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row {
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     height: 2.1rem !important;
     min-height: 2.1rem !important;
     max-height: 2.1rem !important;
-    padding: 0 0 0 0.7rem !important;
+    padding: 0 0 0 0.65rem !important;
     box-sizing: border-box !important;
-    overflow: visible !important;
+    /* Keep radius clip of children; pill itself is constrained to card inner width. */
+    overflow: hidden !important;
     transform: none !important;
     flex: 0 0 auto !important;
     flex-shrink: 0 !important;
+    align-self: stretch !important;
+  }
+
+  .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid,
+  .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-icon,
@@ -4289,21 +4329,39 @@
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-copy {
     flex-direction: row !important;
     align-items: center !important;
+    min-width: 0 !important;
   }
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-value,
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-value {
     font-size: 0.84rem !important;
     line-height: 1.1 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Icon was wider than fixed 2.35rem CTA — size CTA + icon so full arrow stays inside pill. */
+  .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta,
+  .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta,
+  .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:hover,
+  .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:hover {
+    flex: 0 0 2.15rem !important;
+    width: 2.15rem !important;
+    min-width: 2.15rem !important;
+    max-width: 2.15rem !important;
+    overflow: hidden !important;
   }
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta .price-section-v-icon,
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta .price-section-v-icon,
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta .domain-listing-card__price-cta-icon,
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta .domain-listing-card__price-cta-icon {
-    max-width: 2.1rem !important;
-    max-height: 2.2rem !important;
-    margin: -1px 0.45rem -1px 0 !important;
+    max-width: 2.05rem !important;
+    max-height: 2.15rem !important;
+    width: auto !important;
+    height: calc(100% + 2px) !important;
+    margin: -1px 0.28rem -1px 0 !important;
   }
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__stats-footer,

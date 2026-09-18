@@ -84,6 +84,8 @@ export function FeaturedVirtualAssistantCard({
   likeState,
   onLike,
   accent = 'assistance',
+  priceLabelOutside = false,
+  hideStatsFooter = false,
 }) {
   return (
     <HomePreviewCardShell accent={accent}>
@@ -95,6 +97,8 @@ export function FeaturedVirtualAssistantCard({
         onHire={onHire}
         likeState={likeState}
         onLike={onLike}
+        priceLabelOutside={priceLabelOutside}
+        hideStatsFooter={hideStatsFooter}
       />
     </HomePreviewCardShell>
   );
@@ -116,6 +120,8 @@ export default function FeaturedVirtualAssistantsListing({
   loadingFallback = null,
   revealInPages = false,
   viewAllTo,
+  priceLabelOutside = false,
+  hideStatsFooter = false,
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -156,6 +162,8 @@ export default function FeaturedVirtualAssistantsListing({
       onHire={() => handleHire(profile.id)}
       likeState={getLike(profile.id)}
       onLike={() => toggleLike(profile.id)}
+      priceLabelOutside={priceLabelOutside}
+      hideStatsFooter={hideStatsFooter}
     />
   );
 

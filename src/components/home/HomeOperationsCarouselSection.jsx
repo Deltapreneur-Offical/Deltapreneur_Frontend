@@ -138,6 +138,8 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
             loading={false}
             ariaLabel={title}
             viewAllTo={viewAllPath}
+            priceLabelOutside
+            hideStatsFooter
           />
         </div>
       </section>

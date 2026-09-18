@@ -26,6 +26,38 @@
   width: 100%;
 }
 
+/* Homepage DeltaOS: label above pill (matches Ventures price-block). */
+.tech-service-card__price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.28rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.tech-service-card__price-block > .tech-service-card__price-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: #64748b;
+  line-height: 1;
+  padding-left: 0.15rem;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tech-service-card__price-block .tech-service-card__price-text {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+}
+
 .tech-service-card__price-pill {
   position: relative;
   display: inline-flex;

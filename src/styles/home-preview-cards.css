@@ -4045,7 +4045,7 @@
 
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title,
 .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title {
-  color: #0b9fd0 !important;
+  color: var(--home-auction-title-color, #0b9fd0) !important;
   font-size: 1.48rem;
   line-height: 1.1;
   font-weight: 800 !important;

@@ -713,6 +713,7 @@ body.home-page-body .home-preview-card-border--assistance .creator-expected-rate
 body.home-page-body .home-auctions-section .home-preview-card-border--auction,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within {
+  --home-auction-title-color: #0b9fd0;
   --home-card-border: #45d8ff;
   --home-card-border-hover: #45d8ff;
   --home-card-shadow: rgba(69, 216, 255, 0.07);
@@ -805,7 +806,7 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .d
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__title {
-  color: #0b9fd0 !important;
+  color: var(--home-auction-title-color) !important;
   font-weight: 800 !important;
 }
 
@@ -859,7 +860,7 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
   border-color: transparent !important;
   background: transparent !important;
   background-image: none !important;
-  color: #45d8ff !important;
+  color: var(--home-auction-title-color) !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -879,6 +880,7 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
 body.home-page-body .home-ventures-section .home-preview-card-border--venture,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:focus-within {
+  --home-venture-title-color: #0b9fd0;
   --home-card-border: #45d8ff;
   --home-card-border-hover: #45d8ff;
   --home-card-shadow: rgba(69, 216, 255, 0.07);
@@ -919,7 +921,7 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture .v
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .venture-listing-card__title--compact,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain {
-  color: #0b9fd0 !important;
+  color: var(--home-venture-title-color) !important;
   font-weight: 700 !important;
 }
 
@@ -990,7 +992,7 @@ body.home-page-body .home-ventures-section .home-auto-scroll-row .home-preview-c
   border-color: transparent !important;
   background: transparent !important;
   background-image: none !important;
-  color: #45d8ff !important;
+  color: var(--home-venture-title-color) !important;
   box-shadow: none !important;
   transform: none !important;
 }

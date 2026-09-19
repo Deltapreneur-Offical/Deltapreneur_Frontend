@@ -59,7 +59,13 @@ export function buildCartItemBreakdown(item, vaCatalog = [], operationsPriceByKe
   const serviceLines = addonLines.filter((l) => l.isServiceAddon);
   const virtualAssistantLines = addonLines.filter((l) => l.isVirtualAssistant);
   const addonAmount = Number(item.addonAmount) || 0;
-  const productPayToday = round2((Number(item.basePrice) || 0) + addonAmount + (Number(item.coBrotherFee) || 0));
+  const isDomainRegistration = item.productType === 'DOMAIN_REGISTRATION';
+  const domainRegistrationLineTotal = isDomainRegistration
+    ? Number(item.lineTotal) || 0
+    : 0;
+  const productPayToday = isDomainRegistration && domainRegistrationLineTotal > 0
+    ? round2(domainRegistrationLineTotal)
+    : round2((Number(item.basePrice) || 0) + addonAmount + (Number(item.coBrotherFee) || 0));
   const isDomainListing = item.productType === 'DOMAIN_LISTING';
   const listingInclusive = isDomainListing
     ? Number(item.metadata?.buyerPayableInr) > 0
@@ -75,7 +81,7 @@ export function buildCartItemBreakdown(item, vaCatalog = [], operationsPriceByKe
     selectedPlan: item.selectedPlan,
     planLabel: item.selectedPlan ? planLabelForKey(item.selectedPlan) : null,
     periodYears:
-      item.productType === 'DOMAIN_REGISTRATION'
+      isDomainRegistration
         ? Math.max(1, Number(item.metadata?.period || 1))
         : null,
     basePrice: Number(item.basePrice) || 0,

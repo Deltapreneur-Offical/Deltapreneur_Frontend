@@ -55,6 +55,8 @@ export function normalizeDomainCardItem(raw = {}) {
   const renewalPriceInr = positiveMoney(raw.renewalPriceInr ?? raw.renewalPrice);
   const renewalDisplayPriceInr =
     positiveMoney(raw.renewalTotalInr ?? raw.renewalDisplayPriceInr) ?? renewalPriceInr;
+  const providerUnitPriceInr = positiveMoney(raw.providerUnitPriceInr);
+  const providerPeriodTotalInr = positiveMoney(raw.providerPeriodTotalInr);
   const minPeriodYears = Math.max(1, Number(raw.minPeriodYears || 1));
   // Display/cart base is always 1-year; minPeriodYears is metadata for checkout only.
   const period = 1;
@@ -96,6 +98,8 @@ export function normalizeDomainCardItem(raw = {}) {
     displayPriceInr,
     renewalPriceInr,
     renewalDisplayPriceInr,
+    providerUnitPriceInr,
+    providerPeriodTotalInr,
     gstEnabled,
     gstIncluded,
     period,
@@ -167,6 +171,8 @@ export default function DomainCard({
         domain: item.domain,
         tld: item.tld,
         registrationPriceInr: item.registrationPriceInr,
+        providerUnitPriceInr: item.providerUnitPriceInr,
+        providerPeriodTotalInr: item.providerPeriodTotalInr,
         period: item.period,
         minPeriodYears: item.minPeriodYears,
         isPremium: item.isPremium,

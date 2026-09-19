@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +15,58 @@ import HomeFooter from '../components/common/HomeFooter';
 import useHomePageScrollNav from '../hooks/useHomePageScrollNav';
 
 
+
+const HOME_PRICE_SELECTORS = [
+  '.domain-card-price-line',
+  '.domain-search-card__price',
+  '.domain-listing-card__price-value',
+  '.home-auction-preview-card__current-bid-value',
+  '.home-auction-preview-card__live-bid-value',
+  '.home-operations-preview-card__price-amount',
+  '.tech-service-card__price-amount',
+  '.creator-expected-rate__value',
+  '.reg-category-card__price',
+  '.reg-category-card__cta',
+  '.reg-mini-card__price',
+].join(',');
+
+function wrapHomeRupeeSymbols(root) {
+  if (!root || typeof document === 'undefined') return;
+
+  root.querySelectorAll(HOME_PRICE_SELECTORS).forEach((target) => {
+    const textNodes = [];
+    const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (!node.nodeValue?.includes('\u20B9')) return NodeFilter.FILTER_REJECT;
+        if (node.parentElement?.closest('.home-price-rupee-symbol')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+
+    let node = walker.nextNode();
+    while (node) {
+      textNodes.push(node);
+      node = walker.nextNode();
+    }
+
+    textNodes.forEach((textNode) => {
+      const fragment = document.createDocumentFragment();
+      const parts = textNode.nodeValue.split('\u20B9');
+
+      parts.forEach((part, index) => {
+        if (index > 0) {
+          const symbol = document.createElement('span');
+          symbol.className = 'home-price-rupee-symbol';
+          symbol.textContent = '\u20B9';
+          fragment.appendChild(symbol);
+        }
+        if (part) fragment.appendChild(document.createTextNode(part));
+      });
+
+      textNode.parentNode?.replaceChild(fragment, textNode);
+    });
+  });
+}
 
 export const searchDomainRedirect = (domainQuery, selectedExtension = '.com') => {
 
@@ -67,6 +119,8 @@ export default function Home() {
 
   const navigate = useNavigate();
 
+  const homeRootRef = useRef(null);
+
   const [openDropdown, setOpenDropdown] = useState(null);
   const { isScrolled, navRef } = useHomePageScrollNav();
 
@@ -85,11 +139,31 @@ export default function Home() {
 
   }, []);
 
+  useEffect(() => {
+    const root = homeRootRef.current;
+    if (!root) return undefined;
+
+    let frame = 0;
+    const scheduleWrap = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => wrapHomeRupeeSymbols(root));
+    };
+
+    scheduleWrap();
+    const observer = new MutationObserver(scheduleWrap);
+    observer.observe(root, { childList: true, subtree: true, characterData: true });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, []);
+
 
 
   return (
 
-    <div className="relative min-w-0 bg-white overflow-visible">
+    <div ref={homeRootRef} className="relative min-w-0 bg-white overflow-visible">
 
       <TopNavbar homeMobileMenu hideContactUs isScrolled={isScrolled} />
 

@@ -8,6 +8,18 @@
   padding-block: 1rem;
 }
 
+body.home-page-body .home-price-rupee-symbol {
+  display: inline-block;
+  font-family: inherit;
+  font-size: 0.9em;
+  font-weight: 800;
+  line-height: 1;
+  margin-inline-end: 0.02em;
+  position: relative;
+  top: -0.015em;
+  vertical-align: baseline;
+}
+
 
 
 .home-preview-row {

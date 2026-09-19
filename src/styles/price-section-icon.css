@@ -220,6 +220,57 @@ body.home-page-body .home-auto-scroll-row__item:hover .home-preview-card-border-
   filter: brightness(0) saturate(100%) invert(57%) sepia(54%) saturate(681%) hue-rotate(130deg) brightness(98%) contrast(92%) !important;
 }
 
+/* Homepage Ventures/Auctions only: reuse the card title token and preserve the PNG arrow shape. */
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta:active {
+  color: var(--home-venture-title-color) !important;
+}
+
+body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta,
+body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:hover,
+body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:focus-visible,
+body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:active {
+  color: var(--home-auction-title-color) !important;
+}
+
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .price-section-v-icon,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .price-section-v-icon,
+body.home-page-body .home-ventures-section .home-preview-row__item:hover .home-preview-card-border--venture .venture-listing-card--homepage-content .price-section-v-icon,
+body.home-page-body .home-ventures-section .home-auto-scroll-row__item:hover .home-preview-card-border--venture .venture-listing-card--homepage-content .price-section-v-icon,
+body.home-page-body .home-ventures-section .venture-listing-card--homepage-content:hover .price-section-v-icon,
+body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover .price-section-v-icon,
+body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible .price-section-v-icon,
+body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta .price-section-v-icon,
+body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content:hover .home-auction-preview-card__nav-cta .price-section-v-icon,
+body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:hover .price-section-v-icon,
+body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:focus-visible .price-section-v-icon {
+  opacity: 0 !important;
+  filter: none !important;
+}
+
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta::before,
+body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta::before {
+  content: '';
+  position: absolute;
+  top: -1.5px;
+  right: 0.62rem;
+  bottom: -1.5px;
+  width: 2.4rem;
+  background: currentColor;
+  -webkit-mask: url('../assets/pricesectionV.png') center / contain no-repeat;
+  mask: url('../assets/pricesectionV.png') center / contain no-repeat;
+  pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta::before {
+    right: 0.28rem;
+    width: 2.05rem;
+  }
+}
+
 /* Homepage Delta Ventures only: orange investment pill and play arrow. */
 body.home-page-body .home-coventures-section .home-preview-row .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-box,
 body.home-page-body .home-coventures-section .home-auto-scroll-row .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content.venture-listing-card--coventure .domain-listing-card__price-box,

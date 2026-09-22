@@ -46,18 +46,25 @@ function IndependentSection({ title, to, variant = 'browse', compact = false, ac
   );
 }
 
-export default function ExploreSection() {
+export default function ExploreSection({ searchMode = 'new' }) {
   const { t } = useTranslation();
+  const showDeltaDomainsFirst = searchMode === 'premium';
 
   return (
     <>
-      <FeaturedDomainsSection />
-      <IndependentSection
-        title={t('homeDomainRegister', { defaultValue: 'Delta Domains' })}
-        to="/domains"
-      >
-        <DomainsSection />
-      </IndependentSection>
+      <div className="flex flex-col">
+        <div className={showDeltaDomainsFirst ? 'order-2' : 'order-1'}>
+          <FeaturedDomainsSection />
+        </div>
+        <div className={showDeltaDomainsFirst ? 'order-1' : 'order-2'}>
+          <IndependentSection
+            title={t('homeDomainRegister', { defaultValue: 'Delta Domains' })}
+            to="/domains"
+          >
+            <DomainsSection />
+          </IndependentSection>
+        </div>
+      </div>
 
       <IndependentSection title={t('homeVentureRegister', { defaultValue: 'Ventures' })} to="/ventures">
         <VenturesSection />

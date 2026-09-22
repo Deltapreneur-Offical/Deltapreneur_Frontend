@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutGroup, motion, useReducedMotion } from 'framer-motion';
-import { Loader2, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronRight, Globe2, Sparkles, Gem, Gavel, Lightbulb, Crown, Clock } from 'lucide-react';
 import deltapreneurIcon from '../../assets/Deltapreneur_icon.png';
 import { domainAPI, domainStorefrontAPI } from '../../api/services';
 import { HOME_RESET_EVENT } from '../../utils/homeReset';
@@ -205,6 +205,76 @@ function TldPriceMarquee() {
           {renderSet('a', false)}
           {reduceMotion ? null : renderSet('b', true)}
         </div>
+      </div>
+    </div>
+  );
+}
+
+const SEARCH_MODE_CONTEXT = {
+  ai: {
+    icon: Sparkles,
+    accentIcon: Lightbulb,
+    eyebrow: 'AI-powered naming',
+    title: 'Build a brand people remember',
+    description: 'Discover distinctive names shaped around your idea.',
+    iconClassName: 'text-orange-500 bg-orange-50 border-orange-200',
+    panelClassName: 'border-orange-200 bg-gradient-to-r from-white via-orange-50/60 to-amber-100/80',
+    eyebrowClassName: 'text-orange-600',
+  },
+  premium: {
+    icon: Gem,
+    accentIcon: Crown,
+    eyebrow: 'Curated premium names',
+    title: 'Own a name with presence',
+    description: 'Explore memorable Delta Domains ready for your next move.',
+    iconClassName: 'text-amber-600 bg-amber-50 border-amber-200',
+    panelClassName: 'border-amber-200 bg-gradient-to-r from-white via-amber-50/70 to-yellow-100/80',
+    eyebrowClassName: 'text-amber-700',
+  },
+  auction: {
+    icon: Gavel,
+    accentIcon: Clock,
+    eyebrow: 'Live marketplace',
+    title: 'Find your next opportunity',
+    description: 'Browse domain auctions and make your move at the right time.',
+    iconClassName: 'text-slate-700 bg-slate-100 border-slate-200',
+    panelClassName: 'border-slate-200 bg-gradient-to-r from-white via-slate-50 to-orange-50/80',
+    eyebrowClassName: 'text-red-600',
+  },
+};
+
+function SearchModeContextPanel({ searchMode }) {
+  const context = SEARCH_MODE_CONTEXT[searchMode] || {
+    icon: Globe2,
+    accentIcon: Globe2,
+    eyebrow: 'Domain marketplace',
+    title: 'Find the right name for your next move',
+    description: 'Search across the Deltapreneur marketplace.',
+    iconClassName: 'text-orange-500 bg-orange-50 border-orange-100',
+    panelClassName: 'border-orange-100 bg-gradient-to-r from-white to-orange-50/70',
+    eyebrowClassName: 'text-orange-600',
+  };
+  const Icon = context.icon;
+  const AccentIcon = context.accentIcon;
+
+  return (
+    <div className={`flex min-h-[58px] min-w-0 items-center gap-3 overflow-hidden rounded-full border px-4 py-2 shadow-[0_8px_24px_rgba(197,112,34,0.08)] ${context.panelClassName}`}>
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${context.iconClassName}`}>
+        <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
+      </span>
+      <div className="min-w-0 leading-tight">
+        <p className={`truncate text-[10px] font-semibold uppercase tracking-[0.12em] ${context.eyebrowClassName}`}>
+          {context.eyebrow}
+        </p>
+        <p className="truncate text-sm font-semibold text-slate-900 sm:text-[15px]">
+          {context.title}
+        </p>
+        <p className="hidden truncate text-xs text-slate-500 xl:block">
+          {context.description}
+        </p>
+      </div>
+      <div className={`ml-auto hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border bg-white/60 sm:flex ${context.iconClassName}`} aria-hidden="true">
+        <AccentIcon size={18} strokeWidth={1.8} />
       </div>
     </div>
   );
@@ -446,7 +516,7 @@ function damerauLevenshteinDistance(a, b) {
   return dist[sourceLen][targetLen];
 }
 
-export default function DomainSearchBar({ className = '', embedded = false }) {
+export default function DomainSearchBar({ className = '', embedded = false, onSearchModeChange }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
@@ -1111,6 +1181,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     newSearchCacheRef.current.clear();
     clearAllSearchResults();
     setSearchMode(tabId);
+    onSearchModeChange?.(tabId);
   };
 
   const completedNewResults = results.filter((item) => item.status !== 'loading');
@@ -1350,11 +1421,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
                 {desktopSearchForm}
               </div>
 
-              {searchMode === 'new' && (
-                <div className="relative z-30 flex-1 min-w-0 overflow-hidden">
+              <div className="relative z-30 flex-1 min-w-0 overflow-hidden">
+                {searchMode === 'new' ? (
                   <TldPriceMarquee />
-                </div>
-              )}
+                ) : (
+                  <SearchModeContextPanel searchMode={searchMode} />
+                )}
+              </div>
             </div>
 
             <div className="mt-3 flex justify-start pl-2">
@@ -1382,11 +1455,13 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               />
             </div>
 
-            {searchMode === 'new' && (
-              <div className="relative z-30 mt-2 w-full overflow-hidden">
+            <div className="relative z-30 mt-2 w-full overflow-hidden">
+              {searchMode === 'new' ? (
                 <TldPriceMarquee />
-              </div>
-            )}
+              ) : (
+                <SearchModeContextPanel searchMode={searchMode} />
+              )}
+            </div>
           </HeroSearchStack>
         )}
 

@@ -122,6 +122,7 @@ export default function Home() {
   const homeRootRef = useRef(null);
 
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [homepageSearchMode, setHomepageSearchMode] = useState('new');
   const { isScrolled, navRef } = useHomePageScrollNav();
 
   useEffect(() => {
@@ -191,14 +192,18 @@ export default function Home() {
       <div className="hero-search-sticky-wrapper relative z-20 px-4 sm:px-6 md:px-8 lg:px-8">
         <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <div className="w-full">
-            <DomainSearchBar embedded className="mt-7 sm:mt-8 lg:mt-3" />
+            <DomainSearchBar
+              embedded
+              className="mt-7 sm:mt-8 lg:mt-3"
+              onSearchModeChange={setHomepageSearchMode}
+            />
           </div>
         </div>
       </div>
 
       <div className="home-hero-align-outer">
         <div className="home-hero-align-inner">
-          <ExploreSection />
+          <ExploreSection searchMode={homepageSearchMode} />
         </div>
       </div>
 

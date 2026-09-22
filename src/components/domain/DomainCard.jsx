@@ -155,7 +155,7 @@ export default function DomainCard({
   hideDomainTypeLabel = false,
   /** Delta/Showcase cards: hide the GST included caption. */
   hideGstCaption = false,
-  /** Optional fixed renewal caption (e.g. Showcase ₹1,159) — skips API-formatted renewal. */
+  /** Optional preformatted renewal caption — skips API-formatted renewal. */
   renewalPriceLabel = null,
   className = '',
   /** { shareType, originalQuery } — enables the Share & Earn button on this card. */

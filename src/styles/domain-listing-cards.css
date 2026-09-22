@@ -2384,6 +2384,12 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.10) !important;
 }
 
+/* Homepage Domains cards only: TLD color matches DOMAIN badge (all breakpoints). */
+body.home-page-body .home-domains-section .domain-search-card--listing .domain-listing-card-tld,
+body.home-page-body .home-domains-section .domain-search-card--listing .domain-search-card__name .text-sky-700 {
+  color: #075985 !important;
+}
+
 
 
 

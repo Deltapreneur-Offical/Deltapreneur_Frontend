@@ -3122,6 +3122,7 @@ function TakeDownModal({ target, onConfirm, onClose }) {
             {t('adminReason')} <span style={{ color: '#dc2626' }}>*</span>
           </label>
           <textarea value={reason} onChange={e => setReason(e.target.value)}
+            className="admin-takedown-reason-textarea"
             placeholder={t('adminReasonPlaceholder')}
             rows={3} style={{ resize: 'vertical' }} />
         </div>

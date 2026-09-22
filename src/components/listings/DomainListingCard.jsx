@@ -507,7 +507,7 @@ export default function DomainListingCard({
           >
             <span translate="no">{display.name}</span>
             {display.ext?.full ? (
-              <span translate="no" className="text-sky-700">{display.ext.full.startsWith('.') ? display.ext.full : `.${display.ext.full}`}</span>
+              <span translate="no" className="domain-listing-card-tld text-sky-700">{display.ext.full.startsWith('.') ? display.ext.full : `.${display.ext.full}`}</span>
             ) : null}
           </p>
 

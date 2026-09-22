@@ -17,6 +17,8 @@ body.home-page-body {
   --brand-soft: var(--home-saffron-50);
   --brand-border: var(--home-saffron-200);
   --cobrother-hover-color: var(--home-saffron-text);
+  --home-venture-play-color: #18b7e6;
+  --home-deltaop-accent-color: var(--home-venture-play-color);
 }
 
 /* ── Tailwind sky / blue / cyan / indigo utilities ── */
@@ -525,11 +527,18 @@ body.home-page-body .home-domains-section .domain-search-card--listing:focus-vis
     0 10px 28px rgba(69, 216, 255, 0.1) !important;
 }
 
-body.home-page-body .home-domains-section .domain-search-card--listing .text-sky-700,
 body.home-page-body .home-domains-section .domain-search-card--listing .text-sky-800\/80,
-body.home-page-body .home-domains-section .domain-search-card--listing .domain-card-standard-label,
-body.home-page-body .home-domains-section .domain-search-card--listing .domain-card-standard-tld {
+body.home-page-body .home-domains-section .domain-search-card--listing .domain-card-standard-label {
   color: #45d8ff !important;
+}
+
+/* Homepage Domains only: TLD (.com etc.) matches DOMAIN badge text — all breakpoints. */
+body.home-page-body .home-domains-section .domain-search-card--listing .domain-listing-card-tld,
+body.home-page-body .home-domains-section .domain-search-card--listing .domain-search-card__name .text-sky-700,
+body.home-page-body .home-domains-section .domain-search-card--listing .domain-search-card__name > span:last-child,
+body.home-page-body .home-domains-section .domain-search-card--listing .domain-card-standard-tld,
+body.home-page-body .home-domains-section .domain-search-card--listing .domain-card-standard-tld.text-teal-700 {
+  color: #075985 !important;
 }
 
 body.home-page-body .home-domains-section .domain-search-card--listing .registry-standard-badge {
@@ -659,7 +668,7 @@ body.home-page-body .home-preview-card-border--assistance .va-listing-card__comp
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#45d8ff, #45d8ff) border-box !important;
+    linear-gradient(var(--home-venture-title-color, var(--home-auction-title-color, var(--home-deltaop-accent-color))), var(--home-venture-title-color, var(--home-auction-title-color, var(--home-deltaop-accent-color)))) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
@@ -706,6 +715,7 @@ body.home-page-body .home-preview-card-border--assistance .creator-expected-rate
 body.home-page-body .home-auctions-section .home-preview-card-border--auction,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within {
+  --home-auction-title-color: var(--home-venture-play-color);
   --home-card-border: #45d8ff;
   --home-card-border-hover: #45d8ff;
   --home-card-shadow: rgba(69, 216, 255, 0.07);
@@ -798,7 +808,7 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .d
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__title {
-  color: #0b9fd0 !important;
+  color: var(--home-auction-title-color) !important;
   font-weight: 800 !important;
 }
 
@@ -827,7 +837,7 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__metrics-row,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover .home-auction-preview-card__metrics-row,
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content:hover .home-auction-preview-card__metrics-row {
-  border: 1.5px solid #45d8ff !important;
+  border: 1.5px solid var(--home-auction-title-color) !important;
   background: #FFFFFF !important;
   background-image: none !important;
   box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
@@ -852,7 +862,7 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
   border-color: transparent !important;
   background: transparent !important;
   background-image: none !important;
-  color: #45d8ff !important;
+  color: var(--home-auction-title-color) !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -872,13 +882,14 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
 body.home-page-body .home-ventures-section .home-preview-card-border--venture,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:focus-within {
+  --home-venture-title-color: var(--home-venture-play-color);
   --home-card-border: #45d8ff;
   --home-card-border-hover: #45d8ff;
   --home-card-shadow: rgba(69, 216, 255, 0.07);
   --home-card-shadow-hover: rgba(69, 216, 255, 0.10);
   --home-card-price-bg: #FFFFFF;
-  --home-card-price-border: #45d8ff;
-  --home-card-price-border-hover: #45d8ff;
+  --home-card-price-border: var(--home-venture-title-color);
+  --home-card-price-border-hover: var(--home-venture-title-color);
   --home-card-price-shadow-hover: rgba(69, 216, 255, 0.10);
   background: #FFFFFF !important;
   background-image: none !important;
@@ -912,7 +923,7 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture .v
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .venture-listing-card__title--compact,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain {
-  color: #0b9fd0 !important;
+  color: var(--home-venture-title-color) !important;
   font-weight: 700 !important;
 }
 
@@ -963,7 +974,7 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture .v
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#45d8ff, #45d8ff) border-box !important;
+    linear-gradient(var(--home-venture-title-color), var(--home-venture-title-color)) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
@@ -983,7 +994,7 @@ body.home-page-body .home-ventures-section .home-auto-scroll-row .home-preview-c
   border-color: transparent !important;
   background: transparent !important;
   background-image: none !important;
-  color: #45d8ff !important;
+  color: var(--home-venture-title-color) !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -1203,6 +1214,7 @@ body.home-page-body .home-coventures-section .venture-listing-card__price-value-
 body.home-page-body .home-preview-card-border--assistance,
 body.home-page-body .home-preview-card-border--assistance:hover,
 body.home-page-body .home-preview-card-border--assistance:focus-within {
+  --home-deltaop-accent-color: var(--home-venture-play-color);
   --home-card-border: #45d8ff;
   --home-card-border-hover: #45d8ff;
   --home-card-shadow: rgba(69, 216, 255, 0.07);
@@ -1297,10 +1309,10 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .creator-profile-card__badge {
-  border-color: #c8edfd !important;
+  border-color: var(--home-deltaop-accent-color) !important;
   background: #EFF6FF !important;
   background-image: none !important;
-  color: #45d8ff !important;
+  color: var(--home-deltaop-accent-color) !important;
   box-shadow: none !important;
 }
 
@@ -1341,14 +1353,21 @@ body.home-page-body .home-auto-scroll-row .home-preview-card-shell:has(.virtual-
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#45d8ff, #45d8ff) border-box !important;
+    linear-gradient(var(--home-deltaop-accent-color), var(--home-deltaop-accent-color)) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow: 0 0 10px rgba(69, 216, 255, 0.10) !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation-label {
-  color: #334155 !important;
+  color: #64748b !important;
+}
+
+body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation-block > .va-listing-card__compensation-label {
+  text-transform: none !important;
+  letter-spacing: 0.02em !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
 }
 
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-value {
@@ -1366,7 +1385,7 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
   border-color: transparent !important;
   background: transparent !important;
   background-image: none !important;
-  color: #45d8ff !important;
+  color: var(--home-deltaop-accent-color) !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -1388,15 +1407,15 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure:hover,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure:focus-within {
-  --home-card-border: #FF7A1A;
-  --home-card-border-hover: #F97316;
+  --home-card-border: var(--home-saffron);
+  --home-card-border-hover: var(--home-saffron);
   --home-card-shadow: rgba(249, 115, 22, 0.07);
   --home-card-shadow-hover: rgba(249, 115, 22, 0.12);
   --home-card-price-bg: #FFFFFF;
-  --home-card-price-border: #FF7A1A;
-  --home-card-price-border-hover: #F97316;
+  --home-card-price-border: var(--home-saffron);
+  --home-card-price-border-hover: var(--home-saffron);
   --home-card-price-shadow-hover: rgba(249, 115, 22, 0.10);
-  border-color: #FF7A1A !important;
+  border-color: var(--home-saffron) !important;
   background: #FFFFFF !important;
   background-image: none !important;
   box-shadow:
@@ -1406,7 +1425,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
 
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure:hover,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure:focus-within {
-  border-color: #F97316 !important;
+  border-color: var(--home-saffron) !important;
   box-shadow:
     0 0 0 1px rgba(255, 122, 26, 0.24),
     0 10px 28px rgba(249, 115, 22, 0.12) !important;
@@ -1463,7 +1482,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   border-color: #FED7AA !important;
   background: rgba(255, 247, 237, 0.88) !important;
   background-image: none !important;
-  color: #F97316 !important;
+  color: var(--home-saffron) !important;
   box-shadow: 0 0 10px rgba(249, 115, 22, 0.10) !important;
 }
 
@@ -1479,17 +1498,17 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__equity-badge,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure:hover .venture-listing-card__equity-badge,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content:hover .venture-listing-card__equity-badge {
-  border-color: #FF7A1A !important;
+  border-color: var(--home-saffron) !important;
   background: rgba(255, 247, 237, 0.78) !important;
   background-image: none !important;
-  color: #F97316 !important;
+  color: var(--home-saffron) !important;
   box-shadow: none !important;
 }
 
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__equity-badge-icon,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__equity-badge-value,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__equity-badge-label {
-  color: #F97316 !important;
+  color: var(--home-saffron) !important;
 }
 
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__price-label {
@@ -1502,7 +1521,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure:hover .domain-listing-card__price-box--coventure,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content:hover .domain-listing-card__price-box,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content:hover .domain-listing-card__price-box--coventure {
-  border: 1.5px solid #FF7A1A !important;
+  border: 1.5px solid var(--home-saffron) !important;
   background: #FFFFFF !important;
   background-image: none !important;
   box-shadow: 0 0 10px rgba(249, 115, 22, 0.10) !important;
@@ -1520,7 +1539,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   border-color: transparent !important;
   background: transparent !important;
   background-image: none !important;
-  color: #F97316 !important;
+  color: var(--home-saffron) !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -1529,7 +1548,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure:hover .price-section-v-icon,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-cta:hover .price-section-v-icon,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-cta:focus-visible .price-section-v-icon {
-  filter: brightness(0) saturate(100%) invert(53%) sepia(94%) saturate(2542%) hue-rotate(349deg) brightness(101%) contrast(95%) !important;
+  filter: brightness(0) saturate(100%) invert(65%) sepia(79%) saturate(1174%) hue-rotate(337deg) brightness(101%) contrast(101%) !important;
 }
 
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .home-feature-card-beam-spinner {
@@ -1631,7 +1650,7 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#45d8ff, #45d8ff) border-box !important;
+    linear-gradient(var(--home-venture-title-color, var(--home-auction-title-color, var(--home-deltaop-accent-color))), var(--home-venture-title-color, var(--home-auction-title-color, var(--home-deltaop-accent-color)))) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow:
@@ -1667,7 +1686,7 @@ body.home-page-body .home-preview-card-border:not(.home-preview-card-border--ven
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(#F97316, #F97316) border-box !important;
+    linear-gradient(var(--home-saffron), var(--home-saffron)) border-box !important;
   background-origin: padding-box, border-box !important;
   background-clip: padding-box, border-box !important;
   box-shadow:
@@ -1743,10 +1762,10 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
 
 body.home-page-body .home-auctions-section .home-auction-preview-card__nav-cta,
 body.home-page-body .home-auctions-section .home-auction-preview-card__nav-cta:hover {
-  flex: 0 0 2.35rem !important;
-  width: 2.35rem !important;
-  min-width: 2.35rem !important;
-  max-width: 2.35rem !important;
+  flex: 0 0 2.4rem !important;
+  width: 2.4rem !important;
+  min-width: 2.4rem !important;
+  max-width: 2.4rem !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction,

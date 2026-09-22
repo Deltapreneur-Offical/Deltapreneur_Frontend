@@ -4714,11 +4714,21 @@ input[type="checkbox"] {
 
 .app-layout-sidebar {
   position: relative;
+  /* Stretch with page so the right border runs the full column height. */
   align-self: stretch;
   height: auto;
   min-height: 100%;
   max-height: none;
   overflow: visible;
+}
+
+/* Desktop Dashboard sidebar: clear right-edge separator (reuse chrome border slate). */
+@media (min-width: 1024px) {
+  .app-layout-sidebar.app-sidebar {
+    /* Same RGB as --app-chrome-border; slightly stronger so the thin separator is visible. */
+    border-right: 1px solid rgba(15, 23, 42, 0.12);
+    box-shadow: none;
+  }
 }
 
 /* Shared chrome shade — cool grey-blue (footer + left panel, per design reference) */
@@ -4855,8 +4865,15 @@ input[type="checkbox"] {
 }
 
 .app-layout-sidebar .app-sidebar-body {
+  flex: 0 1 auto;
   min-height: auto;
   overflow: visible;
+  justify-content: flex-start;
+}
+
+.app-layout-sidebar .app-sidebar-footer {
+  margin-top: 0;
+  padding-bottom: 0.75rem;
 }
 
 .app-sidebar-body::-webkit-scrollbar {
@@ -5212,6 +5229,27 @@ input[type="checkbox"] {
   width: 16rem;
   z-index: 50;
   box-shadow: 8px 0 40px rgba(15, 23, 42, 0.1);
+  /* Hug menu content on mobile — do not stretch to full viewport with empty space. */
+  top: 0;
+  bottom: auto;
+  height: auto;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-sidebar--drawer .app-sidebar-body {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: visible;
+  justify-content: flex-start;
+}
+
+.app-sidebar--drawer .app-sidebar-footer {
+  margin-top: 0;
+  padding-bottom: 0.75rem;
 }
 
 .app-sidebar--drawer .app-sidebar-header {

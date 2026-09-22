@@ -150,28 +150,32 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
       {/* Footer / Price & CTA */}
       <div className={`tech-service-card__footer flex items-center justify-between gap-1.5 sm:gap-2 border-t border-gray-100 min-w-0 ${homeLayout ? 'pt-3 mt-3' : 'pt-3.5 mt-2'}`}>
         {homeLayout ? (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleCardClick();
-            }}
-            aria-label={t('commonExploreService', { defaultValue: 'Explore Service' })}
-            className="tech-service-card__price-pill"
-          >
-            <span className="tech-service-card__price-text">
-              <span className="tech-service-card__price-label">{t('commonStartingAt', { defaultValue: 'Starting at' })}</span>
-              <span className="tech-service-card__price-row">
-                <span className="tech-service-card__price-amount">
-                  {formatTechPrice(service.starting_price || 15)}
+          <div className="tech-service-card__price-block">
+            <span className="tech-service-card__price-label">
+              {t('commonStartingAt', { defaultValue: 'Starting at' })}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCardClick();
+              }}
+              aria-label={t('commonExploreService', { defaultValue: 'Explore Service' })}
+              className="tech-service-card__price-pill"
+            >
+              <span className="tech-service-card__price-text">
+                <span className="tech-service-card__price-row">
+                  <span className="tech-service-card__price-amount">
+                    {formatTechPrice(service.starting_price || 15)}
+                  </span>
+                  <span className="tech-service-card__price-suffix">/{t('commonMo', { defaultValue: 'mo' })}</span>
                 </span>
-                <span className="tech-service-card__price-suffix">/{t('commonMo', { defaultValue: 'mo' })}</span>
               </span>
-            </span>
-            <span className="tech-service-card__price-arrow" aria-hidden>
-              <PriceSectionIcon />
-            </span>
-          </button>
+              <span className="tech-service-card__price-arrow" aria-hidden>
+                <PriceSectionIcon />
+              </span>
+            </button>
+          </div>
         ) : (
           <>
             <div className="min-w-max shrink-0">

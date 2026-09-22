@@ -623,3 +623,17 @@
   color: #6b7280;
   cursor: not-allowed;
 }
+
+/* Take Down Venture modal is portaled outside .admin-page, so keep this
+   textarea readable without touching other admin or global textareas. */
+.admin-takedown-reason-textarea,
+.admin-takedown-reason-textarea:focus {
+  background: #ffffff;
+  color: #111827;
+  caret-color: #111827;
+  color-scheme: light;
+}
+
+.admin-takedown-reason-textarea::placeholder {
+  color: #6b7280;
+}

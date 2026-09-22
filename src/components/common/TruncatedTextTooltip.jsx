@@ -115,6 +115,8 @@ export default function TruncatedTextTooltip({ text, className = '', children })
     const el = triggerRef.current;
     if (!el) return;
     setIsTruncated(checkTruncation());
+    if (typeof ResizeObserver === 'undefined') return;
+
     const observer = new ResizeObserver(() => setIsTruncated(checkTruncation()));
     observer.observe(el);
     return () => observer.disconnect();

@@ -3331,6 +3331,16 @@ body.home-page-body .home-price-rupee-symbol {
   box-sizing: border-box;
 }
 
+body.home-page-body .home-deltaos-services-nav .tech-service-card--home {
+  overflow: hidden !important;
+  isolation: isolate;
+  background-clip: padding-box;
+}
+
+body.home-page-body .home-deltaos-services-nav .tech-service-card--home .tech-service-card__accent-glow {
+  pointer-events: none;
+}
+
 .home-preview-row:has(.tech-service-card) {
   align-items: stretch;
 }
@@ -4353,15 +4363,15 @@ body.home-page-body .home-price-rupee-symbol {
     text-overflow: ellipsis !important;
   }
 
-  /* Icon was wider than fixed 2.35rem CTA — size CTA + icon so full arrow stays inside pill. */
+  /* Keep the Auction play CTA at the shared homepage play-button width. */
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta,
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta,
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:hover,
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:hover {
-    flex: 0 0 2.15rem !important;
-    width: 2.15rem !important;
-    min-width: 2.15rem !important;
-    max-width: 2.15rem !important;
+    flex: 0 0 2.4rem !important;
+    width: 2.4rem !important;
+    min-width: 2.4rem !important;
+    max-width: 2.4rem !important;
     overflow: hidden !important;
   }
 
@@ -4369,11 +4379,11 @@ body.home-page-body .home-price-rupee-symbol {
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta .price-section-v-icon,
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta .domain-listing-card__price-cta-icon,
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta .domain-listing-card__price-cta-icon {
-    max-width: 2.05rem !important;
-    max-height: 2.15rem !important;
+    max-width: 2.4rem !important;
+    max-height: 2.55rem !important;
     width: auto !important;
     height: calc(100% + 2px) !important;
-    margin: -1px 0.28rem -1px 0 !important;
+    margin: -1.5px 0.62rem -1.5px 0 !important;
   }
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__stats-footer,

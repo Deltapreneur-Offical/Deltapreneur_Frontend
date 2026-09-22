@@ -82,6 +82,8 @@ export default function CommunityListingCard({
   skipVisibilityCheck = false,
   /** Homepage DeltaOp cards: show existing availability as a top-left status badge. */
   showAvailabilityBadge = false,
+  priceLabelOutside = false,
+  hideStatsFooter = false,
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();

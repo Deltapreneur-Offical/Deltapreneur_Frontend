@@ -2265,15 +2265,44 @@ body.home-page-body .home-operators-reference-row .home-preview-card-border--ass
   filter: none !important;
 }
 
+/* Kill the shared play-mask (::before) — it clips as a white triangle inside the blue square. */
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::before,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::before,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover::before,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible::before,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active::before {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+}
+
 body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after,
 body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after {
   content: '→' !important;
-  display: block !important;
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
   color: #ffffff !important;
   font-size: 1.05rem !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   letter-spacing: 0 !important;
+  background: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
   transform: none !important;
 }
 

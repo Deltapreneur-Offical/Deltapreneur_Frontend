@@ -41,7 +41,7 @@ export default function ShowcaseDomainCard({ item, shareContext = null, stackPre
         registrationPriceInr: item.priceInr ?? item.createPriceInr ?? item.askingPrice,
         totalInr: item.payableInr ?? item.totalInr,
         renewalPriceInr: item.renewalPriceInr,
-        renewalTotalInr: item.renewalTotalInr ?? item.renewalPriceInr ?? DEFAULT_SHOWCASE_RENEWAL_PRICE_INR,
+        renewalTotalInr: DEFAULT_SHOWCASE_RENEWAL_PRICE_INR,
         premiumProvider: item.premiumProvider,
         // NOTE: managedAcquisition is intentionally NOT passed to the shared
         // card so the Showcase card never renders the Managed Acquisition

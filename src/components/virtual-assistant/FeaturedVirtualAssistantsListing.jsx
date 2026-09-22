@@ -84,8 +84,7 @@ export function FeaturedVirtualAssistantCard({
   likeState,
   onLike,
   accent = 'assistance',
-  priceLabelOutside = false,
-  hideStatsFooter = false,
+  showAvailabilityBadge = false,
 }) {
   return (
     <HomePreviewCardShell accent={accent}>
@@ -97,8 +96,7 @@ export function FeaturedVirtualAssistantCard({
         onHire={onHire}
         likeState={likeState}
         onLike={onLike}
-        priceLabelOutside={priceLabelOutside}
-        hideStatsFooter={hideStatsFooter}
+        showAvailabilityBadge={showAvailabilityBadge}
       />
     </HomePreviewCardShell>
   );
@@ -120,8 +118,9 @@ export default function FeaturedVirtualAssistantsListing({
   loadingFallback = null,
   revealInPages = false,
   viewAllTo,
-  priceLabelOutside = false,
-  hideStatsFooter = false,
+  className = '',
+  rowClassName = '',
+  showAvailabilityBadge = false,
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -162,8 +161,7 @@ export default function FeaturedVirtualAssistantsListing({
       onHire={() => handleHire(profile.id)}
       likeState={getLike(profile.id)}
       onLike={() => toggleLike(profile.id)}
-      priceLabelOutside={priceLabelOutside}
-      hideStatsFooter={hideStatsFooter}
+      showAvailabilityBadge={showAvailabilityBadge}
     />
   );
 
@@ -182,7 +180,8 @@ export default function FeaturedVirtualAssistantsListing({
   return (
     <HomeCardsNavRow
       accent="assistance"
-      className="home-va-auto-scroll-row"
+      className={['home-va-auto-scroll-row', className].filter(Boolean).join(' ')}
+      rowClassName={rowClassName}
       ariaLabel={ariaLabel || 'Featured Virtual Assistants'}
       viewAllTo={viewAllTo}
     >

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 
-import { Share2, Trash2, Rocket, Handshake, Briefcase, PieChart, Gavel } from 'lucide-react';
+import { Share2, Trash2, Rocket, Handshake, Briefcase, PieChart, Gavel, ArrowRight } from 'lucide-react';
 
 import { EditIcon } from '../common/EditActionLabel';
 
@@ -59,6 +59,22 @@ function VentureCardArrowCta({ label, onClick, disabled = false, className = '' 
     >
       {label}
     </button>
+  );
+}
+
+function renderHomepageVentureTitle(name) {
+  const value = String(name || '');
+  const domainSuffixMatch = value.match(/^(.+?)(\.[A-Za-z0-9-]+)$/);
+
+  if (!domainSuffixMatch) {
+    return <span className="venture-listing-card__homepage-title-text">{value}</span>;
+  }
+
+  return (
+    <span className="venture-listing-card__homepage-title-text">
+      <span>{domainSuffixMatch[1]}</span>
+      <span className="venture-listing-card__homepage-title-suffix">{domainSuffixMatch[2]}</span>
+    </span>
   );
 }
 
@@ -551,6 +567,42 @@ export default function VentureListingCard({
 
   const showPriceBox = isAuction || showPriceText || handleViewDetails;
   const isHomePreview = compact && browseMode;
+  const renderMetricsBlock = () => (
+    <div className="venture-listing-card__metrics flex flex-wrap items-center justify-start gap-2 mt-1 min-w-0 w-full">
+      {sellerAsk.equityLabel ? (
+        <div className="venture-listing-card__equity-badge">
+          <PieChart size={15} className="venture-listing-card__equity-badge-icon shrink-0" aria-hidden />
+          <div className="venture-listing-card__equity-badge-copy min-w-0">
+            <span className="venture-listing-card__equity-badge-value">
+              {sellerAsk.equityLabel.includes('%') ? sellerAsk.equityLabel : `${sellerAsk.equityLabel}%`}
+            </span>
+            <span className="venture-listing-card__equity-badge-label">
+              EQUITY
+            </span>
+          </div>
+        </div>
+      ) : (
+        <span className="shrink-0" aria-hidden>
+          {'\u00A0'}
+        </span>
+      )}
+
+      <div className="flex flex-wrap items-center gap-1 shrink-0">
+        {isCoVenture && roleOffer && !compact ? (
+          <div className="inline-flex items-center gap-1 px-2 py-0.75 bg-slate-50 border border-slate-200 rounded-full text-slate-600 font-medium text-[10px] shrink-0">
+            <Briefcase size={12} className="text-slate-400 shrink-0" />
+            <span className="truncate max-w-[110px]" title={roleOffer}>{roleOffer}</span>
+          </div>
+        ) : null}
+
+        {!homepageContentOnly ? (
+        <div className="inline-flex items-center px-2 py-0.75 bg-slate-50 border border-slate-200 rounded-full text-slate-500 font-medium text-[10px] shrink-0">
+          <span className="text-slate-600 font-semibold">{formatInterestCountLabel(interestCount, isCoVenture)}</span>
+        </div>
+        ) : null}
+      </div>
+    </div>
+  );
 return (
 
     <article
@@ -682,6 +734,8 @@ return (
           </div>
           ) : null}
 
+          {homepageVentureContentOnly ? renderMetricsBlock() : null}
+
           {/* Brand Name & Status Dot */}
 
           <div className="venture-listing-card__title-row flex items-center justify-between gap-2">
@@ -701,7 +755,9 @@ return (
               }}
             >
 
-              <OverflowMarqueeText text={brandName} />
+              {homepageVentureContentOnly
+                ? renderHomepageVentureTitle(brandName)
+                : <OverflowMarqueeText text={brandName} />}
 
             </h3>
 
@@ -720,9 +776,9 @@ return (
 
           </div>
 
-          {/* Description - only show if not compact */}
+          {/* Description */}
 
-          {!compact && b.description && (
+          {(!compact || homepageVentureContentOnly) && b.description && (
 
             <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed m-0 font-medium">
 
@@ -733,40 +789,7 @@ return (
           )}
 
           {/* Key Metrics / Details Grid - Standout Equity Pill Badge */}
-          <div className="venture-listing-card__metrics flex flex-wrap items-center justify-start gap-2 mt-1 min-w-0 w-full">
-            {sellerAsk.equityLabel ? (
-              <div className="venture-listing-card__equity-badge">
-                <PieChart size={15} className="venture-listing-card__equity-badge-icon shrink-0" aria-hidden />
-                <div className="venture-listing-card__equity-badge-copy min-w-0">
-                  <span className="venture-listing-card__equity-badge-value">
-                    {sellerAsk.equityLabel.includes('%') ? sellerAsk.equityLabel : `${sellerAsk.equityLabel}%`}
-                  </span>
-                  <span className="venture-listing-card__equity-badge-label">
-                    EQUITY
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <span className="shrink-0" aria-hidden>
-                {'\u00A0'}
-              </span>
-            )}
-
-            <div className="flex flex-wrap items-center gap-1 shrink-0">
-              {isCoVenture && roleOffer && !compact ? (
-                <div className="inline-flex items-center gap-1 px-2 py-0.75 bg-slate-50 border border-slate-200 rounded-full text-slate-600 font-medium text-[10px] shrink-0">
-                  <Briefcase size={12} className="text-slate-400 shrink-0" />
-                  <span className="truncate max-w-[110px]" title={roleOffer}>{roleOffer}</span>
-                </div>
-              ) : null}
-
-              {!homepageContentOnly ? (
-              <div className="inline-flex items-center px-2 py-0.75 bg-slate-50 border border-slate-200 rounded-full text-slate-500 font-medium text-[10px] shrink-0">
-                <span className="text-slate-600 font-semibold">{formatInterestCountLabel(interestCount, isCoVenture)}</span>
-              </div>
-              ) : null}
-            </div>
-          </div>
+          {!homepageVentureContentOnly ? renderMetricsBlock() : null}
 
         </div>
 
@@ -776,7 +799,7 @@ return (
 
           {showPriceBox && (
             <div className="venture-listing-card__price-block">
-              {!isAuction && showPriceText ? (
+              {!isAuction && showPriceText && !homepageVentureContentOnly ? (
                 <span className={`venture-listing-card__price-label leading-none${homepageVentureContentOnly || (isHomePreview && isCoVenture) ? ' venture-listing-card__price-label--cta' : ' uppercase'}${homepageVentureContentOnly ? ' venture-listing-card__price-label--offer' : ''}${isHomePreview && isCoVenture ? ' venture-listing-card__price-label--apply' : ''}`}>
                   {homepageVentureContentOnly
                     ? t('listingCardOffer', 'Offer')
@@ -805,6 +828,11 @@ return (
               ) : showPriceText ? (
 
                 <div className="domain-listing-card__price-text min-w-0">
+                  {homepageVentureContentOnly ? (
+                    <span className="venture-listing-card__price-label venture-listing-card__price-label--offer leading-none">
+                      {t('listingCardOffer', 'Offer')}
+                    </span>
+                  ) : null}
                   <span className={`domain-listing-card__price-value currency-display truncate ${compact ? 'venture-listing-card__price-value--compact' : ''
                     }`}>
 
@@ -824,14 +852,20 @@ return (
 
                   type="button"
 
-                  className="domain-listing-card__price-cta tech-service-card__price-arrow"
+                  className={`domain-listing-card__price-cta${homepageVentureContentOnly ? ' venture-listing-card__homepage-offer-cta' : ' tech-service-card__price-arrow'}`}
 
                   aria-label={t('listingCardViewDetails', 'View details')}
 
                   onClick={handleViewDetails}
 
                 >
-                  <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
+                  {homepageVentureContentOnly ? (
+                    <span className="venture-listing-card__price-arrow-glyph" aria-hidden>
+                      <ArrowRight size={17} strokeWidth={2.45} />
+                    </span>
+                  ) : (
+                    <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
+                  )}
 
                 </button>
 

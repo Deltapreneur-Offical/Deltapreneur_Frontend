@@ -13,6 +13,7 @@ import './styles/home-saffron.css'
 import './styles/home-saffron-custom.css'
 import './styles/technology-services-theme.css'
 import './styles/price-section-icon.css'
+import './styles/home-ventures-reference-only.css'
 import './styles/home-features-section.css'
 import './styles/listing-card-stats-footer.css'
 import './i18n/index';

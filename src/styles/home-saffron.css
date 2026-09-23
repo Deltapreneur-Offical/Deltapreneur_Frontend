@@ -2930,7 +2930,12 @@ body.home-page-body .home-operators-reference-info__cta {
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation,
   body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .domain-listing-card__price-box.va-listing-card__compensation,
-  body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card) .domain-listing-card__price-box.va-listing-card__compensation {
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance:hover .virtual-assistant-listing-card .domain-listing-card__price-box.va-listing-card__compensation,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance:focus-within .virtual-assistant-listing-card .domain-listing-card__price-box.va-listing-card__compensation,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card:hover .domain-listing-card__price-box.va-listing-card__compensation,
+  body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card) .domain-listing-card__price-box.va-listing-card__compensation,
+  body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card):hover .domain-listing-card__price-box.va-listing-card__compensation,
+  body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card) .va-listing-card__compensation {
     grid-area: price;
     display: flex !important;
     flex-direction: row !important;
@@ -2939,14 +2944,16 @@ body.home-page-body .home-operators-reference-info__cta {
     justify-content: space-between !important;
     gap: 0.55rem !important;
     width: 100% !important;
-    min-height: 2.15rem !important;
+    min-height: 2.85rem !important;
     max-height: none !important;
+    height: auto !important;
     margin-top: 0.35rem !important;
-    padding: 0.1rem 0 0.1rem 0.12rem !important;
-    overflow: visible !important;
+    padding: 0.55rem 0.55rem 0.55rem 0.75rem !important;
+    overflow: hidden !important;
     border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
+    outline: 0 !important;
+    border-radius: 0.75rem !important;
+    background: #f1f5f9 !important;
     background-image: none !important;
     box-shadow: none !important;
   }

@@ -4323,3 +4323,55 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
     box-shadow: 0 8px 18px rgba(255, 85, 59, 0.22) !important;
   }
 }
+
+/*
+ * Homepage Ventures — mobile/tablet ONLY: stack cards vertically (1 per row).
+ * Does not change card design, height, colors, or desktop 2-up carousel.
+ * Desktop (≥1024px) keeps the existing horizontal 2-card layout.
+ */
+@media (max-width: 1023px) {
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap.home-cards-nav-wrap--venture {
+    padding-inline: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Carousel arrows are for horizontal paging — hide when stacked. */
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture > .home-cards-nav {
+    display: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture .home-preview-row.home-cards-nav-row,
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap .home-preview-row.home-cards-nav-row {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: var(--home-venture-gap, 1rem) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    scroll-snap-type: none !important;
+    cursor: default !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}

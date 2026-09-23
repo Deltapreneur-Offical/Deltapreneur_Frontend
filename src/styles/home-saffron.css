@@ -1778,45 +1778,834 @@ body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auc
   aspect-ratio: 1.12 / 1 !important;
 }
 
-/* Homepage Auctions mobile only (<768): one full card between nav arrows. */
-@media (max-width: 767px) {
-  body.home-page-body .home-auctions-section .home-preview-row__item:has(.home-auction-preview-card--homepage-content),
-  body.home-page-body .home-auctions-section .home-auto-scroll-row__item:has(.home-auction-preview-card--homepage-content) {
-    width: 100% !important;
-    max-width: 100% !important;
-    flex: 0 0 100% !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    min-width: 0 !important;
+/* Homepage Operator reference layout only. */
+body.home-page-body .home-operators-reference-section {
+  background: #ffffff !important;
+  padding-top: 1.15rem !important;
+  padding-bottom: 1.75rem !important;
+  box-shadow: 0 0 0 100vmax #ffffff;
+  clip-path: inset(0 -100vmax);
+}
+
+body.home-page-body .home-operators-reference-section > div,
+body.home-page-body .home-operators-reference-shell,
+body.home-page-body .home-operators-reference-rail,
+body.home-page-body .home-operators-reference-nav,
+body.home-page-body .home-operators-reference-row,
+body.home-page-body .home-operators-reference-row .home-preview-row__item,
+body.home-page-body .home-operators-reference-row .home-preview-row__card {
+  background: #ffffff !important;
+}
+
+body.home-page-body .home-operators-reference-section .home-section-header {
+  margin-bottom: 1.25rem;
+}
+
+body.home-page-body .home-operators-reference-section .home-section-header__top {
+  border-bottom: none !important;
+}
+
+/* Blue accent bar left of "DeltaOp (Operators)" — matches reference heading. */
+body.home-page-body .home-operators-reference-section .home-section-header__title {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding-left: 0.85rem;
+  color: #0f172a;
+}
+
+body.home-page-body .home-operators-reference-section .home-section-header__title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.28rem;
+  height: 1.15em;
+  border-radius: 999px;
+  background: #2f80ed;
+  transform: translateY(-50%);
+}
+
+body.home-page-body .home-operators-reference-shell {
+  display: flex;
+  gap: 1.15rem;
+  align-items: stretch;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+body.home-page-body .home-operators-reference-rail {
+  display: flex;
+  min-width: 0;
+  width: 41rem;
+  max-width: 41rem;
+  flex: 0 0 41rem;
+  align-items: stretch;
+}
+
+body.home-page-body .home-operators-reference-nav {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 100%;
+  padding-inline: 3.5rem !important;
+  width: 100%;
+  box-sizing: border-box;
+  align-self: stretch;
+  display: flex !important;
+  flex-direction: column;
+}
+
+body.home-page-body .home-operators-reference-nav .home-cards-nav-row,
+body.home-page-body .home-operators-reference-row {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 100%;
+  align-items: stretch !important;
+}
+
+body.home-page-body .home-operators-reference-nav .home-cards-nav {
+  top: 50%;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-color: #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+body.home-page-body .home-operators-reference-nav .home-cards-nav--prev {
+  left: 0.2rem;
+  right: auto;
+}
+
+body.home-page-body .home-operators-reference-nav .home-cards-nav--next {
+  right: 0.2rem;
+}
+
+body.home-page-body .home-operators-reference-nav .home-cards-nav:disabled {
+  opacity: 1;
+  pointer-events: none;
+}
+
+body.home-page-body .home-operators-reference-row {
+  gap: 1.5rem !important;
+  align-items: stretch;
+  padding: 0 !important;
+}
+
+body.home-page-body .home-operators-reference-row .home-preview-row__item {
+  flex: 0 0 16.25rem !important;
+  width: 16.25rem !important;
+  max-width: 16.25rem !important;
+  min-height: 100%;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+body.home-page-body .home-operators-reference-row .home-preview-row__card,
+body.home-page-body .home-operators-reference-row .home-preview-card-shell,
+body.home-page-body .home-operators-reference-row .home-preview-card-border,
+body.home-page-body .home-operators-reference-row .home-preview-card-border__inner {
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+body.home-page-body .home-operators-reference-row .home-preview-card-border,
+body.home-page-body .home-operators-reference-row .home-preview-card-border:hover {
+  overflow: hidden !important;
+  border: 1px solid #dfe6ee !important;
+  border-radius: 1.35rem !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.07) !important;
+  transform: none !important;
+}
+
+body.home-page-body .home-operators-reference-row .home-feature-card-beam-spinner {
+  display: none !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card.domain-listing-card {
+  min-height: 0 !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 1.25rem !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  transform: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__header {
+  position: relative;
+  background: #ffffff !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__cover {
+  position: relative;
+  height: 7.1rem !important;
+  overflow: visible !important;
+  background: #ffffff !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__cover-inner {
+  align-items: flex-end;
+  justify-content: center;
+  padding: 2.35rem 1rem 0.2rem !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__avatar-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  width: 4.6rem;
+  height: 4.6rem;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__avatar {
+  display: block !important;
+  width: 4.55rem !important;
+  height: 4.55rem !important;
+  border: 3px solid #eef2f7 !important;
+  border-radius: 999px !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1) !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__avatar--fallback {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #eef2ff !important;
+  color: #334155 !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__status-badge {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  max-width: calc(100% - 3.5rem);
+  padding: 0.28rem 0.62rem;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: #e8f8ef;
+  color: #166534;
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__status-badge--available {
+  background: #e8f8ef;
+  color: #166534;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__status-badge--allocated {
+  background: #fff1e6;
+  color: #c2410c;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__status-badge--default {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .domain-listing-card__share-container {
+  top: 0.75rem !important;
+  right: 0.75rem !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .domain-listing-card__share-btn {
+  width: 1.9rem !important;
+  height: 1.9rem !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 999px !important;
+  background: #f8fafc !important;
+  color: #64748b !important;
+  box-shadow: none !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__title-block {
+  gap: 0.28rem !important;
+  padding: 0.25rem 1rem 0.55rem !important;
+  text-align: center !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__name {
+  color: #0f172a !important;
+  font-size: 1.02rem !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  text-align: center !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__badge {
+  border: 0 !important;
+  background: transparent !important;
+  color: #3b82f6 !important;
+  padding: 0 !important;
+  font-size: 0.64rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .domain-listing-card__body {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  gap: 0.55rem !important;
+  padding: 0 0.95rem 0.85rem !important;
+  justify-content: flex-start !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 !important;
+  min-height: 3.35rem;
+  height: auto;
+  margin: 0 !important;
+  padding: 0.55rem 0.35rem !important;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 0.8rem;
+  background: #f1f5f9;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-col {
+  justify-content: center;
+  align-items: center;
+  gap: 0.12rem;
+  min-width: 0;
+  padding-inline: 0.35rem;
+  text-align: center;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-col--center {
+  border-left: 1px solid #e2e8f0 !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-icon {
+  width: 0.85rem !important;
+  height: 0.85rem !important;
+  margin: 0 0 0.05rem !important;
+  color: #64748b !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-col--busy .stat-icon,
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-col--busy .stat-value {
+  color: #ea580c !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-value {
+  color: #334155 !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-label {
+  color: #64748b !important;
+  font-size: 0.58rem !important;
+  font-weight: 600 !important;
+  line-height: 1.05 !important;
+}
+
+/* Compact compensation box — matches second reference (not outlined pill). */
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .domain-listing-card__price-box.va-listing-card__compensation,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance:hover .virtual-assistant-listing-card .domain-listing-card__price-box.va-listing-card__compensation,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance:focus-within .virtual-assistant-listing-card .domain-listing-card__price-box.va-listing-card__compensation,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card:hover .domain-listing-card__price-box.va-listing-card__compensation,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card.domain-listing-card.card-glow-hover:hover .domain-listing-card__price-box.va-listing-card__compensation,
+body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card) .domain-listing-card__price-box.va-listing-card__compensation,
+body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card):hover .domain-listing-card__price-box.va-listing-card__compensation,
+body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card):focus-within .domain-listing-card__price-box.va-listing-card__compensation,
+body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card) .va-listing-card__compensation {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 0.55rem !important;
+  height: auto !important;
+  min-height: 3.35rem !important;
+  max-height: none !important;
+  margin-top: 0.55rem !important;
+  padding: 0.7rem 0.7rem 0.7rem 0.9rem !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  outline: 0 !important;
+  border-radius: 0.8rem !important;
+  background: #f1f5f9 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation::before {
+  display: none !important;
+  content: none !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation-label {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  display: block !important;
+  margin: 0 0 0.2rem !important;
+  color: #94a3b8 !important;
+  font-family: var(--font-body, system-ui, sans-serif) !important;
+  font-size: 0.55rem !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-text {
+  position: static !important;
+  z-index: 1 !important;
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  min-width: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-value {
+  display: inline-flex !important;
+  align-items: baseline !important;
+  flex-wrap: nowrap !important;
+  gap: 0.28rem !important;
+  white-space: nowrap !important;
+  color: #0f172a !important;
+  font-family: var(--font-body, system-ui, sans-serif) !important;
+  font-size: 0.98rem !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation-period {
+  color: #64748b !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active {
+  position: relative !important;
+  z-index: 1 !important;
+  display: inline-flex !important;
+  flex: 0 0 2.15rem !important;
+  width: 2.15rem !important;
+  min-width: 2.15rem !important;
+  max-width: 2.15rem !important;
+  height: 2.15rem !important;
+  min-height: 2.15rem !important;
+  max-height: 2.15rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  align-self: center !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0.55rem !important;
+  background: #2f80ed !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  transform: none !important;
+  flex-shrink: 0 !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible {
+  background: #2563eb !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .price-section-v-icon,
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta-icon,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .price-section-v-icon,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta-icon,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card:hover .va-listing-card__compensation .price-section-v-icon {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  filter: none !important;
+}
+
+/* Kill the shared play-mask (::before) — it clips as a white triangle inside the blue square. */
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::before,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::before,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover::before,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible::before,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active::before {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after,
+body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after {
+  content: '→' !important;
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #ffffff !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  background: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  transform: none !important;
+}
+
+body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .domain-listing-card__stats.listing-card-stats-footer {
+  /* Reference layout omits the footer strip; keep markup/functionality intact. */
+  display: none !important;
+}
+
+body.home-page-body .home-operators-reference-info {
+  position: relative;
+  display: flex;
+  width: 34rem;
+  max-width: 34rem;
+  flex: 0 0 34rem;
+  flex-direction: column;
+  justify-content: space-between;
+  align-self: stretch;
+  min-height: 0;
+  height: auto;
+  overflow: hidden;
+  border: 1px solid #dfe6ee;
+  border-radius: 1.35rem;
+  background: #ffffff;
+  padding: 1.15rem 1.35rem 1rem;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
+}
+
+body.home-page-body .home-operators-reference-info__content {
+  position: relative;
+  z-index: 1;
+  max-width: 34rem;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+body.home-page-body .home-operators-reference-info__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.5rem;
+  color: #f15f4e;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.08em;
+}
+
+body.home-page-body .home-operators-reference-info__eyebrow span {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 999px;
+  background: #ff604c;
+}
+
+body.home-page-body .home-operators-reference-info__title {
+  margin: 0;
+  color: #0f172a;
+  font-family: var(--font-display, var(--font-body), system-ui, sans-serif);
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  font-weight: 850;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+body.home-page-body .home-operators-reference-info__text {
+  max-width: 32rem;
+  margin: 0.55rem 0 0;
+  color: #64748b;
+  font-size: 0.98rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+body.home-page-body .home-operators-reference-info__footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  flex-shrink: 0;
+}
+
+body.home-page-body .home-operators-reference-roster {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+body.home-page-body .home-operators-reference-roster span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  margin-left: -0.42rem;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+body.home-page-body .home-operators-reference-roster span:first-child {
+  margin-left: 0;
+  background: #ff604c;
+}
+
+body.home-page-body .home-operators-reference-roster span:nth-child(2) {
+  background: #0f172a;
+}
+
+body.home-page-body .home-operators-reference-roster span:nth-child(3) {
+  background: #1597d3;
+}
+
+body.home-page-body .home-operators-reference-roster-text {
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+body.home-page-body .home-operators-reference-info__cta {
+  position: relative;
+  z-index: 1;
+  margin-left: auto;
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8.6rem;
+  height: 2.45rem;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.14);
+}
+
+@media (max-width: 1180px) and (min-width: 768px) {
+  /* Tablet / iPad: keep side-by-side, never collapse the promo into a thin strip. */
+  body.home-page-body .home-operators-reference-section {
+    overflow-x: clip;
   }
 
-  body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) {
-    aspect-ratio: 1.05 / 1 !important;
-    width: min(18rem, 100%) !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
+  body.home-page-body .home-operators-reference-shell {
+    gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  body.home-page-body .home-operators-reference-rail {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    flex-basis: 0;
+  }
+
+  body.home-page-body .home-operators-reference-nav {
+    padding-inline: 2.75rem !important;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.home-page-body .home-operators-reference-row {
+    gap: 1rem !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .home-preview-row__item {
+    flex: 0 0 15rem !important;
+    width: 15rem !important;
+    max-width: 15rem !important;
+  }
+
+  body.home-page-body .home-operators-reference-info {
+    flex: 0 0 clamp(18rem, 34vw, 24rem);
+    width: clamp(18rem, 34vw, 24rem);
+    min-width: 18rem;
+    max-width: 24rem;
+    flex-basis: clamp(18rem, 34vw, 24rem);
+    padding: 1.05rem 1.2rem 0.9rem;
+    min-height: 0;
+    height: auto;
+    align-self: stretch;
+  }
+
+  body.home-page-body .home-operators-reference-info__content,
+  body.home-page-body .home-operators-reference-info__title,
+  body.home-page-body .home-operators-reference-info__text {
+    max-width: 100%;
+  }
+
+  body.home-page-body .home-operators-reference-info__footer {
+    flex-wrap: wrap;
+    gap: 0.55rem 0.7rem;
+  }
+
+  body.home-page-body .home-operators-reference-roster-text {
+    white-space: normal;
   }
 }
 
-/* Homepage Auctions iPad / tablet (768–1023): two cards side-by-side (match Ventures). */
-@media (min-width: 768px) and (max-width: 1023px) {
-  body.home-page-body .home-auctions-section .home-preview-row__item:has(.home-auction-preview-card--homepage-content),
-  body.home-page-body .home-auctions-section .home-auto-scroll-row__item:has(.home-auction-preview-card--homepage-content) {
-    width: min(17.25rem, calc((100% - 1rem) / 2)) !important;
-    max-width: min(17.25rem, calc((100% - 1rem) / 2)) !important;
-    flex: 0 0 min(17.25rem, calc((100% - 1rem) / 2)) !important;
-    box-sizing: border-box !important;
-    align-items: stretch !important;
-    min-width: 0 !important;
+@media (max-width: 767px) {
+  /* Phone: stack promo below; operator cards keep readable width in the carousel. */
+  body.home-page-body .home-operators-reference-section {
+    overflow-x: clip;
   }
 
-  body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) {
-    aspect-ratio: 1.12 / 1 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
+  body.home-page-body .home-operators-reference-shell {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  body.home-page-body .home-operators-reference-rail {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 auto;
+    flex-basis: auto;
+    min-width: 0;
+  }
+
+  body.home-page-body .home-operators-reference-nav {
+    padding-inline: 2.75rem !important;
+    width: 100%;
+  }
+
+  body.home-page-body .home-operators-reference-row {
+    gap: 1rem !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .home-preview-row__item {
+    flex: 0 0 min(16.25rem, 78vw) !important;
+    width: min(16.25rem, 78vw) !important;
+    max-width: min(16.25rem, 78vw) !important;
+  }
+
+  body.home-page-body .home-operators-reference-info {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+    flex-basis: auto;
+    height: auto;
+    align-self: stretch;
+    padding: 1.15rem 1.2rem 1rem;
+  }
+
+  body.home-page-body .home-operators-reference-info__content,
+  body.home-page-body .home-operators-reference-info__title,
+  body.home-page-body .home-operators-reference-info__text {
+    max-width: 100%;
+  }
+
+  body.home-page-body .home-operators-reference-info__footer {
+    flex-wrap: wrap;
+    gap: 0.55rem 0.7rem;
+  }
+
+  body.home-page-body .home-operators-reference-roster-text {
+    white-space: normal;
+  }
+
+  body.home-page-body .home-operators-reference-info__cta {
+    margin-left: 0;
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 639px) {
+  body.home-page-body .home-operators-reference-section {
+    padding-top: 0.9rem !important;
+  }
+
+  body.home-page-body .home-operators-reference-shell {
+    gap: 0.9rem;
+  }
+
+  body.home-page-body .home-operators-reference-nav {
+    padding-inline: 2.5rem !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .home-preview-row__item {
+    flex-basis: min(16rem, 82vw) !important;
+    width: min(16rem, 82vw) !important;
+    max-width: min(16rem, 82vw) !important;
+  }
+
+  body.home-page-body .home-operators-reference-info {
+    padding: 1.1rem 1.05rem 0.95rem;
   }
 }
 

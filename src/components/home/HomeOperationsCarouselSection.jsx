@@ -86,6 +86,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   }, [isAssistanceSection, isOfficesSection, section.serviceType]);
 
   const title = section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel });
+  const sectionHint = t(section.hintKey, { defaultValue: section.defaultHint });
   const accent = isAssistanceSection ? 'assistance' : 'operations';
   const viewAllPath = operationsPathForSection(sectionId);
   const { visible: visibleServices } = useHomepageCardReveal(services);
@@ -123,7 +124,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
     }
 
     return (
-      <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
+      <section className="home-operators-reference-section bg-white pt-2 pb-4 md:pt-3 md:pb-6 min-w-0 overflow-visible">
         <div className="w-full min-w-0">
           <HomeSectionHeader
             title={title}
@@ -131,16 +132,45 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
             accent={accent}
             showViewAll={vaFeatured.count > 0}
           />
-          <FeaturedVirtualAssistantsListing
-            layout="row"
-            pageSize={HOMEPAGE_PREVIEW_LIMIT}
-            cards={vaFeatured.cards.slice(0, HOMEPAGE_PREVIEW_LIMIT)}
-            loading={false}
-            ariaLabel={title}
-            viewAllTo={viewAllPath}
-            priceLabelOutside
-            hideStatsFooter
-          />
+          <div className="home-operators-reference-shell">
+            <div className="home-operators-reference-rail">
+              <FeaturedVirtualAssistantsListing
+                layout="row"
+                pageSize={HOMEPAGE_PREVIEW_LIMIT}
+                cards={vaFeatured.cards.slice(0, HOMEPAGE_PREVIEW_LIMIT)}
+                loading={false}
+                ariaLabel={title}
+                className="home-operators-reference-nav"
+                rowClassName="home-operators-reference-row"
+                showAvailabilityBadge
+              />
+            </div>
+            <aside className="home-operators-reference-info" aria-label={title}>
+              <div className="home-operators-reference-info__content">
+                <p className="home-operators-reference-info__eyebrow">
+                  <span aria-hidden="true" />
+                  DEPLOY VENTURE TALENT
+                </p>
+                <h3 className="home-operators-reference-info__title">
+                  Hire Verified Pre-Trained Operators in &lt;24 Hours
+                </h3>
+                <p className="home-operators-reference-info__text">
+                  Embed elite full-stack developers, product managers, and financial analysts directly into your acquired digital domain or SaaS asset.
+                </p>
+              </div>
+              <div className="home-operators-reference-info__footer">
+                <div className="home-operators-reference-roster" aria-label="2+ active operator roster">
+                  <span>OP</span>
+                  <span>HQ</span>
+                  <span>AI</span>
+                </div>
+                <span className="home-operators-reference-roster-text">2+ active operator roster</span>
+                <Link to={viewAllPath} className="home-operators-reference-info__cta">
+                  Request Operator
+                </Link>
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
     );

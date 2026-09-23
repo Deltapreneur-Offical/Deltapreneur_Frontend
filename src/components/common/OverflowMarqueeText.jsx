@@ -34,6 +34,10 @@ export default function OverflowMarqueeText({
     };
 
     check();
+    if (typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
     const observer = new ResizeObserver(check);
     if (containerRef.current) observer.observe(containerRef.current);
     if (textRef.current) observer.observe(textRef.current);

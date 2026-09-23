@@ -74,4 +74,22 @@ describe('normalizeDomainCardItem GST display vs cart unit', () => {
     expect(second.renewalDisplayPriceInr).toBe(678.5);
     expect(second.gstIncluded).toBe(true);
   });
+
+  it('uses 1159 as the Delta domain renewal display amount without changing the raw renewal', () => {
+    const item = normalizeDomainCardItem({
+      domain: 'premium.com',
+      name: 'premium',
+      tld: 'com',
+      available: true,
+      isPremium: true,
+      registryTier: 'premium',
+      registrationPriceInr: 250000,
+      totalInr: 250000,
+      renewalPriceInr: 1197.7,
+      renewalTotalInr: 1413.29,
+    });
+
+    expect(item.renewalPriceInr).toBe(1197.7);
+    expect(item.renewalDisplayPriceInr).toBe(1159);
+  });
 });

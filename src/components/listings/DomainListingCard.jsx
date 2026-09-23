@@ -26,6 +26,7 @@ import '../../styles/domain-listing-cards.css';
 
 const PRIMARY_BTN =
   'domain-listing-card__cta-btn w-full rounded-full px-4 py-2.5 text-[0.8125rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200';
+const DEFAULT_RENEWAL_PRICE_INR = 1159;
 
 function resolveStatusDotClass(status) {
   const key = (status || 'AVAILABLE').toUpperCase();
@@ -395,6 +396,7 @@ export default function DomainListingCard({
   // ═══════════════════════════════════════════════════════════════════════════
     if (marketplace) {
     const priceText = priceAmount > 0 ? formatPrice(priceAmount) : null;
+    const renewalText = formatPrice(DEFAULT_RENEWAL_PRICE_INR);
     const canBuy = statusKey === 'AVAILABLE' && !purchaseBlocked && priceAmount > 0 && !isOwner;
     const canUseAdminMenu = isAdmin && Boolean(onEdit) && Boolean(onDelete);
 
@@ -518,7 +520,7 @@ export default function DomainListingCard({
                 <span className="domain-search-card__price-value">{priceText}</span>
               </p>
               <p className="text-[11px] font-medium text-gray-400 leading-snug pt-0.5">
-                Renews at ₹1,159/yr
+                Renews at {renewalText}/yr
               </p>
             </>
           ) : (

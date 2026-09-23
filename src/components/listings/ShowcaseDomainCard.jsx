@@ -1,5 +1,7 @@
 import DomainCard from '../domain/DomainCard';
 
+const DEFAULT_SHOWCASE_RENEWAL_PRICE_INR = 1159;
+
 /**
  * OpenProvider Premium Showcase card (customer-facing).
  *
@@ -28,7 +30,6 @@ export default function ShowcaseDomainCard({ item, shareContext = null, stackPre
       hideAvailabilityBadge
       hideDomainTypeLabel
       hideGstCaption
-      renewalPriceLabel="₹1,159"
       item={{
         domain: fullDomain,
         name: item.name,
@@ -40,7 +41,7 @@ export default function ShowcaseDomainCard({ item, shareContext = null, stackPre
         registrationPriceInr: item.priceInr ?? item.createPriceInr ?? item.askingPrice,
         totalInr: item.payableInr ?? item.totalInr,
         renewalPriceInr: item.renewalPriceInr,
-        renewalTotalInr: item.renewalTotalInr,
+        renewalTotalInr: DEFAULT_SHOWCASE_RENEWAL_PRICE_INR,
         premiumProvider: item.premiumProvider,
         // NOTE: managedAcquisition is intentionally NOT passed to the shared
         // card so the Showcase card never renders the Managed Acquisition

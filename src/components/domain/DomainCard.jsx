@@ -8,6 +8,8 @@ import { isRegistryPremium } from '../../utils/registryPremium';
 import ShareButton from '../share/ShareButton';
 import { useTranslation } from 'react-i18next';
 
+const DELTA_DOMAIN_RENEWAL_DISPLAY_PRICE_INR = 1159;
+
 function positiveMoney(value) {
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? n : null;
@@ -52,15 +54,16 @@ export function normalizeDomainCardItem(raw = {}) {
   const displayPriceInr = positiveMoney(
     raw.displayPriceInr ?? raw.totalInr ?? raw.payableInr ?? raw.registrationTotalInr,
   ) ?? registrationPriceInr;
+  const registryPremium = isRegistryPremium(raw);
   const renewalPriceInr = positiveMoney(raw.renewalPriceInr ?? raw.renewalPrice);
-  const renewalDisplayPriceInr =
-    positiveMoney(raw.renewalTotalInr ?? raw.renewalDisplayPriceInr) ?? renewalPriceInr;
+  const renewalDisplayPriceInr = registryPremium
+    ? DELTA_DOMAIN_RENEWAL_DISPLAY_PRICE_INR
+    : positiveMoney(raw.renewalTotalInr ?? raw.renewalDisplayPriceInr) ?? renewalPriceInr;
   const providerUnitPriceInr = positiveMoney(raw.providerUnitPriceInr);
   const providerPeriodTotalInr = positiveMoney(raw.providerPeriodTotalInr);
   const minPeriodYears = Math.max(1, Number(raw.minPeriodYears || 1));
   // Display/cart base is always 1-year; minPeriodYears is metadata for checkout only.
   const period = 1;
-  const registryPremium = isRegistryPremium(raw);
   // Aftermarket origin (afternic/sedo) + managed-acquisition flag are carried
   // through so the shared card keeps routing/metadata intact when reused by the
   // OP Premium Showcase. Never rendered as text.
@@ -155,7 +158,7 @@ export default function DomainCard({
   hideDomainTypeLabel = false,
   /** Delta/Showcase cards: hide the GST included caption. */
   hideGstCaption = false,
-  /** Optional fixed renewal caption (e.g. Showcase ₹1,159) — skips API-formatted renewal. */
+  /** Optional preformatted renewal caption — skips API-formatted renewal. */
   renewalPriceLabel = null,
   className = '',
   /** { shareType, originalQuery } — enables the Share & Earn button on this card. */
@@ -163,7 +166,7 @@ export default function DomainCard({
   onDelete = null,
 }) {
   const { t } = useTranslation();
-  const { formatDomainPrice } = useCurrency();
+  const { formatDomainPrice, formatPrice } = useCurrency();
   const item = normalizeDomainCardItem(rawItem);
   const canBuy = item.available && item.registrationPriceInr != null;
   const cartProps = canBuy
@@ -190,7 +193,9 @@ export default function DomainCard({
   const priceTitle = priceText ? `${priceText}${priceYearSuffix}` : undefined;
   const renewalText =
     renewalPriceLabel
-    ?? (item.renewalDisplayPriceInr != null ? formatDomainPrice(item.renewalDisplayPriceInr) : null);
+    ?? (item.renewalDisplayPriceInr != null
+      ? (item.isPremium ? formatPrice(item.renewalDisplayPriceInr) : formatDomainPrice(item.renewalDisplayPriceInr))
+      : null);
 
   // [RENEWAL_PRICE_DEBUG] Log the value actually rendered for premium domains.
   if (item.isPremium) {

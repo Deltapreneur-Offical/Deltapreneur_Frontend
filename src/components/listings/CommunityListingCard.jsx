@@ -100,57 +100,12 @@ export default function CommunityListingCard({
   const expLabel = /^\d+$/.test(String(rawExp).trim()) ? `${String(rawExp).trim()}+ Years` : rawExp;
   const workTypeLabel = formatLabel(profile.preferredWorkType || profile.preferred_work_type || profile.workType || profile.work_type || 'Full-time');
   const isVa = isVirtualAssistantProfile(profile);
-  const availabilityRaw = String(profile.availability || '').trim();
-  const availabilityKey = availabilityRaw.toLowerCase().replace(/[\s-]+/g, '_');
-  const approvedRoles = Array.isArray(profile.applicationRoles)
-    ? profile.applicationRoles.filter((role) => String(role?.status || '').toLowerCase() === 'approved')
-    : Array.isArray(profile.application_roles)
-      ? profile.application_roles.filter((role) => String(role?.status || '').toLowerCase() === 'approved')
-      : [];
-  const primaryApprovedRole = approvedRoles[0] || null;
-  const roleMaxClients = primaryApprovedRole?.maxClients ?? primaryApprovedRole?.max_clients;
-  const roleCurrentClients = Number(primaryApprovedRole?.currentClients ?? primaryApprovedRole?.current_clients ?? 0);
-  const roleAvailabilityStatus = String(
-    primaryApprovedRole?.availabilityStatus
-    || primaryApprovedRole?.availability_status
-    || '',
-  ).toLowerCase().replace(/[\s-]+/g, '_');
-  const isRoleAtCapacity =
-    roleMaxClients != null
-    && Number.isFinite(Number(roleMaxClients))
-    && Number(roleMaxClients) > 0
-    && roleCurrentClients >= Number(roleMaxClients);
-  const isWorkTypeAvailability = ['full_time', 'fulltime', 'part_time', 'parttime', 'flexible'].includes(availabilityKey);
-  const allocatedKeys = new Set([
-    'allocated',
-    'busy',
-    'engaged',
-    'unavailable',
-    'temporarily_unavailable',
-    'not_available',
-  ]);
-  const availableKeys = new Set(['available', 'open', 'limited']);
-  // Prefer profile.availability for homepage badges:
-  // full-time/part-time/flexible → Available; busy/allocated → Allocated.
+  // Homepage DeltaOp badges: always show AVAILABLE (never Allocated/Busy).
   let availabilityLabel = '';
   let availabilityTone = 'default';
   if (showAvailabilityBadge) {
-    if (isWorkTypeAvailability || availableKeys.has(availabilityKey)) {
-      availabilityLabel = 'Available';
-      availabilityTone = 'available';
-    } else if (allocatedKeys.has(availabilityKey)) {
-      availabilityLabel = 'Allocated';
-      availabilityTone = 'allocated';
-    } else if (allocatedKeys.has(roleAvailabilityStatus) || isRoleAtCapacity) {
-      availabilityLabel = 'Allocated';
-      availabilityTone = 'allocated';
-    } else if (availableKeys.has(roleAvailabilityStatus)) {
-      availabilityLabel = 'Available';
-      availabilityTone = 'available';
-    } else {
-      availabilityLabel = 'Available';
-      availabilityTone = 'available';
-    }
+    availabilityLabel = 'Available';
+    availabilityTone = 'available';
   }
   // Prefer live likeState from useLikes — profile.likeCount is a stale seed.
   const vaLikeCount = Number(likeState?.count ?? profile.likeCount ?? profile.like_count ?? 0);
@@ -270,8 +225,11 @@ export default function CommunityListingCard({
               </h3>
             </div>
             {(isMe || roleLabel) ? (
-              <span className="creator-profile-card__badge">
-                {isMe ? t('listingCardOwner', 'Owner').toUpperCase() : roleLabel.toUpperCase()}
+              <span
+                className="creator-profile-card__badge"
+                data-experience={expLabel || undefined}
+              >
+                {isMe ? t('listingCardOwner', 'Owner').toUpperCase() : roleLabel}
               </span>
             ) : null}
           </div>

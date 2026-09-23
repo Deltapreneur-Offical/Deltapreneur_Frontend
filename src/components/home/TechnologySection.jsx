@@ -132,24 +132,26 @@ export default function TechnologySection() {
         ) : null}
 
         {/* 2. Featured Technology Services Catalogue */}
-        <div className="home-deltaos-services px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500/10 to-orange-600/10 px-3 py-1 text-xs font-semibold text-orange-600 mb-1 border border-orange-100">
-                <Sparkles className="h-3.5 w-3.5" />
+        <div className="home-deltaos-services home-deltaos-services--ref px-4 sm:px-6 lg:px-8">
+          <div className="home-deltaos-services__header">
+            <div className="home-deltaos-services__header-left">
+              <div className="home-deltaos-services__eyebrow">
+                <Sparkles className="h-3 w-3" />
                 {t('homeFeaturedServices', { defaultValue: 'Featured Deltapreneur Services' })}
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              <h2 className="home-deltaos-services__title">
                 {t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}
               </h2>
             </div>
-            <button
-              onClick={() => navigate('/technology')}
-              className="inline-flex items-center gap-2 rounded-full border border-orange-300 bg-orange-50 px-4 py-2 text-sm font-bold text-orange-700 hover:bg-orange-100 hover:border-orange-400 hover:text-orange-800 transition-all duration-200"
-            >
-              {t('viewAll', { defaultValue: 'View All' })}
-              <ArrowRight className="h-4 w-4" />
-            </button>
+            <div className="home-deltaos-services__header-right">
+              <button
+                onClick={() => navigate('/technology')}
+                className="home-deltaos-services__view-all"
+              >
+                {t('viewAll', { defaultValue: 'View All' })}
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
 
           <HomeCardsNavRow

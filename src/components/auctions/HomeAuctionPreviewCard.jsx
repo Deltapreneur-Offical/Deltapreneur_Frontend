@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Clock, Gavel, Sparkles, Share2 } from 'lucide-react';
-import PriceSectionIcon from '../common/PriceSectionIcon';
+import { CircleStar, Clock, Gavel, History, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
-import { formatCompactCountdown } from '../../utils/auctionDate';
+import { formatCompactCountdown, parseAuctionDate } from '../../utils/auctionDate';
 import { resolveAuctionListerName } from '../../utils/auctionLister';
 import {
   resolveHomeAuctionBadges,
@@ -54,12 +53,22 @@ function AuctionCountdownDisplay({ value }) {
 }
 
 function useCountdown(target) {
-  const [timeLeft, setTimeLeft] = useState(() => formatCompactCountdown(target).timeLeft);
+  const getDisplayTime = () => {
+    const end = parseAuctionDate(target);
+    if (!end) return formatCompactCountdown(target).timeLeft;
+    const diff = end.getTime() - Date.now();
+    if (diff <= 0) return 'Ended';
+    const totalHours = Math.floor(diff / 3600000);
+    const days = Math.floor(totalHours / 24);
+    if (days > 0) return `${days}d ${totalHours % 24}h`;
+    return formatCompactCountdown(target).timeLeft;
+  };
+
+  const [timeLeft, setTimeLeft] = useState(getDisplayTime);
 
   useEffect(() => {
     const tick = () => {
-      const { timeLeft: next } = formatCompactCountdown(target);
-      setTimeLeft(next);
+      setTimeLeft(getDisplayTime());
     };
 
     let id = null;
@@ -258,7 +267,7 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
   const renderFeaturedBadge = (className = '') => (
     isFeatured ? (
       <span className={`home-auction-preview-card__featured-badge${className ? ` ${className}` : ''}`}>
-        <Sparkles size={11} aria-hidden />
+        <CircleStar size={11} aria-hidden />
         {t('homeAuctionFeatured', { defaultValue: 'Featured' })}
       </span>
     ) : null
@@ -495,7 +504,7 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
                 <span
                   className={`home-auction-preview-card__live-bid-value currency-display${totalBids <= 0 ? ' home-auction-preview-card__live-bid-value--nil' : ''}`}
                 >
-                  {bidDisplay}
+                  {totalBids <= 0 && bidDisplay === 'NIL' ? `₹ ${bidDisplay}` : bidDisplay}
                 </span>
                 </div>
               </div>
@@ -506,7 +515,7 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
                 aria-label={t('listingCardViewDetails', { defaultValue: 'View details' })}
                 onClick={handleArrowClick}
               >
-                <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
+                <Gavel size={18} strokeWidth={2.25} aria-hidden />
               </button>
             </div>
           </div>
@@ -518,7 +527,7 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
             className="home-auction-preview-card__total-bids"
             title={t('homeAuctionTotalBids', { defaultValue: 'Total bids' })}
           >
-            <Gavel size={15} className="home-auction-preview-card__total-bids-icon shrink-0" aria-hidden />
+            <History size={15} className="home-auction-preview-card__total-bids-icon shrink-0" aria-hidden />
             <span className="home-auction-preview-card__total-bids-count">{totalBids}</span>
             <span className="home-auction-preview-card__total-bids-label">
               {totalBids === 1

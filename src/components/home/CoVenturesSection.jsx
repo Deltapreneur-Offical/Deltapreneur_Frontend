@@ -13,6 +13,7 @@ import HomeCardsNavRow from './HomeCardsNavRow';
 import { HomePreviewRowItem } from './HomePreviewRow';
 import VentureListingCard from '../listings/VentureListingCard';
 import '../../styles/domain-listing-cards.css';
+import '../../styles/home-saffron-custom.css';
 
 export default function CoVenturesSection() {
   const { t } = useTranslation();

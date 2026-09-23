@@ -1,0 +1,842 @@
+/* Stitch reference: homepage marketplace Domains section only. */
+body.home-page-body .home-marketplace-domains-section {
+  background: #f8fafc !important;
+  padding-top: 2rem !important;
+  padding-bottom: 2.5rem !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .home-section-header {
+  margin-bottom: 1.5rem;
+}
+
+body.home-page-body .home-marketplace-domains-section .home-section-header__top {
+  align-items: center;
+}
+
+body.home-page-body .home-marketplace-domains-section .home-section-header__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #0f172a !important;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+}
+
+body.home-page-body .home-marketplace-domains-section .home-section-header__title::before {
+  content: '';
+  display: inline-block;
+  width: 0.375rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: #f97316;
+}
+
+body.home-page-body .home-marketplace-domains-section .home-section-header__view-all {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #ea580c;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0;
+}
+
+body.home-page-body .home-marketplace-domains-section .home-section-header__view-all:hover,
+body.home-page-body .home-marketplace-domains-section .home-section-header__view-all:focus-visible {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #c2410c;
+  transform: none;
+}
+
+body.home-page-body .home-marketplace-domains-section .home-section-header__actions {
+  padding-right: 5.5rem;
+}
+
+body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
+body.home-page-body .home-marketplace-domains-section .home-cards-nav--next {
+  top: -3.25rem;
+  width: 2rem;
+  height: 2rem;
+  border-color: #e2e8f0;
+  background: #ffffff;
+  color: #94a3b8;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev {
+  left: auto;
+  right: 2.75rem;
+}
+
+body.home-page-body .home-marketplace-domains-section .home-cards-nav--next {
+  right: 0;
+}
+
+body.home-page-body .home-marketplace-domains-section .home-cards-nav:hover:not(:disabled),
+body.home-page-body .home-marketplace-domains-section .home-cards-nav:focus-visible {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  color: #64748b;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.1);
+}
+
+body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain {
+  --home-nav-accent: #94a3b8;
+  --home-nav-accent-soft: #ffffff;
+  --home-nav-border: #e2e8f0;
+  --home-nav-hover-border: #cbd5e1;
+  --home-nav-pulse: rgba(148, 163, 184, 0.2);
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 1rem !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:hover,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:focus-visible {
+  border-color: #cbd5e1 !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .registry-standard-badge {
+  border-color: #e0f2fe !important;
+  background: #f0f9ff !important;
+  color: #0284c7 !important;
+  box-shadow: none !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .registry-standard-badge__diamond,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-listing-card-tld,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name .text-sky-700 {
+  color: #0284c7 !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name > span:first-child {
+  color: #0f172a !important;
+  transition: color 180ms ease;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:hover .domain-search-card__name,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:hover .domain-search-card__name > span:first-child {
+  color: #f97316 !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:hover .domain-listing-card-tld,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:hover .domain-search-card__name .text-sky-700 {
+  color: #0284c7 !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button {
+  border-color: #e2e8f0 !important;
+  background: #f8fafc !important;
+  color: #64748b !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:hover,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:focus-visible {
+  border-color: #cbd5e1 !important;
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .mt-auto .inline-flex > button:first-child {
+  border-color: #0f172a !important;
+  border-radius: 0.75rem !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 .inline-flex {
+  width: 100% !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 .inline-flex {
+  width: 95% !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 .inline-flex > button:first-child {
+  width: 100% !important;
+  min-height: 2.25rem;
+  padding: 0.4rem 1rem !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  line-height: 1.25;
+  border-radius: 0.75rem !important;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 .inline-flex > button:first-child svg {
+  display: block;
+  flex: 0 0 auto;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 .inline-flex > button:first-child span {
+  line-height: 1.25;
+}
+
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .mt-auto .inline-flex > button:first-child:hover,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .mt-auto .inline-flex > button:first-child:focus-visible {
+  border-color: #1e293b !important;
+  background: #1e293b !important;
+  color: #ffffff !important;
+}
+
+/* Stitch reference: homepage Delta Domains section only. */
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) {
+  background: #f8fafc !important;
+  padding-top: 2rem !important;
+  padding-bottom: 2.5rem !important;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header {
+  margin-bottom: 1.5rem;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__top {
+  align-items: center;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #0f172a !important;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__title::before {
+  content: '';
+  display: inline-block;
+  width: 0.375rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: #f97316;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__view-all {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #ea580c;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__actions {
+  padding-right: 5.5rem;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next {
+  top: -3.25rem;
+  width: 2rem;
+  height: 2rem;
+  border-color: #e2e8f0;
+  background: #ffffff;
+  color: #94a3b8;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev {
+  left: auto;
+  right: 2.75rem;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next {
+  right: 0;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 1rem !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  min-height: 16.7rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):focus-visible {
+  border-color: #cbd5e1 !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .registry-premium-badge {
+  border-color: #fed7aa !important;
+  background: #fff7ed !important;
+  color: #ea580c !important;
+  box-shadow: none !important;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .registry-premium-badge__spark {
+  color: #f97316 !important;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3 > span:first-child {
+  color: #0f172a !important;
+  transition: color 180ms ease;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3 > span:last-child {
+  color: #ea580c !important;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover h3,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover h3 > span:first-child,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover h3 > span:last-child {
+  color: #f97316 !important;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .absolute button {
+  border-color: #e2e8f0 !important;
+  background: #f8fafc !important;
+  color: #64748b !important;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .mt-auto {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .mt-auto .inline-flex {
+  width: 95% !important;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .mt-auto .inline-flex > button:first-child {
+  width: 100% !important;
+  min-height: 2.25rem;
+  padding: 0.4rem 1rem !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  line-height: 1.25;
+  border: 1px solid #0f172a !important;
+  border-radius: 0.75rem !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+}
+
+/* Homepage Auctions and DeltaOp cards - match the Domains blue treatment. */
+
+body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge):hover,
+body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge):focus-visible {
+  border-color: #F59E0B !important;
+  background: #FFFBF5 !important;
+  background-color: #FFFBF5 !important;
+  background-image: none !important;
+  box-shadow:
+    0 0 0 1px rgba(245, 158, 11, 0.38),
+    0 10px 28px rgba(217, 154, 0, 0.12) !important;
+}
+
+body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge) .text-amber-700,
+body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge) .text-amber-800\/80,
+body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge) .text-amber-800\/85 {
+  color: #D99A00 !important;
+}
+
+body.home-page-body .home-domains-section .registry-premium-badge {
+  border-color: #FCD34D !important;
+  background: #FFFBEB !important;
+  background-image: none !important;
+  color: #D99A00 !important;
+  box-shadow: 0 0 10px rgba(217, 154, 0, 0.14) !important;
+}
+
+body.home-page-body .home-domains-section .registry-premium-badge__spark {
+  color: #D99A00 !important;
+}
+
+/* Tech service badges — fill dark saffron + white on hover, matching the icon */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DELTA VENTURES (CoVentures) SECTION — Stitch Reference Design
+   Only targets .home-coventures-section — DOES NOT touch Ventures section.
+   Uses MAXIMUM-SPECIFICITY selectors with body.home-page-body prefix +
+   deep ancestor chains to guarantee winning over home-preview-cards.css.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Section Container ── */
+body.home-page-body .home-coventures-section {
+  background: #f8fafc !important;
+  padding-block: 2rem 2.75rem !important;
+}
+
+/* ── Section Header ── */
+body.home-page-body .home-coventures-section .home-section-header {
+  margin-bottom: 2rem !important;
+}
+
+body.home-page-body .home-coventures-section .home-section-header__top {
+  align-items: center !important;
+}
+
+/* Title: Bold dark text with orange accent bar */
+body.home-page-body .home-coventures-section .home-section-header__title {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  color: #0f172a !important;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+  font-weight: 700 !important;
+}
+
+body.home-page-body .home-coventures-section .home-section-header__title::before {
+  content: '' !important;
+  display: inline-block !important;
+  width: 0.375rem !important;
+  height: 1.5rem !important;
+  flex: 0 0 auto !important;
+  border-radius: 9999px !important;
+  background: #ff4d30 !important;
+}
+
+/* View All link: plain text in orange */
+body.home-page-body .home-coventures-section .home-section-header__view-all,
+body.home-page-body .home-section-header--coventure .home-section-header__view-all {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #ea580c !important;
+  box-shadow: none !important;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  transform: none !important;
+}
+
+body.home-page-body .home-coventures-section .home-section-header__view-all:hover,
+body.home-page-body .home-section-header--coventure .home-section-header__view-all:hover {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #c2410c !important;
+}
+
+/* Header actions spacing */
+body.home-page-body .home-coventures-section .home-section-header__actions {
+  padding-right: 5.5rem !important;
+}
+
+/* ── Navigation Buttons ── */
+body.home-page-body .home-coventures-section .home-cards-nav--prev,
+body.home-page-body .home-coventures-section .home-cards-nav--next {
+  top: -3.25rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 9999px !important;
+  background: #ffffff !important;
+  color: #94a3b8 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+  transform: none !important;
+}
+
+body.home-page-body .home-coventures-section .home-cards-nav--prev {
+  left: auto !important;
+  right: 2.75rem !important;
+}
+
+body.home-page-body .home-coventures-section .home-cards-nav--next {
+  right: 0 !important;
+}
+
+body.home-page-body .home-coventures-section .home-cards-nav:hover:not(:disabled) {
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  color: #64748b !important;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.1) !important;
+}
+
+/* ── Row & Item Sizing ── */
+body.home-page-body .home-coventures-section .home-preview-row.home-cards-nav-row {
+  gap: 1.5rem !important;
+  justify-content: flex-start !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-row__item,
+body.home-page-body .home-coventures-section .home-preview-row__card {
+  width: 18.75rem !important;
+  max-width: 18.75rem !important;
+  flex: 0 0 18.75rem !important;
+  min-height: 16.5rem !important;
+}
+
+/* ── Outer Border Container: Kill beam/glow/border completely ── */
+body.home-page-body .home-coventures-section .home-preview-card-border,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-card-border:hover,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure:hover {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-card-border:focus-within,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure:focus-within {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.home-page-body .home-coventures-section .home-feature-card-beam-spinner {
+  display: none !important;
+}
+
+/* ── Card Shell: Clean white with soft grey border ──
+   Uses 3-4 class deep selectors to beat home-preview-cards.css
+   line 450-461 which has .home-preview-card-border .venture-listing-card */
+body.home-page-body .home-coventures-section .home-preview-card-border .venture-listing-card,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .home-preview-card-border__inner {
+  min-height: 16.5rem !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 1.25rem !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+  transform: none !important;
+  position: relative !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card:hover,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Card body — override the transparent background from home-preview-cards.css line 456 */
+body.home-page-body .home-coventures-section .home-preview-card-border .domain-listing-card__body,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__body {
+  padding: 1.5rem 1.25rem 1.25rem !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  height: 100% !important;
+}
+
+/* ── Remove Watermark & Overlays ── */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__body-watermark,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__body-watermark polygon,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__body::before {
+  display: none !important;
+  opacity: 0 !important;
+  content: none !important;
+}
+
+/* ── Equity Badge: Soft peach pill, bold coral text, NO icon ──
+   Uses 4-class selectors to beat home-preview-cards.css line 1191 (4 classes) */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__metrics,
+body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__metrics,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__metrics {
+  margin-top: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  order: 1 !important;
+  min-height: 0 !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__equity-badge {
+  border: 1px solid #ffedd5 !important;
+  border-radius: 9999px !important;
+  background: #fff7ed !important;
+  background-color: #fff7ed !important;
+  background-image: none !important;
+  color: #ea580c !important;
+  padding: 0.25rem 0.65rem !important;
+  box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__equity-badge-icon {
+  display: none !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__equity-badge-value,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__equity-badge-label {
+  color: #ea580c !important;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* ── HIDE Share Button completely ──
+   Uses 5-class selectors to beat home-preview-cards.css lines 1157-1189
+   which use 4-class chains like:
+   .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline */
+body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__title-actions,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__title-actions,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__title-actions {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .domain-listing-card__share-btn,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__share-btn {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* ── Top Content Layout: Equity badge on top, title below ── */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer) {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__metrics {
+  order: 1 !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__title-row,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__title-row,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title-row {
+  order: 2 !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* ── Venture Title: Sans-serif, bold, bright coral ── */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title--compact,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title .cb-overflow-marquee__plain {
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  color: #ff4d30 !important;
+  font-size: 1.6rem !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 639px) {
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title {
+    font-size: 1.3rem !important;
+  }
+}
+
+/* ── Footer / Price Block: Grey rounded box ──
+   Uses 5-class selectors to beat home-preview-cards.css lines 1197-1216
+   which use 4-class chains */
+body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__footer,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__footer,
+body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__footer.mt-auto,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__footer.mt-auto,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__footer {
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__price-block,
+body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__price-block,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__price-block {
+  background: #f1f5f9 !important;
+  background-color: #f1f5f9 !important;
+  background-image: none !important;
+  border-radius: 1rem !important;
+  padding: 0.8rem 1rem !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 0.2rem !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* "Apply" label */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__price-label {
+  color: #64748b !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: capitalize !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  display: block !important;
+}
+
+/* ── Price Box Inner: Transparent, kill ALL gradient borders ──
+   The key battle: home-preview-cards.css lines 484-495 use selectors like:
+   .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box (3 classes)
+   We use body.home-page-body + 4 classes to guarantee winning */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-box,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-box--coventure,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box--coventure,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-box--compact {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  background-origin: padding-box !important;
+  background-clip: padding-box !important;
+  border: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  transition: none !important;
+}
+
+/* Override hover state gradient border (home-preview-cards.css lines 508-519) */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure:hover .domain-listing-card__price-box,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure:hover .venture-listing-card--coventure .domain-listing-card__price-box,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure:hover .domain-listing-card__price-box--coventure {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  background-origin: padding-box !important;
+  background-clip: padding-box !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Price value text */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__price-value--compact,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-value,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-text {
+  color: #0f172a !important;
+  font-size: 1.5rem !important;
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* ── CTA Arrow Button: Solid coral rounded square with white arrow ──
+   Positioned inside the grey price-block box */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-cta,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta {
+  position: absolute !important;
+  right: 0.85rem !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  min-width: 2.25rem !important;
+  max-width: 2.25rem !important;
+  border: 0 !important;
+  border-radius: 0.65rem !important;
+  background-color: #ff4d30 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'%3E%3C/line%3E%3Cpolyline points='12 5 19 12 12 19'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 1.1rem 1.1rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: 0 1px 2px rgba(255, 77, 48, 0.25) !important;
+  cursor: pointer !important;
+  display: block !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  overflow: hidden !important;
+}
+
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-cta:hover {
+  background-color: #e03c20 !important;
+}
+
+/* Override CTA color from home-preview-cards.css lines 503-506 */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta {
+  color: transparent !important;
+}
+
+/* Hide old V icon inside CTA */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .price-section-v-icon,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-cta-icon,
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-cta img {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Hide any extra text description inside card */
+body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .domain-listing-card__body > div.flex.flex-col > p.text-xs {
+  display: none !important;
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 639px) {
+  body.home-page-body .home-coventures-section .home-preview-row__item,
+  body.home-page-body .home-coventures-section .home-preview-row__card {
+    width: min(18.75rem, 100%) !important;
+    max-width: min(18.75rem, 100%) !important;
+    flex-basis: min(18.75rem, 100%) !important;
+  }
+}

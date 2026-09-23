@@ -371,8 +371,8 @@
   padding: 0.25rem 0.6rem !important;
 }
 
-.home-preview-card-border--venture .venture-listing-card--venture .domain-listing-card__price-box,
-.home-preview-card-border--venture .venture-listing-card--venture .domain-listing-card__price-box--venture {
+.home-preview-card-border--venture .venture-listing-card--venture:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box,
+.home-preview-card-border--venture .venture-listing-card--venture:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box--venture {
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
@@ -389,8 +389,8 @@
   background: #FFFFFF !important;
 }
 
-.home-preview-card-border--venture:hover .venture-listing-card--venture .domain-listing-card__price-box,
-.home-preview-card-border--venture:hover .venture-listing-card--venture .domain-listing-card__price-box--venture {
+.home-preview-card-border--venture:hover .venture-listing-card--venture:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box,
+.home-preview-card-border--venture:hover .venture-listing-card--venture:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box--venture {
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
     linear-gradient(#1E88FF, #1E88FF) border-box !important;
@@ -433,10 +433,10 @@
   display: none !important;
 }
 
-.home-preview-card-border--venture:hover .domain-listing-card__price-box,
-.home-preview-card-border--venture:hover .domain-listing-card__price-box--venture,
-.home-preview-card-border--venture .venture-listing-card:hover .domain-listing-card__price-box,
-.home-preview-card-border--venture .venture-listing-card:hover .domain-listing-card__price-box--venture {
+.home-preview-card-border--venture:hover .venture-listing-card:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box,
+.home-preview-card-border--venture:hover .venture-listing-card:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box--venture,
+.home-preview-card-border--venture .venture-listing-card:not(.venture-listing-card--homepage-content):hover .domain-listing-card__price-box,
+.home-preview-card-border--venture .venture-listing-card:not(.venture-listing-card--homepage-content):hover .domain-listing-card__price-box--venture {
   border: 1.5px solid transparent !important;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,

@@ -23,6 +23,7 @@ const venture = {
   brandDetails: {
     brandName: 'Sunrise Digital',
     industry: 'Services',
+    description: 'A service-oriented digital venture with an acquisition opportunity for a strategic buyer.',
     dealValue: 500000,
   },
   ownershipLiquidationPercent: 25,
@@ -88,6 +89,22 @@ describe('VentureListingCard homepage Ventures layout', () => {
     expect(getByText('Offer')).toBeInTheDocument();
     expect(queryByText(/Offer Price/i)).not.toBeInTheDocument();
     expect(queryByText(/Asking Price/i)).not.toBeInTheDocument();
+  });
+
+  it('renders the homepage Venture marketplace structure without the shared play icon', () => {
+    const { container, getByText } = renderVentureCard({ homepageVentureContentOnly: true });
+    const content = container.querySelector('.domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer)');
+    const metrics = container.querySelector('.venture-listing-card__metrics');
+    const titleRow = container.querySelector('.venture-listing-card__title-row');
+    const priceBox = container.querySelector('.domain-listing-card__price-box');
+
+    expect(content).toBeInTheDocument();
+    expect(metrics).toBeInTheDocument();
+    expect(titleRow).toBeInTheDocument();
+    expect([...content.children].indexOf(metrics)).toBeLessThan([...content.children].indexOf(titleRow));
+    expect(priceBox).toContainElement(getByText('Offer'));
+    expect(priceBox.querySelector('.venture-listing-card__price-arrow-glyph svg')).toBeInTheDocument();
+    expect(priceBox.querySelector('.price-section-v-icon')).not.toBeInTheDocument();
   });
 
   it('keeps offers and Asking Price on non-homepage venture cards', () => {

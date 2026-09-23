@@ -2,8 +2,6 @@ import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Share2, Check, ChevronLeft, ChevronRight } from 'lucide-react';
-import bulletpointTick from '../../assets/bulletpointtick_32.png';
-import PriceSectionIcon from '../common/PriceSectionIcon';
 import {
   Briefcase, Building2, Car, Clapperboard, Copyright, Cpu,
   Factory, FlaskConical, Globe, GraduationCap, HardHat, HeartPulse,
@@ -35,7 +33,25 @@ const CATEGORY_ICONS = {
   employer_labour: Users, environmental: Leaf, digital_services: Monitor,
 };
 
+const CATEGORY_BADGES = {
+  business_entity: 'LEGAL INC',
+  tax_identity: 'COMPLIANCE',
+  local_licences: 'LICENSING',
+  msme_udyam: 'GOVT GRANT',
+  startup_dpiit: 'NATIONAL',
+};
 
+function badgeLabelForCategory(cat, displayName) {
+  if (CATEGORY_BADGES[cat.slug]) return CATEGORY_BADGES[cat.slug];
+  const source = (cat.shortLabel || cat.label || displayName || 'REGISTRATION').trim();
+  return source
+    .replace(/[&/]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .join(' ')
+    .toUpperCase();
+}
 
 export default function HomeRegistrationsSection() {
   const { t } = useTranslation();
@@ -315,6 +331,7 @@ export default function HomeRegistrationsSection() {
     const displayName = t('regCatName' + cat.slug.charAt(0).toUpperCase() + cat.slug.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase()), { defaultValue: cat.label });
     const displayDesc = t('regCatDesc' + cat.slug.charAt(0).toUpperCase() + cat.slug.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase()), { defaultValue: cat.description || '' });
     const priceNumeric = cat.priceNumeric || 0;
+    const badgeLabel = badgeLabelForCategory(cat, displayName);
 
     return (
       <div className="reg-mini-card-wrapper">
@@ -327,15 +344,10 @@ export default function HomeRegistrationsSection() {
           aria-label={`${cat.label} registrations`}
           onClick={(e) => handleCardClick(e, cat)}
         >
-        <svg
-          className="reg-mini-card__watermark"
-          viewBox="0 0 236 206"
-          preserveAspectRatio="none"
-          aria-hidden
-          focusable="false"
-        >
-          <polygon points="0,10 0,196 168,103" fill="#f9d9c8" />
-        </svg>
+        <div className="reg-mini-card__badge">
+          <Icon size={11} strokeWidth={2.2} aria-hidden="true" />
+          <span>{badgeLabel}</span>
+        </div>
         <div className="reg-mini-card__top">
           <h3 className="reg-mini-card__title">{displayName}</h3>
           {displayDesc && (
@@ -349,29 +361,25 @@ export default function HomeRegistrationsSection() {
               const translated = t(`regCatHighlight${slugPascal}${idx}`, { defaultValue: point });
               return (
                 <li key={point}>
-                  <img
-                    src={bulletpointTick}
-                    alt=""
-                    width={14}
-                    height={14}
-                    aria-hidden
-                    draggable="false"
-                    decoding="async"
-                    loading="lazy"
-                    className="reg-mini-card__bullet"
-                  />
+                  <span className="reg-mini-card__bullet" aria-hidden="true">
+                    <Check size={10} strokeWidth={2.35} />
+                  </span>
                   <span>{translated}</span>
                 </li>
               );
             })}
           </ul>
         )}
-        <div className="reg-mini-card__footer">            <span className="reg-mini-card__price-pill">
+        <div className="reg-mini-card__footer">
+          <div className="reg-mini-card__price-box">
+            <span className="reg-mini-card__price-copy">
+              <span className="reg-mini-card__price-label">FEE</span>
             <span className="reg-mini-card__price">{priceNumeric > 0 ? formatPrice(priceNumeric) : '₹999'}</span>
-            <span className="reg-mini-card__price-arrow" aria-hidden>
-              <PriceSectionIcon />
             </span>
-          </span>
+            <span className="reg-mini-card__price-cta" aria-hidden="true">
+              <ArrowRight size={17} strokeWidth={2.45} />
+            </span>
+          </div>
         </div>
         </Link>
       </div>
@@ -379,7 +387,7 @@ export default function HomeRegistrationsSection() {
   };
 
   return (
-    <section className="bg-white pt-3 pb-4 md:pt-4 md:pb-6 min-w-0 overflow-visible">
+    <section className="home-registrations-section bg-white pt-3 pb-4 md:pt-4 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0">
         <header className="home-section-header home-section-header--operations">
           <div className="home-section-header__top">

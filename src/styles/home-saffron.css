@@ -2344,10 +2344,12 @@ body.home-page-body .home-operators-reference-info__eyebrow {
   align-items: center;
   gap: 0.55rem;
   margin: 0 0 0.5rem;
+  padding: 0.12rem 0 0.08rem;
+  overflow: visible;
   color: #f15f4e;
   font-size: 0.78rem;
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.35;
   letter-spacing: 0.08em;
 }
 
@@ -2515,45 +2517,50 @@ body.home-page-body .home-operators-reference-info__cta {
 }
 
 @media (max-width: 767px) {
-  /* Phone: stack promo below; operator cards keep readable width in the carousel. */
+  /* Phone-only DeltaOp list layout. Desktop/tablet rules above are unchanged. */
   body.home-page-body .home-operators-reference-section {
+    padding-top: 0.85rem !important;
+    padding-bottom: 1rem !important;
     overflow-x: clip;
+  }
+
+  body.home-page-body .home-operators-reference-section .home-section-header {
+    margin-bottom: 0.85rem;
+  }
+
+  body.home-page-body .home-operators-reference-section .home-section-header__title::before {
+    width: 0.2rem;
+    height: 1.05em;
+    border-radius: 0.12rem;
+    background: #f2532a;
+  }
+
+  body.home-page-body .home-operators-reference-section .home-section-header__view-all,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:hover,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:focus-visible {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #f2532a !important;
+    padding: 0 !important;
+    transform: none !important;
+    font-size: 0.82rem;
+    font-weight: 700;
   }
 
   body.home-page-body .home-operators-reference-shell {
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
+    gap: 0.85rem;
     width: 100%;
     max-width: 100%;
     min-width: 0;
     overflow: visible;
   }
 
-  body.home-page-body .home-operators-reference-rail {
-    width: 100%;
-    max-width: 100%;
-    flex: 1 1 auto;
-    flex-basis: auto;
-    min-width: 0;
-  }
-
-  body.home-page-body .home-operators-reference-nav {
-    padding-inline: 2.75rem !important;
-    width: 100%;
-  }
-
-  body.home-page-body .home-operators-reference-row {
-    gap: 1rem !important;
-  }
-
-  body.home-page-body .home-operators-reference-row .home-preview-row__item {
-    flex: 0 0 min(16.25rem, 78vw) !important;
-    width: min(16.25rem, 78vw) !important;
-    max-width: min(16.25rem, 78vw) !important;
-  }
-
   body.home-page-body .home-operators-reference-info {
+    order: 1;
     width: 100%;
     max-width: 100%;
     min-width: 0;
@@ -2561,7 +2568,11 @@ body.home-page-body .home-operators-reference-info__cta {
     flex-basis: auto;
     height: auto;
     align-self: stretch;
-    padding: 1.15rem 1.2rem 1rem;
+    padding: 1.05rem 0.95rem 1rem;
+    border: 0;
+    border-radius: 0.85rem;
+    background: #2b2b2d;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
   }
 
   body.home-page-body .home-operators-reference-info__content,
@@ -2570,42 +2581,485 @@ body.home-page-body .home-operators-reference-info__cta {
     max-width: 100%;
   }
 
-  body.home-page-body .home-operators-reference-info__footer {
-    flex-wrap: wrap;
-    gap: 0.55rem 0.7rem;
+  body.home-page-body .home-operators-reference-info__eyebrow {
+    margin-bottom: 0.7rem;
+    padding: 0.14rem 0 0.1rem;
+    overflow: visible;
+    color: #ff8a72;
+    font-size: 0.58rem;
+    font-weight: 800;
+    line-height: 1.4;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
+  body.home-page-body .home-operators-reference-info__eyebrow span {
+    width: 0.72rem;
+    height: 0.72rem;
+    border: 2px solid #ff604c;
+    background: transparent;
+  }
+
+  body.home-page-body .home-operators-reference-info__title {
+    color: #ffffff;
+    font-size: 1.08rem;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  body.home-page-body .home-operators-reference-info__text {
+    margin-top: 0.4rem;
+    color: #d1d5db;
+    font-size: 0.74rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  body.home-page-body .home-operators-reference-info__footer {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.55rem 0.7rem;
+    margin-top: 0.85rem;
+    padding-top: 0;
+  }
+
+  body.home-page-body .home-operators-reference-roster,
   body.home-page-body .home-operators-reference-roster-text {
-    white-space: normal;
+    display: none;
   }
 
   body.home-page-body .home-operators-reference-info__cta {
     margin-left: 0;
     align-self: flex-start;
+    min-width: 0;
+    height: 2.05rem;
+    padding: 0 0.9rem;
+    border-radius: 0.45rem;
+    background: #cf3410;
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    box-shadow: none;
+  }
+
+  body.home-page-body .home-operators-reference-info__cta::after {
+    content: ' \2192';
+    margin-left: 0.25rem;
+  }
+
+  body.home-page-body .home-operators-reference-rail {
+    order: 2;
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 auto;
+    flex-basis: auto;
+    min-width: 0;
+  }
+
+  body.home-page-body .home-operators-reference-nav {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 0 !important;
+    overflow: visible !important;
+  }
+
+  body.home-page-body .home-operators-reference-nav .home-cards-nav {
+    display: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-nav .home-cards-nav-row,
+  body.home-page-body .home-operators-reference-row {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: 0.7rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    overflow-x: visible !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .home-preview-row__item {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .home-preview-row__card,
+  body.home-page-body .home-operators-reference-row .home-preview-card-shell,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border__inner,
+  body.home-page-body .home-operators-reference-row .listing-card-glow-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .home-preview-card-border,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border:hover {
+    border: 1px solid #eceff3 !important;
+    border-radius: 0.85rem !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07) !important;
+    overflow: visible !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .home-preview-card-border__inner,
+  body.home-page-body .home-operators-reference-row .home-preview-card-shell,
+  body.home-page-body .home-operators-reference-row .listing-card-glow-shell {
+    overflow: visible !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .home-feature-card-beam-spinner {
+    display: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card.domain-listing-card {
+    display: grid !important;
+    grid-template-columns: 2.65rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "avatar name status"
+      ". role role"
+      ". meta meta"
+      "price price price";
+    align-items: start;
+    column-gap: 0.7rem;
+    row-gap: 0.22rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0.95rem 0.9rem 0.9rem !important;
+    border-radius: 0.85rem !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__header,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .domain-listing-card__body,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__title-block,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__name-row {
+    display: contents !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__cover {
+    display: contents !important;
+    background: transparent !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__cover-inner {
+    grid-area: avatar;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2.65rem !important;
+    height: 2.65rem !important;
+    padding: 0 !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__avatar-container,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__avatar {
+    width: 2.65rem !important;
+    min-width: 2.65rem !important;
+    height: 2.65rem !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__avatar--fallback {
+    background: #e8e8ed !important;
+    color: #1f2937 !important;
+    font-size: 0.74rem !important;
+    font-weight: 800 !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__name {
+    grid-area: name;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0.08rem 0 0 !important;
+    color: #0f172a !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__badge {
+    grid-area: role;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0.12rem 0.15rem 0.08rem 0.12rem !important;
+    overflow: visible !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #6b7280 !important;
+    font-size: 0.72rem !important;
+    font-weight: 500 !important;
+    line-height: 1.45 !important;
+    letter-spacing: 0 !important;
+    text-align: left !important;
+    text-overflow: clip !important;
+    text-transform: none !important;
+    white-space: nowrap !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__badge[data-experience]::after {
+    content: ' \2022 ' attr(data-experience) ' Experience';
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__status-badge {
+    grid-area: status;
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    justify-self: end;
+    align-self: start;
+    max-width: 6rem;
+    margin: 0 !important;
+    padding: 0.4rem 0.55rem !important;
+    border-radius: 0.35rem !important;
+    background: #e8f0ff !important;
+    color: #3b6fb8 !important;
+    font-size: 0.55rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__status-badge--available {
+    background: #e8f0ff !important;
+    color: #3b6fb8 !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__status-badge--allocated {
+    background: #eee9ea !important;
+    color: #705a5e !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .domain-listing-card__share-container,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .domain-listing-card__stats,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .listing-card-stats-footer {
+    display: none !important;
+  }
+
+  /* Work type as one horizontal line directly under Role • Experience */
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__stats-grid,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__stats-grid--two-col {
+    grid-area: meta;
+    display: block !important;
+    grid-template-columns: none !important;
+    gap: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0.08rem 0 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-col:first-child {
+    display: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-col.stat-col--center {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.3rem !important;
+    flex: 0 0 auto !important;
+    width: max-content !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    padding: 0.1rem 0.15rem 0.06rem 0.12rem !important;
+    overflow: visible !important;
+    text-align: left !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-icon {
+    display: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-col.stat-col--center .stat-value,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-col.stat-col--center .stat-label {
+    display: inline !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    color: #9ca3af !important;
+    font-size: 0.6rem !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0.08em !important;
+    text-align: left !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    writing-mode: horizontal-tb !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .stat-col.stat-col--busy .stat-value {
+    color: #ea580c !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .domain-listing-card__price-box.va-listing-card__compensation,
+  body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card) .domain-listing-card__price-box.va-listing-card__compensation {
+    grid-area: price;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.55rem !important;
+    width: 100% !important;
+    min-height: 2.15rem !important;
+    max-height: none !important;
+    margin-top: 0.35rem !important;
+    padding: 0.1rem 0 0.1rem 0.12rem !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation-label {
+    display: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-text {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: baseline !important;
+    justify-content: flex-start !important;
+    gap: 0.3rem !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-value {
+    color: #0f172a !important;
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation-period {
+    color: #0f172a !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active {
+    flex: 0 0 auto !important;
+    width: 2.15rem !important;
+    min-width: 2.15rem !important;
+    max-width: 2.15rem !important;
+    height: 2.15rem !important;
+    min-height: 2.15rem !important;
+    max-height: 2.15rem !important;
+    margin: 0 !important;
+    border-radius: 999px !important;
+    background: #2f80ed !important;
+    box-shadow: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta img,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after {
+    content: '\2192' !important;
+    color: #ffffff !important;
+    font-size: 1.1rem !important;
+    line-height: 1 !important;
   }
 }
 
 @media (max-width: 639px) {
-  body.home-page-body .home-operators-reference-section {
-    padding-top: 0.9rem !important;
-  }
-
   body.home-page-body .home-operators-reference-shell {
-    gap: 0.9rem;
-  }
-
-  body.home-page-body .home-operators-reference-nav {
-    padding-inline: 2.5rem !important;
-  }
-
-  body.home-page-body .home-operators-reference-row .home-preview-row__item {
-    flex-basis: min(16rem, 82vw) !important;
-    width: min(16rem, 82vw) !important;
-    max-width: min(16rem, 82vw) !important;
+    gap: 0.75rem;
   }
 
   body.home-page-body .home-operators-reference-info {
-    padding: 1.1rem 1.05rem 0.95rem;
+    padding: 1rem 0.9rem 0.95rem;
+  }
+
+  body.home-page-body .home-operators-reference-info__title {
+    font-size: 1.02rem;
+  }
+}
+
+@media (max-width: 360px) {
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card.domain-listing-card {
+    grid-template-columns: 2.3rem minmax(0, 1fr) auto;
+    column-gap: 0.5rem;
+    padding-inline: 0.7rem !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__cover-inner,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__avatar-container,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__avatar {
+    width: 2.3rem !important;
+    min-width: 2.3rem !important;
+    height: 2.3rem !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__status-badge {
+    max-width: 5.1rem;
+    padding-inline: 0.4rem !important;
+    font-size: 0.48rem !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__name {
+    font-size: 0.76rem !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__badge {
+    font-size: 0.6rem !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-value {
+    font-size: 0.88rem !important;
   }
 }
 

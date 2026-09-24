@@ -1303,3 +1303,35 @@ html body.home-page-body .home-auctions-section .home-preview-card-border--aucti
   transform: translate(2px, -50%) !important;
 }
 
+/*
+ * Desktop home Auctions carousel arrows: keep View All in the header and place
+ * the existing controls beside the card row, matching the Ventures section.
+ */
+@media (min-width: 1024px) {
+  body.home-page-body .home-auctions-section .home-section-header__actions {
+    padding-right: 0 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-cards-nav-wrap--auction > .home-cards-nav,
+  body.home-page-body .home-auctions-section .home-cards-nav--prev,
+  body.home-page-body .home-auctions-section .home-cards-nav--next {
+    position: absolute !important;
+    top: var(--home-nav-center, 50%) !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    z-index: 50 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-cards-nav-wrap--auction > .home-cards-nav--prev,
+  body.home-page-body .home-auctions-section .home-cards-nav--prev {
+    left: 0.2rem !important;
+    right: auto !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-cards-nav-wrap--auction > .home-cards-nav--next,
+  body.home-page-body .home-auctions-section .home-cards-nav--next {
+    right: 0.2rem !important;
+    left: auto !important;
+  }
+}
+

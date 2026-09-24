@@ -485,6 +485,62 @@ body.home-page-body .home-coventures-section .home-cards-nav:hover:not(:disabled
   box-shadow: 0 3px 8px rgba(15, 23, 42, 0.1) !important;
 }
 
+/*
+ * Domains + Delta Domains + Delta Venture — desktop/tablet only.
+ * Place carousel arrows beside the first/last visible cards (vertically
+ * centered on the card row via --home-nav-center from HomeCardsNavRow).
+ * Mobile (max-width: 767px) rules elsewhere stay unchanged.
+ */
+@media (min-width: 768px) {
+  body.home-page-body .home-marketplace-domains-section .home-section-header__actions,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__actions,
+  body.home-page-body .home-coventures-section .home-section-header__actions {
+    padding-right: 0 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure {
+    position: relative !important;
+    padding-inline: 3.15rem !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav--next {
+    position: absolute !important;
+    top: var(--home-nav-center, 50%) !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    z-index: 50 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav--prev {
+    left: 0.15rem !important;
+    right: auto !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav--next {
+    right: 0.15rem !important;
+    left: auto !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure {
+    padding-inline: 2.75rem !important;
+  }
+}
+
 /* ── Row & Item Sizing ── */
 body.home-page-body .home-coventures-section .home-preview-row.home-cards-nav-row {
   gap: 1.5rem !important;

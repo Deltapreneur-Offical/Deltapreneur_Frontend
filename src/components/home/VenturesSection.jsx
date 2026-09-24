@@ -15,6 +15,8 @@ import VentureListingCard from '../listings/VentureListingCard';
 import '../../styles/domain-listing-cards.css';
 /* After domain-listing-cards so homepage blue pill borders win over saffron defaults. */
 import '../../styles/home-saffron.css';
+/* Mobile home Ventures final lock — after shared price-cta rules. */
+import '../../styles/home-ventures-mobile.css';
 
 export default function VenturesSection() {
   const { t } = useTranslation();

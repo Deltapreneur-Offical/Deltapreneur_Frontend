@@ -2378,17 +2378,15 @@ body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auc
   }
 
   body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) {
-    aspect-ratio: 1.05 / 1 !important;
-    width: min(18rem, 100%) !important;
+    /* Content-sized stack on mobile — fixed aspect-ratio caused huge inter-card gaps. */
+    aspect-ratio: auto !important;
+    width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
     margin: 0 !important;
-    padding: 0.08rem 0 0 !important;
-    color: #0f172a !important;
-    font-size: 0.92rem !important;
-    font-weight: 800 !important;
-    line-height: 1.2 !important;
-    text-align: left !important;
+    padding: 0 !important;
   }
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .creator-profile-card__badge {
@@ -3361,7 +3359,7 @@ body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.vent
   box-sizing: border-box !important;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1367px) {
   body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
   body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
     width: calc((100% - var(--home-venture-gap)) / 2) !important;
@@ -4118,7 +4116,7 @@ body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-
   flex: 0 0 100% !important;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1367px) {
   body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content) {
     width: calc((100% - var(--home-venture-gap, 1rem)) / 2) !important;
     max-width: calc((100% - var(--home-venture-gap, 1rem)) / 2) !important;
@@ -4608,7 +4606,7 @@ body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.vent
   flex: 0 0 100% !important;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1367px) {
   body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
   body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
     width: calc((100% - var(--home-venture-gap, 1rem)) / 2) !important;
@@ -4890,11 +4888,10 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 }
 
 /*
- * Homepage Ventures — mobile/tablet ONLY: stack cards vertically (1 per row).
- * Does not change card design, height, colors, or desktop 2-up carousel.
- * Desktop (≥1024px) keeps the existing horizontal 2-card layout.
+ * Homepage Ventures — phone ONLY: stack cards vertically (1 per row).
+ * iPad / iPad Pro (≥768px) keep the desktop horizontal 2-card carousel.
  */
-@media (max-width: 1023px) {
+@media (max-width: 767px) {
   body.home-page-body .home-ventures-section .home-cards-nav-wrap.home-cards-nav-wrap--venture {
     padding-inline: 0 !important;
     width: 100% !important;
@@ -5116,23 +5113,19 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 }
 
 /*
- * Homepage Ventures — DESKTOP ONLY (≥1024px).
- * Match Reference 1 card design: show description, compact hierarchy,
- * 2 equal-width cards filling the track. Header blue line + View All unchanged.
- * Does NOT modify mobile (≤1023px) stack layout or card content rules.
+ * Homepage Ventures — desktop + iPad (≥768px).
+ * Card design matches desktop. Width: iPad one-up (below); wide desktop two-up.
  */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   body.home-page-body .home-ventures-section {
     --home-venture-gap: 1.05rem;
     --home-venture-card-h: 14.25rem;
   }
 
-  /* Two equal cards fill the available track (between nav arrows). */
   body.home-page-body .home-ventures-section .home-cards-nav-wrap.home-cards-nav-wrap--venture {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    /* Grow with cards — do not clip bottoms. */
     height: auto !important;
     min-height: var(--home-venture-card-h) !important;
     overflow: visible !important;
@@ -5148,11 +5141,6 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
     max-width: 100% !important;
     margin-inline: 0 !important;
     box-sizing: border-box !important;
-    /*
-     * Clip fix: older cascade locked this row to 13.75rem + overflow-y:hidden
-     * while cards are 14.25rem — that cut off the offer panel / bottom radius.
-     * Keep overflow-x for carousel; size the row to fully contain the cards.
-     */
     height: auto !important;
     min-height: var(--home-venture-card-h) !important;
     max-height: none !important;
@@ -5160,21 +5148,6 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
     padding-bottom: 0.85rem !important;
     overflow-x: auto !important;
     overflow-y: visible !important;
-  }
-
-  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
-  body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
-    width: calc((100% - var(--home-venture-gap)) / 2) !important;
-    max-width: calc((100% - var(--home-venture-gap)) / 2) !important;
-    flex: 0 0 calc((100% - var(--home-venture-gap)) / 2) !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    /* Undo fixed 13.75rem item height from earlier cascade. */
-    height: auto !important;
-    min-height: var(--home-venture-card-h) !important;
-    max-height: none !important;
-    padding: 0 !important;
-    overflow: visible !important;
   }
 
   body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content),
@@ -5380,10 +5353,70 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 }
 
 /*
- * Desktop Home Ventures hover only.
+ * Homepage Ventures — iPad / iPad Pro 13 ONLY (768–1366px).
+ * One full-width card in the track (no second-card peek/overlap).
+ * Desktop (≥1367px) keeps two-up. Phone (≤767px) keeps stacked mobile.
+ */
+@media (min-width: 768px) and (max-width: 1366px) {
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap.home-cards-nav-wrap--venture {
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap .home-preview-row.home-cards-nav-row {
+    gap: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    scroll-snap-type: x mandatory !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__item,
+  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    flex: 0 0 100% !important;
+    box-sizing: border-box !important;
+    height: auto !important;
+    min-height: var(--home-venture-card-h, 14.25rem) !important;
+    max-height: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    scroll-snap-align: start !important;
+    scroll-snap-stop: always !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/*
+ * Homepage Ventures — wide desktop ONLY (≥1367px): two equal cards.
+ */
+@media (min-width: 1367px) {
+  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
+    width: calc((100% - var(--home-venture-gap)) / 2) !important;
+    max-width: calc((100% - var(--home-venture-gap)) / 2) !important;
+    flex: 0 0 calc((100% - var(--home-venture-gap)) / 2) !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    height: auto !important;
+    min-height: var(--home-venture-card-h) !important;
+    max-height: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+}
+
+/*
+ * Desktop + iPad Home Ventures hover only.
  * Match Domains card lift while keeping the OFFER arrow button stationary.
  */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content) {
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
     transform: none !important;
@@ -5631,11 +5664,11 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 }
 
 /*
- * Desktop homepage spacing: keep Auctions close to the Venture row.
+ * Desktop + iPad homepage spacing: keep Auctions close to the Venture row.
  * The shared preview-row card-height token can otherwise leave a large blank
  * band before the next section.
  */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   body.home-page-body .home-ventures-section {
     padding-bottom: 0.75rem !important;
   }
@@ -5650,5 +5683,434 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   body.home-page-body .home-auctions-section {
     padding-top: 0.75rem !important;
     margin-top: 0 !important;
+  }
+}
+
+/*
+ * Homepage Ventures - mobile ONLY.
+ * One compact card per row matching the mobile reference (name+equity, 2-line
+ * description, OFFER + price + dark square arrow). Desktop unchanged.
+ */
+@media (max-width: 767px) {
+  body.home-page-body .home-ventures-section {
+    --home-venture-mobile-gap: 0.65rem;
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.85rem !important;
+    background: #ffffff !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-section-header {
+    margin-bottom: 0.65rem !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-section-header__top {
+    align-items: center !important;
+    min-height: 1.45rem !important;
+    padding: 0 !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-section-header__title {
+    gap: 0.4rem !important;
+    color: #0f172a !important;
+    font-family: Inter, Arial, sans-serif !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-section-header__title::before {
+    width: 0.22rem !important;
+    height: 1.1rem !important;
+    background: #ff553b !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-section-header__actions {
+    padding-right: 0 !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-section-header__view-all,
+  body.home-page-body .home-ventures-section .home-section-header__view-all:hover,
+  body.home-page-body .home-ventures-section .home-section-header__view-all:focus-visible {
+    gap: 0.18rem !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    color: #ff553b !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-section-header__view-all-icon {
+    width: 0.72rem !important;
+    height: 0.72rem !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap.home-cards-nav-wrap--venture {
+    padding-inline: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture > .home-cards-nav {
+    display: none !important;
+  }
+
+  /* Vertical list — one full-width card per row (overrides prior 2-col mobile grid). */
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture .home-preview-row.home-cards-nav-row,
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap .home-preview-row.home-cards-nav-row,
+  body.home-page-body .home-ventures-section .home-preview-row.home-cards-nav-row {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: var(--home-venture-mobile-gap) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    overflow-x: hidden !important;
+    scroll-snap-type: none !important;
+    cursor: default !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) > div,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .listing-card-glow-shell,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .home-preview-card-shell,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .home-preview-card-border,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .home-preview-card-border__inner,
+  body.home-page-body .home-ventures-section .home-preview-row .venture-listing-card--homepage-content.venture-listing-card--compact,
+  body.home-page-body .home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content.venture-listing-card--compact {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):hover,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):focus-within {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0.85rem !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+    transform: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row .venture-listing-card--homepage-content .domain-listing-card__body,
+  body.home-page-body .home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content .domain-listing-card__body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;
+    padding: 0.85rem 0.9rem 0.8rem !important;
+    overflow: hidden !important;
+  }
+
+  /* Title left + equity right (description hidden on mobile — uneven card heights). */
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas: "title equity" !important;
+    align-items: start !important;
+    gap: 0.4rem 0.55rem !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col.gap-2\.5 > p.text-xs,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content p.text-xs,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer) > p,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer) > p.text-xs {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__metrics {
+    grid-area: equity !important;
+    order: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    width: auto !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__title-row {
+    grid-area: title !important;
+    order: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__title-actions,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__share-container--inline {
+    display: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__equity-badge,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content:hover .venture-listing-card__equity-badge,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .venture-listing-card__equity-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.18rem !important;
+    max-width: 100% !important;
+    padding: 0.22rem 0.48rem !important;
+    border: 1px solid #fed7aa !important;
+    border-radius: 999px !important;
+    background: #fff7ed !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__equity-badge-icon {
+    display: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__equity-badge-copy {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.18rem !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__equity-badge-value,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__equity-badge-label {
+    color: #c2410c !important;
+    font-family: Inter, Arial, sans-serif !important;
+    font-size: 0.58rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__title,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__title--compact,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__homepage-title-text,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__homepage-title-suffix,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .venture-listing-card__title,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .venture-listing-card__homepage-title-text,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .venture-listing-card__homepage-title-suffix {
+    color: #111827 !important;
+    font-family: Inter, Arial, sans-serif !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.015em !important;
+    padding-right: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer) > p {
+    display: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__footer,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__footer.mt-auto {
+    margin-top: 0.7rem !important;
+    margin-bottom: 0 !important;
+    gap: 0 !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box--venture,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box:hover,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content:hover .domain-listing-card__price-box,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .domain-listing-card__price-box,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:focus-within .venture-listing-card--homepage-content .domain-listing-card__price-box {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.65rem !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 0.22rem !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-label,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-label--offer,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label--offer {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #9ca3af !important;
+    font-family: Inter, Arial, sans-serif !important;
+    font-size: 0.58rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-label--offer::before,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label--offer::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-value,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-value--compact,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-value.currency-display,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box:hover .domain-listing-card__price-value,
+  #root .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-value.currency-display,
+  #root .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box:hover .domain-listing-card__price-value.currency-display {
+    max-width: 100% !important;
+    color: #111827 !important;
+    font-family: Inter, Arial, sans-serif !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.02em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    transform: none !important;
+  }
+
+  /* True square dark arrow (not circle / pill / orange). */
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__homepage-offer-cta,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:active,
+  body.home-page-body .home-ventures-section .home-preview-row .home-preview-card-shell .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-box .domain-listing-card__price-cta,
+  body.home-page-body .home-ventures-section .home-preview-row .home-preview-card-shell .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-box .domain-listing-card__price-cta:hover,
+  body.home-page-body .home-ventures-section .home-preview-row .home-preview-card-shell .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-box .domain-listing-card__price-cta:focus-visible,
+  body.home-page-body .home-ventures-section .home-preview-row .home-preview-card-shell .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-box .domain-listing-card__price-cta:active {
+    position: static !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 2rem !important;
+    align-self: center !important;
+    width: 2rem !important;
+    min-width: 2rem !important;
+    max-width: 2rem !important;
+    height: 2rem !important;
+    min-height: 2rem !important;
+    max-height: 2rem !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0.45rem !important;
+    background: #111827 !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    color: #ffffff !important;
+    transform: none !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta::before,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover::before,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible::before,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:active::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-arrow-glyph,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover .venture-listing-card__price-arrow-glyph,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible .venture-listing-card__price-arrow-glyph {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 0.95rem !important;
+    height: 0.95rem !important;
+    color: #ffffff !important;
+    line-height: 0 !important;
+    transform: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-arrow-glyph svg {
+    display: block !important;
+    width: 0.95rem !important;
+    height: 0.95rem !important;
+    stroke: #ffffff !important;
+    color: #ffffff !important;
+    fill: none !important;
   }
 }

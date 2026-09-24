@@ -14,6 +14,7 @@ import { HomePreviewRowItem } from './HomePreviewRow';
 import VentureListingCard from '../listings/VentureListingCard';
 import '../../styles/domain-listing-cards.css';
 import '../../styles/home-saffron-custom.css';
+import '../../styles/home-coventures-mobile.css';
 
 export default function CoVenturesSection() {
   const { t } = useTranslation();

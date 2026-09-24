@@ -929,7 +929,7 @@ body.home-page-body .home-price-rupee-symbol {
   box-sizing: border-box;
 }
 
-/* Mobile/tablet: one card uses the full track between arrows. */
+/* Phone: one card uses the full track between arrows. */
 .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
 .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
   width: 100% !important;
@@ -940,13 +940,27 @@ body.home-page-body .home-price-rupee-symbol {
   box-sizing: border-box;
 }
 
-/* Desktop: two equal columns of the available carousel track. */
-@media (min-width: 1024px) {
+/* iPad / iPad Pro 13: one full-width card (no peek/overlap). */
+@media (min-width: 768px) and (max-width: 1366px) {
+  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content),
+  .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
+  .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+}
+
+/* Wide desktop: two equal columns of the available carousel track. */
+@media (min-width: 1367px) {
   .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
   .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
     width: calc((100% - var(--home-venture-gap)) / 2) !important;
     max-width: calc((100% - var(--home-venture-gap)) / 2) !important;
     flex: 0 0 calc((100% - var(--home-venture-gap)) / 2) !important;
+    min-width: 0 !important;
   }
 }
 
@@ -3976,11 +3990,20 @@ body.home-page-body .home-deltaos-services-nav .tech-service-card--home .tech-se
   }
 
   .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) {
-    /* Compact: only slightly taller than desktop 1.12/1 so content fits without looking oversized. */
-    aspect-ratio: 1.05 / 1;
-    width: min(18rem, 100%) !important;
+    /* Mobile home stack: size to card content (fixed ratio left tall empty shells). */
+    aspect-ratio: auto;
+    width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .home-auctions-section .home-preview-row__item:has(.home-auction-preview-card--homepage-content),
+  .home-auctions-section .home-auto-scroll-row__item:has(.home-auction-preview-card--homepage-content) {
+    padding-bottom: 0;
+    height: auto !important;
+    aspect-ratio: auto;
   }
 }
 

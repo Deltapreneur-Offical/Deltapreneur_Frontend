@@ -1,0 +1,172 @@
+/*
+ * Homepage Main Ventures — mobile ONLY final lock.
+ * Loaded from VenturesSection so it wins over shared price-cta / preview-card rules.
+ * Desktop and dedicated Ventures page are untouched.
+ */
+@media (max-width: 767px) {
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture > .home-cards-nav {
+    display: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture .home-preview-row.home-cards-nav-row,
+  body.home-page-body .home-ventures-section .home-preview-row.home-cards-nav-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.65rem !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    scroll-snap-type: none !important;
+  }
+
+  /* Kill desktop fixed card height so every mobile card is content-sized. */
+  body.home-page-body .home-ventures-section .home-preview-row__item,
+  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) > div,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .listing-card-glow-shell,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .home-preview-card-shell,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .home-preview-card-border,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .home-preview-card-border__inner,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .home-preview-card-border__inner,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:hover,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:focus-visible,
+  body.home-page-body .home-ventures-section .home-preview-row .venture-listing-card--homepage-content,
+  body.home-page-body .home-ventures-section .home-preview-row .venture-listing-card--homepage-content.venture-listing-card--compact {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;
+    aspect-ratio: auto !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row .venture-listing-card--homepage-content .domain-listing-card__body,
+  body.home-page-body .home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content .domain-listing-card__body {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;
+    padding: 0.85rem 0.9rem 0.8rem !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__footer,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__footer.mt-auto {
+    margin-top: 0.7rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Description length was stretching only some cards — hide on mobile home. */
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col.gap-2\.5 > p.text-xs,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content p.text-xs,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer) > p,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer) > p.text-xs {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row .home-preview-card-shell .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-box .domain-listing-card__price-cta,
+  body.home-page-body .home-ventures-section .home-preview-row .home-preview-card-shell .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-box .domain-listing-card__price-cta:hover,
+  body.home-page-body .home-ventures-section .home-preview-row .home-preview-card-shell .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-box .domain-listing-card__price-cta:focus-visible,
+  body.home-page-body .home-ventures-section .home-preview-row .home-preview-card-shell .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-box .domain-listing-card__price-cta:active,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__homepage-offer-cta,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta:active {
+    position: static !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 2rem !important;
+    width: 2rem !important;
+    min-width: 2rem !important;
+    max-width: 2rem !important;
+    height: 2rem !important;
+    min-height: 2rem !important;
+    max-height: 2rem !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0.45rem !important;
+    background: #111827 !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    color: #ffffff !important;
+    transform: none !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta::before,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta::before,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover::before,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible::before,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:active::before {
+    content: none !important;
+    display: none !important;
+    -webkit-mask: none !important;
+    mask: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-arrow-glyph,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-arrow-glyph svg {
+    width: 0.95rem !important;
+    height: 0.95rem !important;
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+  }
+}
+
+/*
+ * Homepage Ventures — iPad / iPad Pro 13 (768–1366px) final lock.
+ * One full-width card only; no second-card peek. Wide desktop unchanged.
+ */
+@media (min-width: 768px) and (max-width: 1366px) {
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap.home-cards-nav-wrap--venture {
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture .home-preview-row.home-cards-nav-row,
+  body.home-page-body .home-ventures-section .home-preview-row.home-cards-nav-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    scroll-snap-type: x mandatory !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__item,
+  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    flex: 0 0 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    scroll-snap-align: start !important;
+    scroll-snap-stop: always !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-preview-row .venture-listing-card--homepage-content.venture-listing-card--compact {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}

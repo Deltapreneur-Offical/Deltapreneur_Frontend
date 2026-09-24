@@ -396,6 +396,18 @@ body.home-page-body .home-coventures-section {
   padding-block: 2rem 2.75rem !important;
 }
 
+/* Desktop + tablet: tighten gap before Auctions. Mobile spacing unchanged. */
+@media (min-width: 768px) {
+  body.home-page-body .home-coventures-section {
+    padding-bottom: 1rem !important;
+  }
+
+  body.home-page-body .home-auctions-section {
+    padding-top: 0.75rem !important;
+    margin-top: 0 !important;
+  }
+}
+
 /* ── Section Header ── */
 body.home-page-body .home-coventures-section .home-section-header {
   margin-bottom: 2rem !important;

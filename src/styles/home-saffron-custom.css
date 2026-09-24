@@ -965,3 +965,51 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
     flex-basis: min(17rem, 100%) !important;
   }
 }
+
+/*
+ * Desktop home carousel arrows: keep View All in the header and place the
+ * existing controls beside the card row, matching the Ventures section.
+ */
+@media (min-width: 1024px) {
+  body.home-page-body .home-marketplace-domains-section .home-section-header__actions,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__actions,
+  body.home-page-body .home-coventures-section .home-section-header__actions {
+    padding-right: 0 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain > .home-cards-nav,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain > .home-cards-nav,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure > .home-cards-nav,
+  body.home-page-body .home-coventures-section .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav--next {
+    position: absolute !important;
+    top: var(--home-nav-center, 50%) !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    z-index: 50 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain > .home-cards-nav--prev,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain > .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure > .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav--prev {
+    left: 0.2rem !important;
+    right: auto !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain > .home-cards-nav--next,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain > .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure > .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav--next {
+    right: 0.2rem !important;
+    left: auto !important;
+  }
+}

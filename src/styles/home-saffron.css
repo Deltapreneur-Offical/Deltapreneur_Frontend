@@ -4888,3 +4888,229 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
     box-shadow: 0 8px 18px rgba(255, 85, 59, 0.22) !important;
   }
 }
+
+/*
+ * Homepage Ventures — mobile/tablet ONLY: stack cards vertically (1 per row).
+ * Does not change card design, height, colors, or desktop 2-up carousel.
+ * Desktop (≥1024px) keeps the existing horizontal 2-card layout.
+ */
+@media (max-width: 1023px) {
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap.home-cards-nav-wrap--venture {
+    padding-inline: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Carousel arrows are for horizontal paging — hide when stacked. */
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture > .home-cards-nav {
+    display: none !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture .home-preview-row.home-cards-nav-row,
+  body.home-page-body .home-ventures-section .home-cards-nav-wrap .home-preview-row.home-cards-nav-row {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: var(--home-venture-gap, 1rem) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    scroll-snap-type: none !important;
+    cursor: default !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/*
+ * Homepage Delta Registrations — mobile ONLY: stack cards vertically (1 per row).
+ * Does not change card design, colors, or desktop/tablet horizontal carousel.
+ * Desktop/tablet (≥768px) keeps the existing multi-card row layout.
+ */
+@media (max-width: 767px) {
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap {
+    padding-inline: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Carousel arrows are for horizontal paging — hide when stacked. */
+  body.home-page-body .home-registrations-section .reg-cards-nav {
+    display: none !important;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .home-preview-row.reg-cards-preview-row {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 0.75rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    scroll-snap-type: none !important;
+    cursor: default !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .home-preview-row__item:has(.reg-mini-card) {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .home-preview-row__card:has(.reg-mini-card),
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card-wrapper,
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /*
+   * Mobile Home Delta Registrations — compact card content (stack layout unchanged).
+   * Title + share | 2-line description | compact FEE badge. Desktop untouched.
+   */
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card {
+    min-height: 0 !important;
+    padding: 0.85rem 0.9rem 0.85rem !important;
+  }
+
+  /* 1. Hide category badge (LEGAL INC / COMPLIANCE / …) — data stays in DOM. */
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge {
+    display: none !important;
+  }
+
+  /* Leave room for the existing share icon (unchanged). */
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__top {
+    padding-right: 2.35rem !important;
+  }
+
+  /* 2. Smaller service title. */
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__title {
+    font-size: 0.88rem !important;
+    line-height: 1.28 !important;
+  }
+
+  /* 3. Description — max 2 lines with ellipsis. */
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__desc {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-height: 0 !important;
+    max-height: calc(0.72rem * 1.4 * 2) !important;
+    margin-top: 0.4rem !important;
+    font-size: 0.72rem !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Compact hierarchy: title / description / fee — hide feature list on mobile home. */
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__list {
+    display: none !important;
+  }
+
+  /* 5. Bring fee back as a compact peach badge (reuse existing markup + dynamic value). */
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__footer {
+    display: flex !important;
+    margin-top: 0.65rem !important;
+    padding-top: 0 !important;
+    border-top: none !important;
+    justify-content: flex-start !important;
+    width: auto !important;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-box {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.28rem !important;
+    width: auto !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0.28rem 0.55rem !important;
+    border: 1px solid rgba(253, 186, 116, 0.4) !important;
+    border-radius: 0.45rem !important;
+    background: #fff4eb !important;
+    box-shadow: none !important;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-copy {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.28rem !important;
+    min-width: 0 !important;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-label {
+    color: #c2410c !important;
+    font-size: 0.62rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price {
+    color: #9a3412 !important;
+    font-family: var(--font-body, system-ui, sans-serif) !important;
+    font-size: 0.68rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+    line-height: 1 !important;
+  }
+
+  /* No large CTA on the compact fee badge. */
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-cta {
+    display: none !important;
+  }
+
+  /*
+   * Share button — true circle on mobile home only.
+   * Global touch-target `button { min-height: 44px }` otherwise stretches it into an oval.
+   */
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__share {
+    width: 1.65rem !important;
+    height: 1.65rem !important;
+    min-width: 1.65rem !important;
+    min-height: 1.65rem !important;
+    max-width: 1.65rem !important;
+    max-height: 1.65rem !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    aspect-ratio: 1 / 1 !important;
+    flex: 0 0 1.65rem !important;
+    box-sizing: border-box !important;
+    align-self: auto !important;
+  }
+}

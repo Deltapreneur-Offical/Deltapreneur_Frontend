@@ -10,7 +10,6 @@ body.home-page-body .home-marketplace-domains-section .home-section-header {
 }
 
 body.home-page-body .home-marketplace-domains-section .home-section-header__top {
-  justify-content: space-between;
   align-items: center;
 }
 
@@ -30,14 +29,14 @@ body.home-page-body .home-marketplace-domains-section .home-section-header__titl
   width: 0.375rem;
   height: 1.5rem;
   border-radius: 9999px;
-  background: #0284c7;
+  background: #f97316;
 }
 
 body.home-page-body .home-marketplace-domains-section .home-section-header__view-all {
   background: transparent;
   border: 0;
   box-shadow: none;
-  color: #0284c7;
+  color: #ea580c;
   font-size: 0.875rem;
   font-weight: 600;
   padding: 0;
@@ -48,12 +47,11 @@ body.home-page-body .home-marketplace-domains-section .home-section-header__view
   background: transparent;
   border: 0;
   box-shadow: none;
-  color: #0369a1;
+  color: #c2410c;
   transform: none;
 }
 
 body.home-page-body .home-marketplace-domains-section .home-section-header__actions {
-  margin-left: auto;
   padding-right: 5.5rem;
 }
 
@@ -215,7 +213,6 @@ body.home-page-body .home-domains-section:not(.home-marketplace-domains-section)
 }
 
 body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__top {
-  justify-content: space-between;
   align-items: center;
 }
 
@@ -249,7 +246,6 @@ body.home-page-body .home-domains-section:not(.home-marketplace-domains-section)
 }
 
 body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__actions {
-  margin-left: auto;
   padding-right: 5.5rem;
 }
 
@@ -381,34 +377,22 @@ body.home-page-body .home-domains-section .registry-premium-badge__spark {
   color: #D99A00 !important;
 }
 
-/* Tech service badges — fill dark saffron + white on hover, matching the icon */
+/* Tech service badges ΓÇö fill dark saffron + white on hover, matching the icon */
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   DELTA VENTURES (CoVentures) SECTION — Stitch Reference Design
-   Only targets .home-coventures-section — DOES NOT touch Ventures section.
+/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+   DELTA VENTURES (CoVentures) SECTION ΓÇö Stitch Reference Design
+   Only targets .home-coventures-section ΓÇö DOES NOT touch Ventures section.
    Uses MAXIMUM-SPECIFICITY selectors with body.home-page-body prefix +
    deep ancestor chains to guarantee winning over home-preview-cards.css.
-   ═══════════════════════════════════════════════════════════════════════════ */
+   ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
 
-/* ── Section Container ── */
+/* ΓöÇΓöÇ Section Container ΓöÇΓöÇ */
 body.home-page-body .home-coventures-section {
   background: #f8fafc !important;
   padding-block: 2rem 2.75rem !important;
 }
 
-/* Desktop + tablet: tighten gap before Auctions. Mobile spacing unchanged. */
-@media (min-width: 768px) {
-  body.home-page-body .home-coventures-section {
-    padding-bottom: 1rem !important;
-  }
-
-  body.home-page-body .home-auctions-section {
-    padding-top: 0.75rem !important;
-    margin-top: 0 !important;
-  }
-}
-
-/* ── Section Header ── */
+/* ΓöÇΓöÇ Section Header ΓöÇΓöÇ */
 body.home-page-body .home-coventures-section .home-section-header {
   margin-bottom: 2rem !important;
 }
@@ -466,7 +450,7 @@ body.home-page-body .home-coventures-section .home-section-header__actions {
   padding-right: 5.5rem !important;
 }
 
-/* ── Navigation Buttons ── */
+/* ΓöÇΓöÇ Navigation Buttons ΓöÇΓöÇ */
 body.home-page-body .home-coventures-section .home-cards-nav--prev,
 body.home-page-body .home-coventures-section .home-cards-nav--next {
   /* Align the row controls with the View All action in the section header. */
@@ -497,63 +481,7 @@ body.home-page-body .home-coventures-section .home-cards-nav:hover:not(:disabled
   box-shadow: 0 3px 8px rgba(15, 23, 42, 0.1) !important;
 }
 
-/*
- * Domains + Delta Domains + Delta Venture — desktop/tablet only.
- * Place carousel arrows beside the first/last visible cards (vertically
- * centered on the card row via --home-nav-center from HomeCardsNavRow).
- * Mobile (max-width: 767px) rules elsewhere stay unchanged.
- */
-@media (min-width: 768px) {
-  body.home-page-body .home-marketplace-domains-section .home-section-header__actions,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__actions,
-  body.home-page-body .home-coventures-section .home-section-header__actions {
-    padding-right: 0 !important;
-  }
-
-  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain,
-  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure {
-    position: relative !important;
-    padding-inline: 3.15rem !important;
-  }
-
-  body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
-  body.home-page-body .home-marketplace-domains-section .home-cards-nav--next,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next,
-  body.home-page-body .home-coventures-section .home-cards-nav--prev,
-  body.home-page-body .home-coventures-section .home-cards-nav--next {
-    position: absolute !important;
-    top: var(--home-nav-center, 50%) !important;
-    bottom: auto !important;
-    transform: translateY(-50%) !important;
-    z-index: 50 !important;
-  }
-
-  body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
-  body.home-page-body .home-coventures-section .home-cards-nav--prev {
-    left: 0.15rem !important;
-    right: auto !important;
-  }
-
-  body.home-page-body .home-marketplace-domains-section .home-cards-nav--next,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next,
-  body.home-page-body .home-coventures-section .home-cards-nav--next {
-    right: 0.15rem !important;
-    left: auto !important;
-  }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain,
-  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure {
-    padding-inline: 2.75rem !important;
-  }
-}
-
-/* ── Row & Item Sizing ── */
+/* ΓöÇΓöÇ Row & Item Sizing ΓöÇΓöÇ */
 body.home-page-body .home-coventures-section .home-preview-row.home-cards-nav-row {
   gap: 1.5rem !important;
   justify-content: flex-start !important;
@@ -594,7 +522,7 @@ body.home-page-body .home-coventures-section .home-preview-row__card:has(.ventur
   overflow: visible !important;
 }
 
-/* ── Outer Border Container: Kill beam/glow/border completely ── */
+/* ΓöÇΓöÇ Outer Border Container: Kill beam/glow/border completely ΓöÇΓöÇ */
 body.home-page-body .home-coventures-section .home-preview-card-border,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure {
   background: transparent !important;
@@ -625,7 +553,7 @@ body.home-page-body .home-coventures-section .home-feature-card-beam-spinner {
   display: none !important;
 }
 
-/* ── Card Shell: Clean white with soft grey border ──
+/* ΓöÇΓöÇ Card Shell: Clean white with soft grey border ΓöÇΓöÇ
    Uses 3-4 class deep selectors to beat home-preview-cards.css
    line 450-461 which has .home-preview-card-border .venture-listing-card */
 body.home-page-body .home-coventures-section .home-preview-card-border .venture-listing-card,
@@ -653,7 +581,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   transform: translateY(-2px) !important;
 }
 
-/* Card body — override the transparent background from home-preview-cards.css line 456 */
+/* Card body ΓÇö override the transparent background from home-preview-cards.css line 456 */
 body.home-page-body .home-coventures-section .home-preview-card-border .domain-listing-card__body,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__body {
   padding: 1rem 1.125rem 1rem !important;
@@ -667,7 +595,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   flex: 0 0 auto !important;
 }
 
-/* ── Remove Watermark & Overlays ── */
+/* ΓöÇΓöÇ Remove Watermark & Overlays ΓöÇΓöÇ */
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__body-watermark,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__body-watermark polygon,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__body::before {
@@ -676,7 +604,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   content: none !important;
 }
 
-/* ── Equity Badge: Soft peach pill, bold coral text, NO icon ──
+/* ΓöÇΓöÇ Equity Badge: Soft peach pill, bold coral text, NO icon ΓöÇΓöÇ
    Uses 4-class selectors to beat home-preview-cards.css line 1191 (4 classes) */
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__metrics,
 body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__metrics,
@@ -716,7 +644,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   letter-spacing: 0.04em !important;
 }
 
-/* ── HIDE Share Button completely ──
+/* ΓöÇΓöÇ HIDE Share Button completely ΓöÇΓöÇ
    Uses 5-class selectors to beat home-preview-cards.css lines 1157-1189
    which use 4-class chains like:
    .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline */
@@ -742,7 +670,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   visibility: hidden !important;
 }
 
-/* ── Top Content Layout: Equity badge on top, title below ── */
+/* ΓöÇΓöÇ Top Content Layout: Equity badge on top, title below ΓöÇΓöÇ */
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer) {
   display: flex !important;
   flex-direction: column !important;
@@ -775,7 +703,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   white-space: nowrap !important;
 }
 
-/* ── Venture Title: Sans-serif, bold, bright coral ── */
+/* ΓöÇΓöÇ Venture Title: Sans-serif, bold, bright coral ΓöÇΓöÇ */
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title--compact,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title .cb-overflow-marquee__plain {
@@ -836,7 +764,7 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture:ho
   box-shadow: none !important;
 }
 
-/* ── Footer / Price Block: Grey rounded box ──
+/* ΓöÇΓöÇ Footer / Price Block: Grey rounded box ΓöÇΓöÇ
    Uses 5-class selectors to beat home-preview-cards.css lines 1197-1216
    which use 4-class chains */
 body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__footer,
@@ -885,7 +813,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   display: block !important;
 }
 
-/* ── Price Box Inner: Transparent wrapper ── */
+/* ΓöÇΓöÇ Price Box Inner: Transparent wrapper ΓöÇΓöÇ */
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-box,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-box,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-box--coventure,
@@ -951,7 +879,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   letter-spacing: -0.02em !important;
 }
 
-/* ── CTA Arrow Button: Taller solid coral rounded square ── */
+/* ΓöÇΓöÇ CTA Arrow Button: Taller solid coral rounded square ΓöÇΓöÇ */
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .domain-listing-card__price-cta,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--coventure .domain-listing-card__price-cta,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__delta-ref-cta {
@@ -1028,7 +956,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   display: none !important;
 }
 
-/* ── Mobile responsive ── */
+/* ΓöÇΓöÇ Mobile responsive ΓöÇΓöÇ */
 @media (max-width: 639px) {
   body.home-page-body .home-coventures-section .home-preview-row__item,
   body.home-page-body .home-coventures-section .home-preview-row__card {
@@ -1038,7 +966,6 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   }
 }
 
-<<<<<<< HEAD
 /* Homepage Delta Ventures - mobile only. */
 @media (max-width: 767px) {
   body.home-page-body .home-coventures-section {
@@ -1451,11 +1378,50 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   body.home-page-body .home-marketplace-domains-section .home-section-header__actions,
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__actions,
   body.home-page-body .home-coventures-section .home-section-header__actions {
-=======
-/* ═══════════════════════════════════════════════════════════════════════════
-   Domains + Delta Domains — phone-only layout (max-width: 767px).
-   Desktop / tablet (≥768px) styles above stay unchanged.
-   ═══════════════════════════════════════════════════════════════════════════ */
+    padding-right: 0 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain > .home-cards-nav,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain > .home-cards-nav,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure > .home-cards-nav,
+  body.home-page-body .home-coventures-section .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav--next {
+    position: absolute !important;
+    top: var(--home-nav-center, 50%) !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    z-index: 50 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain > .home-cards-nav--prev,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain > .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure > .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav--prev {
+    left: 0.2rem !important;
+    right: auto !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain > .home-cards-nav--next,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain > .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure > .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav--next {
+    right: 0.2rem !important;
+    left: auto !important;
+  }
+}
+
+/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+   Domains + Delta Domains ΓÇö phone-only layout (max-width: 767px).
+   Desktop / tablet (ΓëÑ768px) styles above stay unchanged.
+   ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
 @media (max-width: 767px) {
   /*
    * Slightly tighter outer inset only ( Domains / Delta Domains ).
@@ -1467,7 +1433,6 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
     padding-top: 1.1rem !important;
     padding-bottom: 1.35rem !important;
     padding-left: 0 !important;
->>>>>>> origin/main
     padding-right: 0 !important;
     max-width: none !important;
     overflow-x: clip;
@@ -1548,7 +1513,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
     max-height: none !important;
   }
 
-  /* ── Domains (marketplace) cards ── */
+  /* ΓöÇΓöÇ Domains (marketplace) cards ΓöÇΓöÇ */
   body.home-page-body .home-marketplace-domains-section .domain-search-card--listing {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -1745,7 +1710,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
     height: 0.95rem !important;
   }
 
-  /* ── Delta Domains (showcase) cards ── */
+  /* ΓöÇΓöÇ Delta Domains (showcase) cards ΓöÇΓöÇ */
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -1892,7 +1857,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
     min-width: 0 !important;
     max-width: 100% !important;
     white-space: normal !important; /* label can wrap; value is nowrap below */
-    font-weight: 700 !important; /* override Tailwind font-extrabold — match Domains PRICE */
+    font-weight: 700 !important; /* override Tailwind font-extrabold ΓÇö match Domains PRICE */
   }
 
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-line::before {
@@ -1912,7 +1877,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
     max-width: 100% !important;
     min-width: 0 !important;
     color: #0f172a !important;
-    /* Slightly smaller so long ₹ amounts stay on one line beside the cart */
+    /* Slightly smaller so long Γé╣ amounts stay on one line beside the cart */
     font-size: 0.9rem !important;
     font-weight: 700 !important;
     line-height: 1.15 !important;

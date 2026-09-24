@@ -1006,8 +1006,8 @@ body.home-page-body .home-price-rupee-symbol {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  /* Nudge name + equity slightly down into the middle gap; share/offer/pill stay put. */
-  margin-top: clamp(1.35rem, 10%, 2.35rem);
+  /* Keep the badge, title, and description aligned with the top of the reference card. */
+  margin-top: 0;
   position: static !important; /* let share position against the card */
 }
 

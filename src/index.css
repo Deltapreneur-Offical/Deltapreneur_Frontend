@@ -7978,7 +7978,7 @@ body.app-layout-body [data-app-layout-scroll] input[type='radio'] {
 
 
 body.home-page-body {
-  background: #ffffff !important;
+  background: #f8fafc !important;
   color: #111827 !important;
   overflow-x: clip;
   --home-topbar-height: 2.85rem;

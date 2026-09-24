@@ -745,13 +745,13 @@ return (
                 }`}
               title={brandName}
               style={{
-                display: '-webkit-box',
+                display: homepageDeltaVentureContentOnly ? 'block' : '-webkit-box',
                 WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: 2,
+                WebkitLineClamp: homepageDeltaVentureContentOnly ? 1 : 2,
                 overflow: 'hidden',
                 textOverflow: 'clip',
-                overflowWrap: 'anywhere',
-                wordBreak: 'break-word',
+                overflowWrap: homepageDeltaVentureContentOnly ? 'normal' : 'anywhere',
+                wordBreak: homepageDeltaVentureContentOnly ? 'normal' : 'break-word',
               }}
             >
 
@@ -852,7 +852,9 @@ return (
 
                   type="button"
 
-                  className={`domain-listing-card__price-cta${homepageVentureContentOnly ? ' venture-listing-card__homepage-offer-cta' : ' tech-service-card__price-arrow'}`}
+                  className={homepageDeltaVentureContentOnly
+                    ? 'domain-listing-card__price-cta tech-service-card__ref-cta venture-listing-card__delta-ref-cta'
+                    : `domain-listing-card__price-cta${homepageVentureContentOnly ? ' venture-listing-card__homepage-offer-cta' : ' tech-service-card__price-arrow'}`}
 
                   aria-label={t('listingCardViewDetails', 'View details')}
 
@@ -863,6 +865,8 @@ return (
                     <span className="venture-listing-card__price-arrow-glyph" aria-hidden>
                       <ArrowRight size={17} strokeWidth={2.45} />
                     </span>
+                  ) : homepageDeltaVentureContentOnly ? (
+                    <ArrowRight className="h-4 w-4" />
                   ) : (
                     <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
                   )}

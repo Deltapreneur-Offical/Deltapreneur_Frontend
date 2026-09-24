@@ -1,0 +1,245 @@
+/**
+body.home-page-body .home-marketplace-domains-section {
+body.home-page-body .home-marketplace-domains-section .home-section-header {
+body.home-page-body .home-marketplace-domains-section .home-section-header__top {
+body.home-page-body .home-marketplace-domains-section .home-section-header__title {
+body.home-page-body .home-marketplace-domains-section .home-section-header__title::before {
+body.home-page-body .home-marketplace-domains-section .home-section-header__view-all {
+body.home-page-body .home-marketplace-domains-section .home-section-header__view-all:hover,
+body.home-page-body .home-marketplace-domains-section .home-section-header__view-all:focus-visible {
+body.home-page-body .home-marketplace-domains-section .home-section-header__actions {
+body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
+body.home-page-body .home-marketplace-domains-section .home-cards-nav--next {
+body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev {
+body.home-page-body .home-marketplace-domains-section .home-cards-nav--next {
+body.home-page-body .home-marketplace-domains-section .home-cards-nav:hover:not(:disabled),
+body.home-page-body .home-marketplace-domains-section .home-cards-nav:focus-visible {
+body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:hover,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:focus-visible {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .registry-standard-badge {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .registry-standard-badge__diamond,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-listing-card-tld,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name .text-sky-700 {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name > span:first-child {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:hover .domain-search-card__name,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:hover .domain-search-card__name > span:first-child {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:hover .domain-listing-card-tld,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:hover .domain-search-card__name .text-sky-700 {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:hover,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:focus-visible {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .mt-auto .inline-flex > button:first-child {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 .inline-flex {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 .inline-flex {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 .inline-flex > button:first-child {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 .inline-flex > button:first-child svg {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pt-3 .inline-flex > button:first-child span {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .mt-auto .inline-flex > button:first-child:hover,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .mt-auto .inline-flex > button:first-child:focus-visible {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__top {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__title {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__title::before {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__view-all {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__actions {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):focus-visible {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .registry-premium-badge {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .registry-premium-badge__spark {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3 > span:first-child {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3 > span:last-child {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover h3,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover h3 > span:first-child,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover h3 > span:last-child {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .absolute button {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .mt-auto {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .mt-auto .inline-flex {
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .mt-auto .inline-flex > button:first-child {
+body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge):hover,
+body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge):focus-visible {
+body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge) .text-amber-700,
+body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge) .text-amber-800\/80,
+body.home-page-body .home-domains-section .domain-search-card:has(.registry-premium-badge) .text-amber-800\/85 {
+body.home-page-body .home-domains-section .registry-premium-badge {
+body.home-page-body .home-domains-section .registry-premium-badge__spark {
+body.home-page-body .home-ventures-section {
+body.home-page-body .home-ventures-section .home-section-header {
+body.home-page-body .home-ventures-section .home-section-header__title {
+body.home-page-body .home-ventures-section .home-section-header__title::before {
+body.home-page-body .home-ventures-section .home-section-header__view-all {
+body.home-page-body .home-ventures-section .home-section-header__actions {
+body.home-page-body .home-ventures-section .home-cards-nav--prev,
+body.home-page-body .home-ventures-section .home-cards-nav--next {
+body.home-page-body .home-ventures-section .home-cards-nav--prev {
+body.home-page-body .home-ventures-section .home-cards-nav--next {
+body.home-page-body .home-ventures-section .home-preview-row.home-cards-nav-row {
+body.home-page-body .home-ventures-section .home-preview-row__item {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture:focus-within {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .home-feature-card-beam-spinner {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .home-preview-card-border__inner,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:hover,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:focus-visible {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__body {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__body-watermark,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__body-watermark polygon {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__share-container--inline .domain-listing-card__share-btn {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-icon,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-value,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-label {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__price-label {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box--venture,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box--compact {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__price-value--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-value {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-cta {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .price-section-v-icon {
+body.home-page-body .home-ventures-section .home-preview-row.home-cards-nav-row {
+body.home-page-body .home-ventures-section .home-preview-row__item,
+body.home-page-body .home-ventures-section .home-preview-row__card {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .home-preview-card-border__inner,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:hover,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:focus-visible {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__body {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__body-watermark {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__body-watermark polygon {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__share-container--inline .domain-listing-card__share-btn {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-icon,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-value,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-label {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col.gap-2\.5 > p.text-xs {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box--venture,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box--compact {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__price-value--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-value {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-cta {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .price-section-v-icon {
+body.home-page-body .home-ventures-section {
+body.home-page-body .home-ventures-section .home-section-header {
+body.home-page-body .home-ventures-section .home-section-header__title {
+body.home-page-body .home-ventures-section .home-section-header__title::before {
+body.home-page-body .home-ventures-section .home-section-header__actions {
+body.home-page-body .home-ventures-section .home-section-header__view-all {
+body.home-page-body .home-ventures-section .home-cards-nav--prev,
+body.home-page-body .home-ventures-section .home-cards-nav--next {
+body.home-page-body .home-ventures-section .home-cards-nav--prev {
+body.home-page-body .home-ventures-section .home-cards-nav--next {
+body.home-page-body .home-ventures-section .home-preview-row.home-cards-nav-row {
+body.home-page-body .home-ventures-section .home-preview-row__item,
+body.home-page-body .home-ventures-section .home-preview-row__card {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture:focus-within,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .home-preview-card-border__inner {
+body.home-page-body .home-ventures-section .home-feature-card-beam-spinner {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:hover,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:focus-visible {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__body {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__body-watermark {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__body-watermark polygon {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__share-container--inline .domain-listing-card__share-btn {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-icon,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-value,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__equity-badge-label {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content p.text-xs {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__price-label {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box--venture,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box--compact {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__price-value--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-value {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-cta {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .price-section-v-icon {
+body.home-page-body .home-ventures-section .home-preview-row.home-cards-nav-row {
+body.home-page-body .home-ventures-section .home-preview-row__item,
+body.home-page-body .home-ventures-section .home-preview-row__card,
+body.home-page-body .home-ventures-section .home-preview-card-shell,
+body.home-page-body .home-ventures-section .home-preview-card-border,
+body.home-page-body .home-ventures-section .home-preview-card-border__inner {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:hover,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:focus-visible {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__body {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__body > div.flex.flex-col.gap-2\.5 > p.text-xs {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__footer {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box--venture,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box--compact {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__price-value--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-value {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-cta {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__track {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain > span:last-child,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title > span:last-child {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card__title .cb-overflow-marquee__plain,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card__title > span,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:hover .venture-listing-card__title .cb-overflow-marquee__plain,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:hover .venture-listing-card__title > span {
+body.home-page-body .home-ventures-section .home-preview-row.home-cards-nav-row {
+body.home-page-body .home-ventures-section .home-preview-row__item,
+body.home-page-body .home-ventures-section .home-preview-row__card,
+body.home-page-body .home-ventures-section .home-preview-card-shell,
+body.home-page-body .home-ventures-section .home-preview-card-border,
+body.home-page-body .home-ventures-section .home-preview-card-border__inner {
+body.home-page-body .home-ventures-section .home-preview-row.home-cards-nav-row {
+body.home-page-body .home-ventures-section .home-preview-row__item,
+body.home-page-body .home-ventures-section .home-preview-row__card,
+body.home-page-body .home-ventures-section .home-preview-card-shell,
+body.home-page-body .home-ventures-section .home-preview-card-border,
+body.home-page-body .home-ventures-section .home-preview-card-border__inner {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:hover,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card:focus-visible {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__body {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title--compact,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__title .cb-overflow-marquee__plain {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card__body > div.flex.flex-col.gap-2\.5 > p.text-xs {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box--venture,
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-box--compact {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture .domain-listing-card__price-cta {
+body.home-page-body .home-ventures-section article.venture-listing-card,
+body.home-page-body .home-ventures-section article.venture-listing-card:hover,
+body.home-page-body .home-ventures-section article.venture-listing-card:focus-visible {
+body.home-page-body #root > .relative.min-w-0.bg-white,
+body.home-page-body .home-hero-align-outer,
+body.home-page-body .home-hero-align-inner,
+body.home-page-body .home-hero-align-inner > .flex,
+body.home-page-body .home-hero-align-inner section {

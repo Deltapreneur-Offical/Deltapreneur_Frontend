@@ -47,6 +47,39 @@ body.home-page-body .home-operators-reference-section .home-section-header__titl
   transform: translateY(-50%);
 }
 
+/*
+ * Desktop + tablet: match Domains marketplace blue View All.
+ * Mobile (max-width: 767px) keeps the existing orange text link below.
+ */
+@media (min-width: 768px) {
+  body.home-page-body .home-operators-reference-section .home-section-header__view-all,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #0284c7 !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
+    transform: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-section .home-section-header__view-all:hover,
+  body.home-page-body .home-operators-reference-section .home-section-header__view-all:focus-visible,
+  body.home-page-body .home-operators-reference-section .home-section-header__view-all:active,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:hover,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:focus-visible,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:active {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #0369a1 !important;
+    transform: none !important;
+  }
+}
+
 body.home-page-body .home-operators-reference-shell {
   display: flex;
   gap: 1.15rem;

@@ -1335,3 +1335,11 @@ html body.home-page-body .home-auctions-section .home-preview-card-border--aucti
   }
 }
 
+/* Desktop + tablet: sit closer under Delta Ventures. Mobile (<768px) unchanged. */
+@media (min-width: 768px) {
+  body.home-page-body .home-auctions-section {
+    padding-top: 0.75rem !important;
+    margin-top: 0 !important;
+  }
+}
+

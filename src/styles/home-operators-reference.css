@@ -1,10 +1,11 @@
 /* Homepage Operator reference layout only. */
 body.home-page-body .home-operators-reference-section {
-  background: #ffffff !important;
+  /* Blend with Home page canvas (#f8fafc) — no separate white section box */
+  background: #f8fafc !important;
   padding-top: 1.15rem !important;
   padding-bottom: 1.75rem !important;
-  box-shadow: 0 0 0 100vmax #ffffff;
-  clip-path: inset(0 -100vmax);
+  box-shadow: none;
+  clip-path: none;
 }
 
 body.home-page-body .home-operators-reference-section > div,
@@ -14,7 +15,7 @@ body.home-page-body .home-operators-reference-nav,
 body.home-page-body .home-operators-reference-row,
 body.home-page-body .home-operators-reference-row .home-preview-row__item,
 body.home-page-body .home-operators-reference-row .home-preview-row__card {
-  background: #ffffff !important;
+  background: transparent !important;
 }
 
 body.home-page-body .home-operators-reference-section .home-section-header {
@@ -44,6 +45,39 @@ body.home-page-body .home-operators-reference-section .home-section-header__titl
   border-radius: 999px;
   background: #2f80ed;
   transform: translateY(-50%);
+}
+
+/*
+ * Desktop + tablet: match Domains marketplace blue View All.
+ * Mobile (max-width: 767px) keeps the existing orange text link below.
+ */
+@media (min-width: 768px) {
+  body.home-page-body .home-operators-reference-section .home-section-header__view-all,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #0284c7 !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
+    transform: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-section .home-section-header__view-all:hover,
+  body.home-page-body .home-operators-reference-section .home-section-header__view-all:focus-visible,
+  body.home-page-body .home-operators-reference-section .home-section-header__view-all:active,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:hover,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:focus-visible,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:active {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #0369a1 !important;
+    transform: none !important;
+  }
 }
 
 body.home-page-body .home-operators-reference-shell {

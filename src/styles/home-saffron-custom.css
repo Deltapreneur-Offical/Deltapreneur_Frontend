@@ -746,12 +746,30 @@ body.home-page-body .home-ventures-section .home-section-header__title::before {
   background: #0b86c6;
 }
 
-body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content),
-body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):hover,
-body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):focus-within {
+body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content) {
   border: 1px solid #dbe5ee !important;
   background: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+  transform: none !important;
+}
+
+@media (min-width: 768px) {
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):hover,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):focus-within {
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):has(.domain-listing-card__price-box:hover),
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):has(.domain-listing-card__price-cta:hover),
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):has(.venture-listing-card__homepage-offer-cta:hover) {
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
+    transform: translateY(-2px) !important;
+  }
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box,

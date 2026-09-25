@@ -61,15 +61,55 @@ describe('HomeAuctionPreviewCard homepage layout', () => {
   });
 
   it('removes the cover and moves featured/share into the card for homepage auctions only', () => {
-    const { container, getByText, queryByText } = renderCard({ homepageAuctionContentOnly: true });
+    const { container, getAllByText, getByText, queryByText } = renderCard({ homepageAuctionContentOnly: true });
 
     expect(container.querySelector('.domain-listing-card__cover')).not.toBeInTheDocument();
     expect(container.querySelector('.home-auction-preview-card--homepage-content')).toBeInTheDocument();
     expect(container.querySelector('.home-auction-preview-card__share-container--inline')).toBeInTheDocument();
     expect(container.querySelector('.home-auction-preview-card__featured-badge--inline')).toBeInTheDocument();
     expect(getByText('Featured')).toBeInTheDocument();
-    expect(getByText(/Starting Bid/i)).toBeInTheDocument();
-    expect(getByText(/Current Bid/i)).toBeInTheDocument();
+    expect(getAllByText(/Starting Bid/i).length).toBeGreaterThan(0);
+    expect(getAllByText(/Current Bid/i).length).toBeGreaterThan(0);
     expect(queryByText(/Listed by/i)).not.toBeInTheDocument();
+  });
+
+  it('splits the homepage auction title suffix for desktop styling', () => {
+    const { container } = renderCard({ homepageAuctionContentOnly: true });
+
+    const titleText = container.querySelector('.home-auction-preview-card__title-text');
+    const suffix = container.querySelector('.home-auction-preview-card__title-suffix');
+
+    expect(titleText).toBeInTheDocument();
+    expect(titleText).toHaveTextContent('drygrains.com');
+    expect(suffix).toHaveTextContent('.com');
+  });
+
+  it('adds active mobile state and two-column bid summary hooks', () => {
+    const { container, getByText } = renderCard({ homepageAuctionContentOnly: true });
+
+    expect(container.querySelector('.home-auction-preview-card--active')).toBeInTheDocument();
+    expect(container.querySelector('.home-auction-preview-card__mobile-state-pill--active')).toBeInTheDocument();
+    expect(container.querySelector('.home-auction-preview-card__bid-summary--active')).toBeInTheDocument();
+    expect(container.querySelector('.home-auction-preview-card__bid-summary-cell--total')).not.toBeInTheDocument();
+    expect(getByText('Current Bid / Count')).toBeInTheDocument();
+  });
+
+  it('adds ended mobile state and three-column bid summary hooks', () => {
+    const endedAuction = {
+      ...auction,
+      status: 'ENDED',
+      endTime: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    };
+    const { container, getByText } = renderCard({
+      auction: endedAuction,
+      homepageAuctionContentOnly: true,
+    });
+
+    expect(container.querySelector('.home-auction-preview-card--ended')).toBeInTheDocument();
+    expect(container.querySelector('.home-auction-preview-card__mobile-state-pill--ended')).toBeInTheDocument();
+    expect(container.querySelector('.home-auction-preview-card__bid-summary--ended')).toBeInTheDocument();
+    expect(container.querySelector('.home-auction-preview-card__bid-summary-cell--total')).toBeInTheDocument();
+    expect(getByText(/Status/i)).toBeInTheDocument();
+    expect(getByText(/0 Bids/i)).toBeInTheDocument();
   });
 });

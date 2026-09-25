@@ -122,6 +122,22 @@ const BADGE_TONE_CLASS = {
   },
 };
 
+function renderHomepageAuctionTitle(name) {
+  const value = String(name || '');
+  const domainSuffixMatch = value.match(/^(.+?)(\.[A-Za-z0-9-]+)$/);
+
+  if (!domainSuffixMatch) {
+    return <span className="home-auction-preview-card__title-text">{value}</span>;
+  }
+
+  return (
+    <span className="home-auction-preview-card__title-text">
+      <span>{domainSuffixMatch[1]}</span>
+      <span className="home-auction-preview-card__title-suffix">{domainSuffixMatch[2]}</span>
+    </span>
+  );
+}
+
 export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctionContentOnly = false }) {
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
@@ -138,6 +154,13 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
   const bidDisplay = resolveHomeAuctionCurrentBidDisplay(auction, formatPrice, t);
   const startingBidDisplay = formatPrice(startingBid);
   const timeLeft = useCountdown(auction?.endTime || auction);
+  const normalizedStatus = String(auction?.status || 'ACTIVE').toUpperCase();
+  const isLiveAuction = normalizedStatus === 'ACTIVE' || normalizedStatus === 'EXTENDED';
+  const isEndedAuction = timeLeft === 'Ended' || (!isLiveAuction && normalizedStatus !== 'DRAFT');
+  const currentBidDisplay = totalBids <= 0 && bidDisplay === 'NIL' ? `\u20b9 ${bidDisplay}` : bidDisplay;
+  const bidCountLabel = totalBids === 1
+    ? t('homeAuctionBidSingular', { defaultValue: 'Bid' })
+    : t('homeAuctionBidPlural', { defaultValue: 'Bids' });
   const category = auction?.category || 'domain';
   const categoryClass = CATEGORY_CLASS[category] || CATEGORY_CLASS.domain;
   const coverImage = image && !imgFailed ? image : null;
@@ -346,7 +369,7 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
   return (
     <article
       ref={cardRef}
-      className={`domain-listing-card domain-listing-card--browse home-preview-browse-card home-auction-preview-card home-auction-preview-card--home-preview${homepageAuctionContentOnly ? ' home-auction-preview-card--homepage-content' : ''} ${categoryClass} relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl bg-white border border-[#BAE6FD] hover:border-[#38BDF8] shadow-[0_8px_24px_rgba(56,189,248,0.15)] hover:shadow-[0_12px_28px_rgba(56,189,248,0.22)] transition-all duration-200`}
+      className={`domain-listing-card domain-listing-card--browse home-preview-browse-card home-auction-preview-card home-auction-preview-card--home-preview${homepageAuctionContentOnly ? ' home-auction-preview-card--homepage-content' : ''}${isEndedAuction ? ' home-auction-preview-card--ended' : ' home-auction-preview-card--active'} ${categoryClass} relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl bg-white border border-[#BAE6FD] hover:border-[#38BDF8] shadow-[0_8px_24px_rgba(56,189,248,0.15)] hover:shadow-[0_12px_28px_rgba(56,189,248,0.22)] transition-all duration-200`}
       onClick={handleView}
       role="button"
       tabIndex={0}
@@ -414,6 +437,28 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
             <div className="home-auction-preview-card__homepage-topline">
               {renderFeaturedBadge('home-auction-preview-card__featured-badge--inline')}
               {renderShareControl('home-auction-preview-card__share-container--inline')}
+              <span
+                className={`home-auction-preview-card__mobile-state-pill${isEndedAuction ? ' home-auction-preview-card__mobile-state-pill--ended' : ' home-auction-preview-card__mobile-state-pill--active'}`}
+              >
+                {isEndedAuction ? (
+                  <>
+                    <span className="home-auction-preview-card__mobile-state-label">
+                      {t('homeAuctionStatusLabel', { defaultValue: 'Status' })}:
+                    </span>
+                    <span className="home-auction-preview-card__mobile-state-value">
+                      {t('auctionDetailStatusEnded', { defaultValue: 'Ended' })}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Clock size={10} className="home-auction-preview-card__mobile-state-icon shrink-0" aria-hidden />
+                    <span className="home-auction-preview-card__mobile-state-label">
+                      {t('auctionsPageEndsIn', { defaultValue: 'Ends in' })}:
+                    </span>
+                    <AuctionCountdownDisplay value={timeLeft} />
+                  </>
+                )}
+              </span>
             </div>
           ) : null}
 
@@ -437,7 +482,7 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
                   wordBreak: 'break-word',
                 }}
               >
-                {title}
+                {homepageAuctionContentOnly ? renderHomepageAuctionTitle(title) : title}
               </h3>
             </div>
           </div>
@@ -492,6 +537,36 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
             <span className="home-auction-preview-card__live-bid-label">
               {currentBidLabel}
             </span>
+            {homepageAuctionContentOnly ? (
+              <div
+                className={`home-auction-preview-card__bid-summary${isEndedAuction ? ' home-auction-preview-card__bid-summary--ended' : ' home-auction-preview-card__bid-summary--active'}`}
+              >
+                <div className="home-auction-preview-card__bid-summary-cell home-auction-preview-card__bid-summary-cell--starting">
+                  <span className="home-auction-preview-card__bid-summary-label">{startingBidLabel}</span>
+                  <span className="home-auction-preview-card__bid-summary-value currency-display">{startingBidDisplay}</span>
+                </div>
+                <div className="home-auction-preview-card__bid-summary-cell home-auction-preview-card__bid-summary-cell--current">
+                  <span className="home-auction-preview-card__bid-summary-label">
+                    {isEndedAuction
+                      ? currentBidLabel
+                      : t('homeAuctionCurrentBidCount', { defaultValue: 'Current Bid / Count' })}
+                  </span>
+                  <span className="home-auction-preview-card__bid-summary-value currency-display">
+                    {isEndedAuction ? currentBidDisplay : `${currentBidDisplay} (${totalBids} ${bidCountLabel})`}
+                  </span>
+                </div>
+                {isEndedAuction ? (
+                  <div className="home-auction-preview-card__bid-summary-cell home-auction-preview-card__bid-summary-cell--total">
+                    <span className="home-auction-preview-card__bid-summary-label">
+                      {t('homeAuctionTotalBids', { defaultValue: 'Total bids' })}
+                    </span>
+                    <span className="home-auction-preview-card__bid-summary-value">
+                      {totalBids} {bidCountLabel}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <div className="home-auction-preview-card__metrics-row">
               <div className="home-auction-preview-card__live-bid min-w-0 flex-1">
               <Gavel
@@ -504,7 +579,7 @@ export default function HomeAuctionPreviewCard({ auction, onView, homepageAuctio
                 <span
                   className={`home-auction-preview-card__live-bid-value currency-display${totalBids <= 0 ? ' home-auction-preview-card__live-bid-value--nil' : ''}`}
                 >
-                  {totalBids <= 0 && bidDisplay === 'NIL' ? `₹ ${bidDisplay}` : bidDisplay}
+                  {currentBidDisplay}
                 </span>
                 </div>
               </div>

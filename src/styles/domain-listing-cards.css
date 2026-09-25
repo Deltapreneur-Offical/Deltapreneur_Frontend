@@ -2527,14 +2527,38 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   font-size: 0.875rem !important;
 }
 
-@media (max-width: 639px) {
+/* Homepage mobile Ventures: nudge arrow further right inside the offer pill. */
+@media (max-width: 767px) {
   body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box,
   body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box--venture {
-    padding: 0.72rem 3.1rem 0.72rem 0.85rem !important;
+    padding: 0.55rem 2.35rem 0.55rem 0.85rem !important;
+    min-height: 2.85rem !important;
+    height: auto !important;
+    max-height: none !important;
+    border-radius: 9999px !important;
   }
 
-  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta {
-    right: 0.55rem !important;
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:active,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .domain-listing-card__price-cta {
+    position: absolute !important;
+    top: 50% !important;
+    right: 0.16rem !important;
+    width: 2rem !important;
+    min-width: 2rem !important;
+    max-width: 2rem !important;
+    height: 2rem !important;
+    min-height: 2rem !important;
+    max-height: 2rem !important;
+    flex: 0 0 2rem !important;
+    border-radius: 0.45rem !important;
+    background: #111827 !important;
+    box-shadow: none !important;
+    transform: translateY(-50%) !important;
   }
 }
 

@@ -4,6 +4,21 @@
  * Desktop and dedicated Ventures page are untouched.
  */
 @media (max-width: 767px) {
+  /* Drop the white/panel fill behind Ventures — match page canvas (homepage only). */
+  html body.home-page-body .home-hero-align-inner section.home-ventures-section,
+  html body.home-page-body .home-hero-align-inner > .home-ventures-section,
+  html body.home-page-body .home-ventures-section,
+  html body.home-page-body .home-ventures-section.bg-white,
+  html body.home-page-body .home-ventures-section.bg-transparent,
+  html body.home-page-body .home-ventures-section > div {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
   body.home-page-body .home-ventures-section .home-cards-nav-wrap--venture > .home-cards-nav {
     display: none !important;
   }
@@ -163,10 +178,10 @@
 }
 
 /*
- * Homepage Ventures — iPad / iPad Pro 13 (768–1366px) final lock.
- * One full-width card only; no second-card peek. Wide desktop unchanged.
+ * Homepage Ventures — tablet + desktop (≥768px): two equal cards like desktop.
+ * Phone (≤767px) stays stacked. Clears fixed rem widths so cards never overlap.
  */
-@media (min-width: 768px) and (max-width: 1366px) {
+@media (min-width: 768px) {
   body.home-page-body .home-ventures-section .home-cards-nav-wrap.home-cards-nav-wrap--venture {
     overflow: hidden !important;
   }
@@ -176,30 +191,56 @@
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 0 !important;
+    gap: var(--home-venture-gap, 1rem) !important;
     overflow-x: auto !important;
     overflow-y: visible !important;
-    scroll-snap-type: x mandatory !important;
+    scroll-snap-type: none !important;
   }
 
   body.home-page-body .home-ventures-section .home-preview-row__item,
   body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
   body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 100% !important;
-    flex: 0 0 100% !important;
+    width: calc((100% - var(--home-venture-gap, 1rem)) / 2) !important;
+    max-width: calc((100% - var(--home-venture-gap, 1rem)) / 2) !important;
+    min-width: 0 !important;
+    flex: 0 0 calc((100% - var(--home-venture-gap, 1rem)) / 2) !important;
     margin: 0 !important;
     padding: 0 !important;
     box-sizing: border-box !important;
-    scroll-snap-align: start !important;
-    scroll-snap-stop: always !important;
+    overflow: hidden !important;
+    scroll-snap-align: unset !important;
+    scroll-snap-stop: normal !important;
   }
 
   body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content),
   body.home-page-body .home-ventures-section .home-preview-row .venture-listing-card--homepage-content.venture-listing-card--compact {
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+/*
+ * Kill leftover fixed rem widths (23.5rem / 29rem) on card chrome.
+ * Those rules made borders wider than the flex item → iPad two-up overlap.
+ * Homepage Ventures only; dedicated Ventures page untouched.
+ */
+@media (min-width: 768px) {
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) > div,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .listing-card-glow-shell,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .home-preview-card-shell,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .home-preview-card-border,
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) .home-preview-card-border__inner,
+  body.home-page-body .home-ventures-section .home-preview-card-shell:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-preview-card-border:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content),
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content) .home-preview-card-border__inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    box-sizing: border-box !important;
   }
 }
 

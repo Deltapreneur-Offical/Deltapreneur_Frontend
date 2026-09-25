@@ -2063,6 +2063,70 @@ body.home-page-body .reg-cards-row-wrap .reg-mini-card__price-play {
   display: none;
 }
 
+/*
+ * Desktop ONLY — Home Delta Registrations long category badge text scroll.
+ * Mobile (@media max-width: 767px) and dedicated /registrations page are untouched.
+ *
+ * Why previous CSS-only attempts failed:
+ * badge { overflow:hidden } clipped paint while .badge-text still sized to its
+ * content (clientWidth === scrollWidth), so overflow-x:auto never scrolled.
+ *
+ * Fix: JS sets an explicit pixel max-width on .badge-text (desktop only), and
+ * CSS makes that node the scrollport. Icon stays outside; share stays absolute.
+ */
+@media (min-width: 768px) {
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge {
+    display: inline-flex !important;
+    align-items: center;
+    align-self: flex-start;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    width: max-content !important;
+    max-width: calc(100% - 3.1rem) !important;
+    margin-right: 3.1rem !important;
+    /* Parent must NOT nowrap+clip — that hides text without a scrollport. */
+    white-space: normal !important;
+    overflow: visible !important;
+    box-sizing: border-box;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge svg {
+    flex: 0 0 auto !important;
+  }
+
+  /* Actual horizontal scroll container (max-width set in px by JS on desktop). */
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text {
+    display: block !important;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: clip !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text--overflow {
+    cursor: grab;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text-inner {
+    display: inline-block;
+    white-space: nowrap;
+    max-width: none;
+  }
+}
+
 @media (max-width: 767px) {
   body.home-page-body .home-registrations-section {
     padding-top: 0.85rem !important;

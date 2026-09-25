@@ -17,6 +17,7 @@ import HomeSectionHeader from './HomeSectionHeader';
 import HomeCardsNavRow from './HomeCardsNavRow';
 import { HomePreviewRowItem } from './HomePreviewRow';
 import DeltapreneurShowcaseHint from './DeltapreneurShowcaseHint';
+import '../../styles/home-deltapreneurs-mobile.css';
 
 export default function CommunitySection() {
   const { t } = useTranslation();
@@ -112,6 +113,7 @@ export default function CommunitySection() {
         onLike={() => toggleLike(item.id)}
         onView={() => handleViewProfile(item.id)}
         priceLabelOutside
+        homepageContent
       />
     </HomePreviewCardShell>
   );
@@ -134,7 +136,7 @@ export default function CommunitySection() {
   }
 
   return (
-    <section className="home-community-section bg-white pt-2 pb-4 md:pt-3 md:pb-6 overflow-visible">
+    <section className="home-community-section home-deltapreneurs-section bg-white pt-2 pb-4 md:pt-3 md:pb-6 overflow-visible">
       <div className="w-full">
         <HomeSectionHeader
           title="Deltapreneurs"

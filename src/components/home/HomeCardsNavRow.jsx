@@ -1,4 +1,5 @@
 import { Children, useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import HomePreviewRow from './HomePreviewRow';
 import '../../styles/home-cards-nav.css';
@@ -11,8 +12,10 @@ function readRowOverflow(el) {
 /**
  * Homepage card strip with left/right paging — same control as Delta Registrations.
  * Left/right arrows scroll the visible cards; at the right edge the arrow
- * reveals more cards when a section supplies hasMore/onRevealMore.
+ * reveals more cards when a section supplies hasMore/onRevealMore. If no more
+ * cards can be revealed, viewAllTo can route to the full listing.
  * @param {string} [accent] section theme: domain | venture | coventure | auction | technology | operations | community | assistance
+ * @param {string} [viewAllTo] react-router path used after the last card is reached
  */
 export default function HomeCardsNavRow({
   children,
@@ -22,11 +25,14 @@ export default function HomeCardsNavRow({
   rowClassName = '',
   hasMore = false,
   onRevealMore,
+  viewAllTo,
 }) {
+  const navigate = useNavigate();
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const itemCount = Children.toArray(children).length;
   const showPrev = itemCount > 1 || hasMore;
+  const showNext = showPrev || Boolean(viewAllTo);
   const prevItemCountRef = useRef(itemCount);
   const didInitScrollRef = useRef(false);
   const wrapRef = useRef(null);
@@ -162,7 +168,8 @@ export default function HomeCardsNavRow({
     window.setTimeout(() => target.classList.remove('home-view-all-shake'), 900);
   }, []);
 
-  const scrollCards = useCallback((dir) => {    const el = getPreviewRow();
+  const scrollCards = useCallback((dir) => {
+    const el = getPreviewRow();
     if (!el) return;
     const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
     if (maxScroll <= 2) {
@@ -187,7 +194,8 @@ export default function HomeCardsNavRow({
     scrollCards(-1);
   }, [getPreviewRow, scrollCards, shakeViewAll]);
 
-  const handleNext = useCallback(() => {    const el = getPreviewRow();
+  const handleNext = useCallback(() => {
+    const el = getPreviewRow();
     const maxScroll = el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0;
     const atEnd = !el || maxScroll <= 2 || el.scrollLeft >= maxScroll - 2;
     if (atEnd && hasMore) {
@@ -197,12 +205,16 @@ export default function HomeCardsNavRow({
       return;
     }
     if (atEnd) {
+      if (viewAllTo) {
+        navigate(viewAllTo);
+        return;
+      }
       // End of the row (or nothing to scroll): point the user at View All.
       shakeViewAll();
       return;
     }
     scrollCards(1);
-  }, [getPreviewRow, hasMore, onRevealMore, scrollCards, shakeViewAll]);
+  }, [getPreviewRow, hasMore, navigate, onRevealMore, scrollCards, shakeViewAll, viewAllTo]);
 
   useEffect(() => {
     if (itemCount > prevItemCountRef.current) {
@@ -353,7 +365,7 @@ export default function HomeCardsNavRow({
       className={[
         'home-cards-nav-wrap',
         `home-cards-nav-wrap--${accent}`,
-        showPrev ? '' : 'home-cards-nav-wrap--no-overflow',
+        showNext ? '' : 'home-cards-nav-wrap--no-overflow',
         className,
       ].filter(Boolean).join(' ')}
       role="region"
@@ -372,12 +384,12 @@ export default function HomeCardsNavRow({
       <HomePreviewRow className={`home-cards-nav-row${rowClassName ? ` ${rowClassName}` : ''}`}>
         {children}
       </HomePreviewRow>
-      {showPrev ? (
+      {showNext ? (
         <button
           type="button"
           className="home-cards-nav home-cards-nav--next"
           onClick={handleNext}
-          aria-label="Scroll cards right"
+          aria-label={canScrollRight || hasMore ? 'Scroll cards right' : 'View all'}
         >
           <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
         </button>

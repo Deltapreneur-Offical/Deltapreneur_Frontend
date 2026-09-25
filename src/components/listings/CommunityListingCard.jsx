@@ -84,6 +84,8 @@ export default function CommunityListingCard({
   showAvailabilityBadge = false,
   priceLabelOutside = false,
   hideStatsFooter = false,
+  /** Homepage Deltapreneurs strip — enables mobile layout lock class. */
+  homepageContent = false,
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -281,7 +283,7 @@ export default function CommunityListingCard({
   return (
     <article
       ref={cardRef}
-      className={`domain-listing-card community-listing-card card-glow-hover relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-white${isMe ? ' community-listing-card--owner' : ''}${interactive ? ' cursor-pointer' : ''}`}
+      className={`domain-listing-card community-listing-card card-glow-hover relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-white${isMe ? ' community-listing-card--owner' : ''}${homepageContent ? ' community-listing-card--homepage-content' : ''}${interactive ? ' cursor-pointer' : ''}`}
       onClick={interactive ? handleCardClick : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
@@ -292,17 +294,19 @@ export default function CommunityListingCard({
           <div className="va-listing-card__cover-inner">
             <CreatorAvatar imageUrl={imageUrl} name={profile.name} profile={profile} />
           </div>
-          <div className="domain-listing-card__share-container">
-            <button
-              type="button"
-              className="domain-listing-card__share-btn"
-              onClick={handleShare}
-              title={t('listingCardShare', { defaultValue: 'Share' })}
-              aria-label={t('listingCardShare', { defaultValue: 'Share' })}
-            >
-              <Share2 size={18} strokeWidth={2} />
-            </button>
-          </div>
+          {!homepageContent ? (
+            <div className="domain-listing-card__share-container">
+              <button
+                type="button"
+                className="domain-listing-card__share-btn"
+                onClick={handleShare}
+                title={t('listingCardShare', { defaultValue: 'Share' })}
+                aria-label={t('listingCardShare', { defaultValue: 'Share' })}
+              >
+                <Share2 size={18} strokeWidth={2} />
+              </button>
+            </div>
+          ) : null}
           {isMe && onEdit ? (
             <button
               type="button"
@@ -333,6 +337,20 @@ export default function CommunityListingCard({
             </span>
           ) : null}
         </div>
+
+        {homepageContent ? (
+          <div className="domain-listing-card__share-container community-listing-card__share-container--homepage">
+            <button
+              type="button"
+              className="domain-listing-card__share-btn"
+              onClick={handleShare}
+              title={t('listingCardShare', { defaultValue: 'Share' })}
+              aria-label={t('listingCardShare', { defaultValue: 'Share' })}
+            >
+              <Share2 size={18} strokeWidth={2} />
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div className="domain-listing-card__body">

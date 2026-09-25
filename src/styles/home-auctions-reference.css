@@ -2157,3 +2157,245 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
     margin-top: 0 !important;
   }
 }
+
+/*
+ * Homepage Auctions — iPad / tablet ONLY (768–1023).
+ * Desktop (≥1024) keeps the absolute Ends-In lockup. Phone (≤767) stays stacked.
+ *
+ * Bug: desktop `position:absolute; top:100px; right:20px` on Ends-In lands on top
+ * of Starting Bid when cards are narrow (3-up). Fix: 2 wider cards + grid row so
+ * bid amount and status/timer sit side-by-side without overlap.
+ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  body.home-page-body .home-auctions-section .home-preview-row.home-cards-nav-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    gap: 1.05rem !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 0.35rem 0 0.85rem !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.home-page-body .home-auctions-section .home-preview-row__item:has(.home-auction-preview-card--homepage-content),
+  body.home-page-body .home-auctions-section .home-preview-row__item:has(.home-auction-preview-card--homepage-content),
+  body.home-page-body .home-auctions-section .home-auto-scroll-row__item:has(.home-auction-preview-card--homepage-content) {
+    width: calc((100% - 1.05rem) / 2) !important;
+    min-width: 0 !important;
+    max-width: calc((100% - 1.05rem) / 2) !important;
+    flex: 0 0 calc((100% - 1.05rem) / 2) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content),
+  body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) > div,
+  body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) .listing-card-glow-shell,
+  body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) .home-preview-card-shell,
+  body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) .home-preview-card-border,
+  body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) .home-preview-card-border__inner,
+  body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__body {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__content {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "topline topline"
+      "title title"
+      "bid ends"
+      "price price" !important;
+    align-items: center !important;
+    column-gap: 0.4rem !important;
+    row-gap: 0.45rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__homepage-topline {
+    grid-area: topline !important;
+    order: unset !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-row {
+    grid-area: title !important;
+    order: unset !important;
+    margin: 0 !important;
+    transform: none !important;
+    /* Give descenders (g/y) room — fixed ~1.28–1.63rem rows were clipping names. */
+    height: auto !important;
+    min-height: 1.7rem !important;
+    max-height: none !important;
+    overflow: visible !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-line,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text > span,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-suffix {
+    display: inline !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    line-height: 1.45 !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title {
+    display: block !important;
+    /* overflow:hidden clips bold descenders (g/y) on narrow iPad cards */
+    overflow: visible !important;
+    text-overflow: clip !important;
+    padding-bottom: 0.12rem !important;
+    line-clamp: unset !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid {
+    grid-area: bid !important;
+    order: unset !important;
+    position: static !important;
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: baseline !important;
+    justify-content: flex-start !important;
+    gap: 0.3rem !important;
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding-right: 0 !important;
+    transform: none !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-label,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-value {
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-value {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  /* Kill desktop absolute overlay that collided with Starting Bid. */
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__ends-in-row,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__ends-in-row,
+  body.home-page-body .home-auctions-section .home-preview-row .home-preview-card-border--auction .home-auction-preview-card__ends-in-row,
+  body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-card-border--auction .home-auction-preview-card__ends-in-row {
+    grid-area: ends !important;
+    order: unset !important;
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    z-index: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    align-self: center !important;
+    justify-self: end !important;
+    width: auto !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+
+  /* Compact timer/Ended pill — drop "Ends In:" label to free horizontal space. */
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__ends-in-label,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__ends-in-icon {
+    display: none !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__ends-in-compact {
+    gap: 0 !important;
+    max-width: 100% !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section {
+    grid-area: price !important;
+    order: unset !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Arrows beside the card row (match desktop), not up next to View All. */
+  body.home-page-body .home-auctions-section .home-section-header__actions {
+    padding-right: 0 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-cards-nav-wrap--auction {
+    position: relative !important;
+    padding-inline: 2.75rem !important;
+    overflow: visible !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-cards-nav-wrap--auction > .home-cards-nav,
+  body.home-page-body .home-auctions-section .home-cards-nav--prev,
+  body.home-page-body .home-auctions-section .home-cards-nav--next {
+    position: absolute !important;
+    top: var(--home-nav-center, 50%) !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    z-index: 50 !important;
+    width: 2.15rem !important;
+    height: 2.15rem !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-cards-nav-wrap--auction > .home-cards-nav--prev,
+  body.home-page-body .home-auctions-section .home-cards-nav--prev {
+    left: 0.1rem !important;
+    right: auto !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-cards-nav-wrap--auction > .home-cards-nav--next,
+  body.home-page-body .home-auctions-section .home-cards-nav--next {
+    right: 0.1rem !important;
+    left: auto !important;
+  }
+}

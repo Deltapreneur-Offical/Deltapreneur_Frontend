@@ -2671,19 +2671,22 @@ body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auc
 @media (min-width: 768px) and (max-width: 1023px) {
   body.home-page-body .home-auctions-section .home-preview-row__item:has(.home-auction-preview-card--homepage-content),
   body.home-page-body .home-auctions-section .home-auto-scroll-row__item:has(.home-auction-preview-card--homepage-content) {
-    width: min(17.25rem, calc((100% - 1rem) / 2)) !important;
-    max-width: min(17.25rem, calc((100% - 1rem) / 2)) !important;
-    flex: 0 0 min(17.25rem, calc((100% - 1rem) / 2)) !important;
+    width: calc((100% - 1.05rem) / 2) !important;
+    max-width: calc((100% - 1.05rem) / 2) !important;
+    flex: 0 0 calc((100% - 1.05rem) / 2) !important;
     box-sizing: border-box !important;
     align-items: stretch !important;
     min-width: 0 !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content) {
-    aspect-ratio: 1.12 / 1 !important;
+    aspect-ratio: auto !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    height: auto !important;
   }
 }
 
@@ -2716,15 +2719,19 @@ body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auc
 
   body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title-row,
   body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title-row {
-    height: 1.28rem !important;
-    min-height: 1.28rem !important;
-    max-height: 1.28rem !important;
+    height: auto !important;
+    min-height: 1.7rem !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
   body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title,
   body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title {
-    font-size: 1.18rem !important;
-    line-height: 1.08 !important;
+    font-size: 1.05rem !important;
+    line-height: 1.45 !important;
+    letter-spacing: 0 !important;
+    overflow: visible !important;
+    padding-bottom: 0.12rem !important;
   }
 
   body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid,
@@ -2732,7 +2739,7 @@ body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auc
     min-height: 1.5rem !important;
     margin-top: 0 !important;
     flex: 0 0 auto !important;
-    transform: translateY(0.22rem) !important;
+    transform: none !important;
   }
 
   body.home-page-body .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-label,
@@ -3377,9 +3384,17 @@ body.home-page-body .home-ventures-section {
   background: #ffffff !important;
 }
 
+@media (max-width: 767px) {
+  html body.home-page-body .home-hero-align-inner section.home-ventures-section,
+  html body.home-page-body .home-ventures-section {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+}
+
 /*
  * Homepage Venture cards: fill track between arrows (height unchanged).
- * Desktop = 2 equal columns; <1024px = 1 full-width card.
+ * ≥1024px = 2 equal columns; <1024px = 1 full-width card (mobile stack ≤767px).
  */
 body.home-page-body .home-ventures-section {
   --home-venture-card-h: 13.75rem;
@@ -3410,7 +3425,7 @@ body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.vent
   box-sizing: border-box !important;
 }
 
-@media (min-width: 1367px) {
+@media (min-width: 768px) {
   body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
   body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
     width: calc((100% - var(--home-venture-gap)) / 2) !important;
@@ -4169,13 +4184,23 @@ body.home-page-body .home-ventures-section > div {
   background-image: none !important;
 }
 
+@media (max-width: 767px) {
+  html body.home-page-body .home-hero-align-inner section.home-ventures-section,
+  html body.home-page-body .home-ventures-section,
+  html body.home-page-body .home-ventures-section > div {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+}
+
 body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content) {
   width: 100% !important;
   max-width: 100% !important;
   flex: 0 0 100% !important;
 }
 
-@media (min-width: 1367px) {
+@media (min-width: 768px) {
   body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content) {
     width: calc((100% - var(--home-venture-gap, 1rem)) / 2) !important;
     max-width: calc((100% - var(--home-venture-gap, 1rem)) / 2) !important;
@@ -4674,7 +4699,7 @@ body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.vent
   flex: 0 0 100% !important;
 }
 
-@media (min-width: 1367px) {
+@media (min-width: 768px) {
   body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
   body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
     width: calc((100% - var(--home-venture-gap, 1rem)) / 2) !important;
@@ -5424,50 +5449,22 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 }
 
 /*
- * Homepage Ventures — iPad / iPad Pro 13 ONLY (768–1366px).
- * One full-width card in the track (no second-card peek/overlap).
- * Desktop (≥1367px) keeps two-up. Phone (≤767px) keeps stacked mobile.
+ * Homepage Ventures — tablet + desktop (≥768px): two equal cards (match desktop).
+ * Phone (≤767px) keeps stacked mobile. Fixed rem min-widths cleared elsewhere.
  */
-@media (min-width: 768px) and (max-width: 1366px) {
+@media (min-width: 768px) {
   body.home-page-body .home-ventures-section .home-cards-nav-wrap.home-cards-nav-wrap--venture {
     overflow: hidden !important;
   }
 
   body.home-page-body .home-ventures-section .home-cards-nav-wrap .home-preview-row.home-cards-nav-row {
-    gap: 0 !important;
+    gap: var(--home-venture-gap) !important;
     overflow-x: auto !important;
     overflow-y: visible !important;
-    scroll-snap-type: x mandatory !important;
+    scroll-snap-type: none !important;
   }
 
   body.home-page-body .home-ventures-section .home-preview-row__item,
-  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
-  body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 100% !important;
-    flex: 0 0 100% !important;
-    box-sizing: border-box !important;
-    height: auto !important;
-    min-height: var(--home-venture-card-h, 14.25rem) !important;
-    max-height: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: visible !important;
-    scroll-snap-align: start !important;
-    scroll-snap-stop: always !important;
-  }
-
-  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-}
-
-/*
- * Homepage Ventures — wide desktop ONLY (≥1367px): two equal cards.
- */
-@media (min-width: 1367px) {
   body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
   body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
     width: calc((100% - var(--home-venture-gap)) / 2) !important;
@@ -5479,7 +5476,14 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
     min-height: var(--home-venture-card-h) !important;
     max-height: none !important;
     padding: 0 !important;
-    overflow: visible !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-row__card:has(.venture-listing-card--homepage-content) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 }
 
@@ -5694,10 +5698,11 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 }
 
 /*
- * Homepage Delta Registrations - DESKTOP ONLY.
- * Keep the existing FEE pill, but reveal its existing arrow action inside it.
+ * Homepage Delta Registrations — desktop + iPad (≥768px).
+ * Keep the existing FEE pill, and show the black arrow CTA inside it (match desktop).
+ * Phone (≤767px) keeps the compact fee badge without the arrow.
  */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-box {
     padding-right: 0.62rem !important;
     transform: none !important;
@@ -5812,7 +5817,11 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
     --home-venture-mobile-gap: 0.65rem;
     padding-top: 0.7rem !important;
     padding-bottom: 0.85rem !important;
-    background: #ffffff !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
   }
 
   body.home-page-body .home-ventures-section .home-section-header {

@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { useMemo, useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Share2, Check, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -49,9 +49,170 @@ function badgeLabelForCategory(cat, displayName) {
     .replace(/[&/]/g, ' ')
     .split(/\s+/)
     .filter(Boolean)
-    .slice(0, 2)
     .join(' ')
     .toUpperCase();
+}
+
+/**
+ * Desktop-only constrained scroll viewport for Home Delta Registrations badges.
+ * Forces a real pixel width when the label overflows, enables overflow-x scroll,
+ * auto-marquee via scrollLeft (so long names visibly move), and maps wheel to
+ * horizontal scroll. Below 768px this is a plain span (mobile unchanged).
+ */
+function HomeRegDesktopBadgeText({ text }) {
+  const viewportRef = useRef(null);
+  const innerRef = useRef(null);
+  const interactingRef = useRef(false);
+  const resumeTimerRef = useRef(0);
+  const animRef = useRef({ raf: 0, cycleStart: 0, overflowing: false });
+
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    const inner = innerRef.current;
+    if (!viewport || !inner || typeof window === 'undefined') return undefined;
+
+    const mq = window.matchMedia('(min-width: 768px)');
+
+    const clearConstraint = () => {
+      viewport.style.removeProperty('max-width');
+      viewport.style.removeProperty('width');
+      viewport.style.removeProperty('flex');
+      viewport.style.removeProperty('overflow-x');
+      animRef.current.overflowing = false;
+      viewport.scrollLeft = 0;
+      viewport.classList.remove('reg-mini-card__badge-text--overflow');
+    };
+
+    const constrain = () => {
+      if (!mq.matches) {
+        clearConstraint();
+        return;
+      }
+
+      const badge = viewport.closest('.reg-mini-card__badge');
+      const card = viewport.closest('.reg-mini-card');
+      if (!badge || !card) return;
+
+      viewport.style.removeProperty('max-width');
+      viewport.style.removeProperty('width');
+      viewport.style.removeProperty('flex');
+      const needed = inner.scrollWidth;
+
+      const cardStyle = getComputedStyle(card);
+      const padX = (parseFloat(cardStyle.paddingLeft) || 0)
+        + (parseFloat(cardStyle.paddingRight) || 0);
+      const badgeStyle = getComputedStyle(badge);
+      const badgePadX = (parseFloat(badgeStyle.paddingLeft) || 0)
+        + (parseFloat(badgeStyle.paddingRight) || 0);
+      const gap = parseFloat(badgeStyle.columnGap || badgeStyle.gap) || 0;
+      const icon = badge.querySelector('svg');
+      const iconW = icon ? icon.getBoundingClientRect().width : 0;
+      const share = card.parentElement?.querySelector('.reg-mini-card__share');
+      const shareW = share ? share.getBoundingClientRect().width : 36;
+      const shareGap = 8;
+      const available = Math.max(
+        48,
+        Math.floor(card.clientWidth - padX - shareW - shareGap - iconW - gap - badgePadX),
+      );
+
+      if (needed > available + 1) {
+        viewport.style.setProperty('width', `${available}px`, 'important');
+        viewport.style.setProperty('max-width', `${available}px`, 'important');
+        viewport.style.setProperty('flex', '0 0 auto', 'important');
+        viewport.style.setProperty('overflow-x', 'auto', 'important');
+        animRef.current.overflowing = true;
+        viewport.classList.add('reg-mini-card__badge-text--overflow');
+      } else {
+        clearConstraint();
+      }
+    };
+
+    constrain();
+    const card = viewport.closest('.reg-mini-card');
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(constrain) : null;
+    if (card) ro?.observe(card);
+    mq.addEventListener('change', constrain);
+    window.addEventListener('resize', constrain);
+
+    const PAUSE_MS = 1400;
+    const PX_PER_SEC = 28;
+
+    const tick = (now) => {
+      const vp = viewportRef.current;
+      if (!vp || !animRef.current.overflowing || !mq.matches) {
+        animRef.current.raf = requestAnimationFrame(tick);
+        return;
+      }
+      if (interactingRef.current) {
+        animRef.current.cycleStart = 0;
+        animRef.current.raf = requestAnimationFrame(tick);
+        return;
+      }
+      const max = Math.max(0, vp.scrollWidth - vp.clientWidth);
+      if (max <= 1) {
+        animRef.current.raf = requestAnimationFrame(tick);
+        return;
+      }
+      const scrollMs = Math.max(4000, (max / PX_PER_SEC) * 1000);
+      const cycleMs = PAUSE_MS + scrollMs + PAUSE_MS + scrollMs;
+      if (!animRef.current.cycleStart) animRef.current.cycleStart = now;
+      const t = (now - animRef.current.cycleStart) % cycleMs;
+      let pos = 0;
+      if (t < PAUSE_MS) pos = 0;
+      else if (t < PAUSE_MS + scrollMs) pos = max * ((t - PAUSE_MS) / scrollMs);
+      else if (t < PAUSE_MS + scrollMs + PAUSE_MS) pos = max;
+      else pos = max * (1 - ((t - PAUSE_MS - scrollMs - PAUSE_MS) / scrollMs));
+      vp.scrollLeft = pos;
+      animRef.current.raf = requestAnimationFrame(tick);
+    };
+    animRef.current.raf = requestAnimationFrame(tick);
+
+    const pause = () => {
+      interactingRef.current = true;
+      if (resumeTimerRef.current) window.clearTimeout(resumeTimerRef.current);
+    };
+    const resume = () => {
+      if (resumeTimerRef.current) window.clearTimeout(resumeTimerRef.current);
+      resumeTimerRef.current = window.setTimeout(() => {
+        interactingRef.current = false;
+        animRef.current.cycleStart = 0;
+      }, 1500);
+    };
+    const onWheel = (e) => {
+      if (!animRef.current.overflowing) return;
+      const dominant = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (!dominant) return;
+      pause();
+      viewport.scrollLeft += dominant;
+      e.preventDefault();
+      e.stopPropagation();
+      resume();
+    };
+
+    viewport.addEventListener('pointerdown', pause);
+    viewport.addEventListener('pointerup', resume);
+    viewport.addEventListener('pointerleave', resume);
+    viewport.addEventListener('wheel', onWheel, { passive: false });
+
+    return () => {
+      cancelAnimationFrame(animRef.current.raf);
+      ro?.disconnect();
+      mq.removeEventListener('change', constrain);
+      window.removeEventListener('resize', constrain);
+      viewport.removeEventListener('pointerdown', pause);
+      viewport.removeEventListener('pointerup', resume);
+      viewport.removeEventListener('pointerleave', resume);
+      viewport.removeEventListener('wheel', onWheel);
+      if (resumeTimerRef.current) window.clearTimeout(resumeTimerRef.current);
+      clearConstraint();
+    };
+  }, [text]);
+
+  return (
+    <span ref={viewportRef} className="reg-mini-card__badge-text">
+      <span ref={innerRef} className="reg-mini-card__badge-text-inner">{text}</span>
+    </span>
+  );
 }
 
 export default function HomeRegistrationsSection() {
@@ -198,7 +359,7 @@ export default function HomeRegistrationsSection() {
 
     const onPointerDown = (e) => {
       if (e.pointerType === 'touch') return;
-      if (e.target.closest('.reg-mini-card__share, .reg-cards-nav')) return;
+      if (e.target.closest('.reg-mini-card__share, .reg-cards-nav, .reg-mini-card__badge-text')) return;
       pointerId = e.pointerId;
       startX = e.clientX;
       startScroll = el.scrollLeft;
@@ -347,7 +508,7 @@ export default function HomeRegistrationsSection() {
         >
         <div className="reg-mini-card__badge">
           <Icon size={11} strokeWidth={2.2} aria-hidden="true" />
-          <span>{badgeLabel}</span>
+          <HomeRegDesktopBadgeText text={badgeLabel} />
         </div>
         <div className="reg-mini-card__top">
           <h3 className="reg-mini-card__title">{displayName}</h3>

@@ -1,5 +1,5 @@
 import { Children, useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import HomePreviewRow from './HomePreviewRow';
 import '../../styles/home-cards-nav.css';
@@ -11,10 +11,10 @@ function readRowOverflow(el) {
 
 /**
  * Homepage card strip with left/right paging — same control as Delta Registrations.
- * Left arrow scrolls the visible cards. Right arrow goes to the section View All
- * page when viewAllTo is set; otherwise it pages/reveals more cards.
+ * Left arrow scrolls the visible cards. Right arrow pages/reveals more cards first;
+ * when the track is already at the end and viewAllTo is set, it navigates to View All.
  * @param {string} [accent] section theme: domain | venture | coventure | auction | technology | operations | community | assistance
- * @param {string} [viewAllTo] react-router path for the right-arrow control
+ * @param {string} [viewAllTo] react-router path used after the last card is reached
  */
 export default function HomeCardsNavRow({
   children,
@@ -26,6 +26,7 @@ export default function HomeCardsNavRow({
   onRevealMore,
   viewAllTo,
 }) {
+  const navigate = useNavigate();
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const itemCount = Children.toArray(children).length;
@@ -110,12 +111,18 @@ export default function HomeCardsNavRow({
     const el = getPreviewRow();
     const maxScroll = el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0;
     const atEnd = !el || maxScroll <= 2 || el.scrollLeft >= maxScroll - 2;
-    if (atEnd && hasMore) {
+    if (!atEnd) {
+      scrollCards(1);
+      return;
+    }
+    if (hasMore) {
       onRevealMore?.();
       return;
     }
-    scrollCards(1);
-  }, [getPreviewRow, hasMore, onRevealMore, scrollCards]);
+    if (viewAllTo) {
+      navigate(viewAllTo);
+    }
+  }, [getPreviewRow, hasMore, navigate, onRevealMore, scrollCards, viewAllTo]);
 
   useEffect(() => {
     if (itemCount > prevItemCountRef.current) {
@@ -265,25 +272,15 @@ export default function HomeCardsNavRow({
         {children}
       </HomePreviewRow>
       {showNext ? (
-        viewAllTo ? (
-          <Link
-            to={viewAllTo}
-            className="home-cards-nav home-cards-nav--next"
-            aria-label="View all"
-          >
-            <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
-          </Link>
-        ) : (
-          <button
-            type="button"
-            className="home-cards-nav home-cards-nav--next"
-            onClick={handleNext}
-            disabled={!canScrollRight && !hasMore}
-            aria-label="Scroll cards right"
-          >
-            <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
-          </button>
-        )
+        <button
+          type="button"
+          className="home-cards-nav home-cards-nav--next"
+          onClick={handleNext}
+          disabled={!canScrollRight && !hasMore && !viewAllTo}
+          aria-label={canScrollRight || hasMore ? 'Scroll cards right' : 'View all'}
+        >
+          <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
+        </button>
       ) : null}
     </div>
   );

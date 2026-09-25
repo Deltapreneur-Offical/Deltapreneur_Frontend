@@ -117,7 +117,6 @@ export default function FeaturedVirtualAssistantsListing({
   onHireProfile,
   loadingFallback = null,
   revealInPages = false,
-  viewAllTo,
   className = '',
   rowClassName = '',
   showAvailabilityBadge = false,
@@ -183,7 +182,6 @@ export default function FeaturedVirtualAssistantsListing({
       className={['home-va-auto-scroll-row', className].filter(Boolean).join(' ')}
       rowClassName={rowClassName}
       ariaLabel={ariaLabel || 'Featured Virtual Assistants'}
-      viewAllTo={viewAllTo}
     >
       {rendered.map((profile, index) => (
         <HomePreviewRowItem key={cardKey(profile, index)}>

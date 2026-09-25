@@ -62,7 +62,7 @@ export default function FeaturedDomainsSection() {
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', previewDomains);
-  const { visible } = useHomepageCardReveal(previewDomains, {
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewDomains, {
     pageSize: DOMAINS_HOME_VISIBLE,
     previewLimit: DOMAINS_HOME_PREVIEW_LIMIT,
   });
@@ -81,7 +81,7 @@ export default function FeaturedDomainsSection() {
           showViewAll={!loading && previewDomains.length > 0}
         />
         {loading ? (
-          <HomeCardsNavRow accent="domain" ariaLabel={title} viewAllTo="/domains">
+          <HomeCardsNavRow accent="domain" ariaLabel={title}>
             {Array.from({ length: DOMAINS_HOME_VISIBLE }).map((_, i) => (
               <HomePreviewRowItem key={i}>
                 <HomePreviewCardSkeleton variant="browse" />
@@ -91,7 +91,9 @@ export default function FeaturedDomainsSection() {
         ) : previewDomains.length === 0 ? (
           <p className="home-section-empty text-center text-gray-500">{t('noDomains')}</p>
         ) : (
-          <HomeCardsNavRow accent="domain" ariaLabel={title} viewAllTo="/domains">
+          <HomeCardsNavRow accent="domain" ariaLabel={title}
+  hasMore={hasMore}
+  onRevealMore={revealMore}>
             {visible.map((domain) => (
               <HomePreviewRowItem key={domain.id}>
                 <DomainListingCard

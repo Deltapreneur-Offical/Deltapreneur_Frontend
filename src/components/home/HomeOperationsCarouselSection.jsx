@@ -89,7 +89,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const sectionHint = t(section.hintKey, { defaultValue: section.defaultHint });
   const accent = isAssistanceSection ? 'assistance' : 'operations';
   const viewAllPath = operationsPathForSection(sectionId);
-  const { visible: visibleServices } = useHomepageCardReveal(services);
+  const { visible: visibleServices, hasMore: servicesHaveMore, revealMore: revealServices } = useHomepageCardReveal(services);
 
   const openServiceRequest = (service) => {
     operationsAPI.get(service.id)
@@ -287,7 +287,9 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
             {t('operationsHomeEmpty', { defaultValue: 'No services available yet.' })}
           </p>
         ) : (
-          <HomeCardsNavRow accent="operations" ariaLabel={title} viewAllTo={viewAllPath}>
+          <HomeCardsNavRow accent="operations" ariaLabel={title}
+  hasMore={servicesHaveMore}
+  onRevealMore={revealServices}>
             {visibleServices.map((service) => (
               <HomePreviewRowItem key={service.id}>
                 {renderServiceCard(service)}

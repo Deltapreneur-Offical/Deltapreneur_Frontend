@@ -25,7 +25,7 @@ export default function DomainsSection() {
   const [previewDomains, setPreviewDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasFetchedDomains, setHasFetchedDomains] = useState(false);
-  const { visible } = useHomepageCardReveal(previewDomains, {
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewDomains, {
     pageSize: DOMAINS_HOME_VISIBLE,
     previewLimit: DOMAINS_HOME_PREVIEW_LIMIT,
   });
@@ -82,7 +82,8 @@ export default function DomainsSection() {
           <HomeCardsNavRow
             accent="domain"
             ariaLabel={t('homeDomainRegister', { defaultValue: 'Delta Domains' })}
-            viewAllTo="/domains"
+            hasMore={hasMore}
+            onRevealMore={revealMore}
           >
             {visible.map((domain) => (
               <HomePreviewRowItem key={domain.id || domain.domainName}>

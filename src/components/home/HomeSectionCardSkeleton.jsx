@@ -50,7 +50,7 @@ export default function HomeSectionCardSkeleton({
           <HomeSectionHeader title={title} to={to} accent={accent} showViewAll={Boolean(to)} />
         ) : null}
         {animated ? (
-          <HomeCardsNavRow accent={accent || 'domain'} ariaLabel={title} viewAllTo={to}>
+          <HomeCardsNavRow accent={accent || 'domain'} ariaLabel={title}>
             {cards}
           </HomeCardsNavRow>
         ) : (

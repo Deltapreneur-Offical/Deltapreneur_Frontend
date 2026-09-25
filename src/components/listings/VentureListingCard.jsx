@@ -755,7 +755,7 @@ return (
               }}
             >
 
-              {homepageVentureContentOnly
+              {homepageVentureContentOnly || homepageDeltaVentureContentOnly
                 ? renderHomepageVentureTitle(brandName)
                 : <OverflowMarqueeText text={brandName} />}
 
@@ -799,7 +799,7 @@ return (
 
           {showPriceBox && (
             <div className="venture-listing-card__price-block">
-              {!isAuction && showPriceText && !homepageVentureContentOnly ? (
+              {!isAuction && showPriceText && !homepageVentureContentOnly && !homepageDeltaVentureContentOnly ? (
                 <span className={`venture-listing-card__price-label leading-none${homepageVentureContentOnly || (isHomePreview && isCoVenture) ? ' venture-listing-card__price-label--cta' : ' uppercase'}${homepageVentureContentOnly ? ' venture-listing-card__price-label--offer' : ''}${isHomePreview && isCoVenture ? ' venture-listing-card__price-label--apply' : ''}`}>
                   {homepageVentureContentOnly
                     ? t('listingCardOffer', 'Offer')
@@ -831,6 +831,10 @@ return (
                   {homepageVentureContentOnly ? (
                     <span className="venture-listing-card__price-label venture-listing-card__price-label--offer leading-none">
                       {t('listingCardOffer', 'Offer')}
+                    </span>
+                  ) : homepageDeltaVentureContentOnly ? (
+                    <span className="venture-listing-card__price-label venture-listing-card__price-label--apply leading-none">
+                      {t('listingCardApply', 'Apply')}
                     </span>
                   ) : null}
                   <span className={`domain-listing-card__price-value currency-display truncate ${compact ? 'venture-listing-card__price-value--compact' : ''

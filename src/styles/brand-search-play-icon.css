@@ -40,3 +40,34 @@
   padding: 0 !important;
   transform: none !important;
 }
+
+/* The icon's height:100% chain resolves against .brand-search-arrow, which has
+   no height of its own — at short search-bar heights (iPad/tablet layouts)
+   the SVG falls back to its intrinsic 62px and overflows the pill. Pin the
+   arrow wrapper to the submit button's box so the icon tracks the real bar
+   height, and clamp the icon itself as a safety net. */
+.brand-search-submit:has(.brand-search-play-icon) .brand-search-arrow {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  /* Sit the triangle just inside the pill's rounded right end (reference
+     look) instead of flush against the edge. */
+  padding: 0 0.65rem 0 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.brand-search-submit:has(.brand-search-play-icon) .brand-search-arrow .brand-search-play-icon {
+  height: 100% !important;
+  width: auto !important;
+  max-height: 100% !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+}

@@ -1524,19 +1524,50 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
    Domains + Delta Domains ΓÇö phone-only layout (max-width: 767px).
    Desktop / tablet (ΓëÑ768px) styles above stay unchanged.
    ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
+
+/*
+ * Phone only: tighter left/right gutter for the entire Home content column.
+ * Matches the compact reference (~0.75rem) without touching card gaps,
+ * card internals, or desktop/tablet spacing.
+ */
 @media (max-width: 767px) {
-  /*
-   * Slightly tighter outer inset only ( Domains / Delta Domains ).
-   * Parent align wrappers keep most of their padding; pull in just a little.
-   * Does NOT change card gap, card width, or peek behavior.
-   */
-  body.home-page-body .home-domains-section {
-    margin-inline: -0.5rem !important;
-    padding-top: 1.1rem !important;
-    padding-bottom: 1.35rem !important;
+  body.home-page-body .home-hero-align-outer {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    overflow-x: clip;
+  }
+
+  body.home-page-body .home-hero-align-inner {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Sections that add their own horizontal padding — align with the shared gutter */
+  body.home-page-body .home-deltaos-services,
+  body.home-page-body .home-deltaos-services.home-deltaos-services--ref {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body.home-page-body .home-domains-section,
+  body.home-page-body .home-marketplace-domains-section,
+  body.home-page-body .home-ventures-section,
+  body.home-page-body .home-coventures-section,
+  body.home-page-body .home-auctions-section,
+  body.home-page-body .home-community-section,
+  body.home-page-body .home-registrations-section,
+  body.home-page-body .home-operators-reference-section {
+    margin-inline: 0 !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
     max-width: none !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-domains-section {
+    padding-top: 1.1rem !important;
+    padding-bottom: 1.35rem !important;
     overflow-x: clip;
   }
 }

@@ -178,20 +178,21 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__share-con
 }
 
 body.home-page-body .home-auctions-section .domain-listing-card__share-btn {
-  width: 1.75rem !important;
-  height: 1.75rem !important;
-  border: 0 !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  border: 1px solid #e2e8f0 !important;
   border-radius: 999px !important;
-  background: #edf2f7 !important;
+  background: #f8fafc !important;
   color: #64748b !important;
   box-shadow: none !important;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease !important;
 }
 
 body.home-page-body .home-auctions-section .domain-listing-card__share-btn:hover,
 body.home-page-body .home-auctions-section .domain-listing-card__share-btn:focus-visible {
-  border: 0 !important;
-  background: #dcecf4 !important;
-  color: #0087c1 !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #f1f5f9 !important;
+  color: #334155 !important;
 }
 
 body.home-page-body .home-auctions-section .home-auction-preview-card__ends-in-row {
@@ -374,15 +375,15 @@ body.home-page-body .home-auctions-section .home-preview-card-border--auction .h
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .domain-listing-card__share-btn {
-  border: 0 !important;
-  background: #edf2f7 !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
   color: #64748b !important;
   box-shadow: none !important;
 }
 
 body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn {
-  border: 0 !important;
-  background: #edf2f7 !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
   color: #64748b !important;
   box-shadow: none !important;
 }
@@ -907,16 +908,20 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
   }
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .domain-listing-card__share-btn {
-    width: 28px !important;
-    min-width: 28px !important;
-    height: 28px !important;
-    min-height: 28px !important;
+    width: 2rem !important;
+    min-width: 2rem !important;
+    height: 2rem !important;
+    min-height: 2rem !important;
     padding: 0 !important;
+    border-radius: 999px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #f8fafc !important;
+    color: #64748b !important;
   }
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .domain-listing-card__share-btn svg {
-    width: 15px !important;
-    height: 15px !important;
+    width: 0.9rem !important;
+    height: 0.9rem !important;
   }
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-row {

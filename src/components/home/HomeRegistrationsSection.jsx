@@ -18,6 +18,7 @@ import { usePublicHubRegistrarCategories } from '../../context/CategoryContext';
 import useCurrency from '../../context/CurrencyContext';
 import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
 import '../../styles/registrations-catalog.css';
+import '../../styles/home-share-button-unify.css';
 
 const CATEGORY_ICONS = {
   business_entity: Building2, tax_identity: Receipt, local_licences: Landmark,

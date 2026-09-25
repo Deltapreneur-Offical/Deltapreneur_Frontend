@@ -1068,17 +1068,23 @@ body.home-page-body .home-price-rupee-symbol {
 
 .home-ventures-section .home-preview-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
 .home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid #fed7aa;
-  background: #fff7ed !important;
-  color: #c2410c;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc !important;
+  color: #64748b;
+  box-shadow: none;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
 }
 
 .home-ventures-section .home-preview-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
-.home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover {
-  background: #ffedd5 !important;
-  color: #9a3412;
+.home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
+.home-ventures-section .home-preview-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active,
+.home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active {
+  border-color: #cbd5e1;
+  background: #f1f5f9 !important;
+  color: #334155;
 }
 
 .home-ventures-section .home-preview-row .venture-listing-card--homepage-content .venture-listing-card__metrics,
@@ -1223,17 +1229,23 @@ body.home-page-body .home-price-rupee-symbol {
 
 .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
 .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid #5EEAD4;
-  background: #F0FDFA !important;
-  color: #0F766E;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc !important;
+  color: #64748b;
+  box-shadow: none;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
 }
 
 .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
-.home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover {
-  background: #CCFBF1 !important;
-  color: #115E59;
+.home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
+.home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active,
+.home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active {
+  border-color: #cbd5e1;
+  background: #f1f5f9 !important;
+  color: #334155;
 }
 
 .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__metrics,
@@ -2617,6 +2629,323 @@ body.home-page-body .home-price-rupee-symbol {
   border-color: #ea580c;
   color: #ffffff;
   outline: none;
+}
+
+/* Deltapreneurs section — title accent + empty state (zero cards only) */
+body.home-page-body .home-community-section {
+  background: #f8fafc !important;
+}
+
+body.home-page-body .home-community-section .home-section-header__title {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #0f172a;
+}
+
+body.home-page-body .home-community-section .home-section-header__title::before {
+  content: '';
+  display: inline-block;
+  width: 0.28rem;
+  height: 1.15em;
+  flex: 0 0 auto;
+  border-radius: 9999px;
+  background: #ea580c;
+}
+
+/* Match Delta Domains plain-text View All (desktop + tablet + mobile) */
+body.home-page-body .home-community-section .home-section-header__view-all,
+body.home-page-body .home-community-section .home-section-header--community .home-section-header__view-all {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #ea580c !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
+  transform: none !important;
+}
+
+body.home-page-body .home-community-section .home-section-header__view-all:hover,
+body.home-page-body .home-community-section .home-section-header__view-all:focus-visible,
+body.home-page-body .home-community-section .home-section-header--community .home-section-header__view-all:hover,
+body.home-page-body .home-community-section .home-section-header--community .home-section-header__view-all:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #c2410c !important;
+  transform: none !important;
+}
+
+body.home-page-body .home-community-section .home-community-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  width: 100%;
+  min-height: 16rem;
+  margin: 0;
+  padding: 2.25rem 1.5rem;
+  box-sizing: border-box;
+  border: 1px solid #e8edf3;
+  border-radius: 1.35rem;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+  text-align: center;
+}
+
+body.home-page-body .home-community-section .home-community-empty__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  background: #fff1e8;
+  color: #9a3412;
+}
+
+body.home-page-body .home-community-section .home-community-empty__title {
+  margin: 0;
+  max-width: 28rem;
+  color: #0f172a;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+body.home-page-body .home-community-section .home-community-empty__text {
+  margin: 0;
+  max-width: 32rem;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+body.home-page-body .home-community-section .home-community-empty__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+  min-height: 2.6rem;
+  padding: 0.65rem 1.35rem;
+  border: 0;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #ff7a1a 0%, #ea580c 55%, #c2410c 100%);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  box-shadow: 0 8px 18px rgba(234, 88, 12, 0.28);
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.home-page-body .home-community-section .home-community-empty__cta:hover,
+body.home-page-body .home-community-section .home-community-empty__cta:focus-visible {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(234, 88, 12, 0.34);
+  outline: none;
+}
+
+/* Homepage Deltapreneurs: COMPENSATION label above pill (no inside overlap). */
+body.home-page-body .home-community-section .va-listing-card__compensation-block {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.28rem;
+  width: 100%;
+  min-width: 0;
+}
+
+body.home-page-body .home-community-section .va-listing-card__compensation-block > .va-listing-card__compensation-label {
+  color: #c2410c;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+body.home-page-body .home-community-section .va-listing-card__compensation-block .va-listing-card__compensation .domain-listing-card__price-text {
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+}
+
+body.home-page-body .home-community-section .community-listing-card .va-listing-card__compensation .price-section-v-icon {
+  height: 1.75rem !important;
+  width: auto !important;
+  max-width: 1.75rem !important;
+  max-height: 1.75rem !important;
+  margin: 0 0.45rem 0 0 !important;
+}
+
+body.home-page-body .home-community-section .community-listing-card .va-listing-card__compensation .domain-listing-card__price-cta {
+  width: 2rem !important;
+  min-width: 2rem !important;
+  max-width: 2.15rem !important;
+  overflow: hidden !important;
+}
+
+/*
+ * Mobile only: keep title + Sign Up + View All on one row without overlap.
+ * View All matches Delta Domains compact text link. Desktop/tablet unchanged.
+ */
+@media (max-width: 767px) {
+  body.home-page-body .home-community-section .home-section-header__top {
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  body.home-page-body .home-community-section .home-section-header__title {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 0.45rem;
+    font-size: 1.05rem !important;
+    line-height: 1.25 !important;
+  }
+
+  body.home-page-body .home-community-section .home-section-header__title::before {
+    width: 0.2rem;
+    height: 1.05em;
+  }
+
+  body.home-page-body .home-community-section .home-section-header__actions {
+    flex: 0 0 auto;
+    gap: 0.35rem;
+    max-width: none;
+  }
+
+  body.home-page-body .home-community-section .home-section-header__signup {
+    min-height: 1.7rem;
+    padding: 0.28rem 0.6rem;
+    font-size: 0.68rem;
+  }
+
+  body.home-page-body .home-community-section .home-section-header__view-all,
+  body.home-page-body .home-community-section .home-section-header--community .home-section-header__view-all,
+  body.home-page-body .home-community-section .home-section-header__view-all:hover,
+  body.home-page-body .home-community-section .home-section-header__view-all:focus-visible,
+  body.home-page-body .home-community-section .home-section-header--community .home-section-header__view-all:hover,
+  body.home-page-body .home-community-section .home-section-header--community .home-section-header__view-all:focus-visible {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #ea580c !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    gap: 0.2rem !important;
+    transform: none !important;
+  }
+
+  body.home-page-body .home-community-section .home-section-header__view-all-icon {
+    width: 0.85rem !important;
+    height: 0.85rem !important;
+  }
+
+  /* Narrower cards so the next card peeks; keep carousel gap intact */
+  body.home-page-body .home-community-section .home-cards-nav-wrap--community {
+    padding-inline: 0 !important;
+  }
+
+  body.home-page-body .home-community-section .home-preview-row.home-cards-nav-row {
+    gap: 0.75rem !important;
+  }
+
+  body.home-page-body .home-community-section .home-preview-row .home-preview-row__item {
+    width: min(15.25rem, 78vw) !important;
+    max-width: min(15.25rem, 78vw) !important;
+    flex: 0 0 min(15.25rem, 78vw) !important;
+  }
+
+  /* Compensation: label above pill, amount + compact CTA inside — no overlap */
+  body.home-page-body .home-community-section .va-listing-card__compensation-block {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.3rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-top: auto !important;
+  }
+
+  body.home-page-body .home-community-section .va-listing-card__compensation-block > .va-listing-card__compensation-label {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding-left: 0.2rem !important;
+    font-size: 0.62rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    line-height: 1.1 !important;
+    color: #c2410c !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  body.home-page-body .home-community-section .community-listing-card .va-listing-card__compensation,
+  body.home-page-body .home-community-section .home-preview-row .community-listing-card .va-listing-card__compensation {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: 2.15rem !important;
+    min-height: 2.15rem !important;
+    max-height: 2.15rem !important;
+    margin: 0 !important;
+    padding: 0 0.15rem 0 0.75rem !important;
+    overflow: hidden !important;
+    gap: 0.35rem !important;
+  }
+
+  body.home-page-body .home-community-section .community-listing-card .va-listing-card__compensation .domain-listing-card__price-text {
+    flex: 1 1 auto !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    min-width: 0 !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-community-section .community-listing-card .va-listing-card__compensation .domain-listing-card__price-value {
+    font-size: 0.88rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-width: 0 !important;
+  }
+
+  body.home-page-body .home-community-section .community-listing-card .va-listing-card__compensation .va-listing-card__compensation-period {
+    font-size: 0.72rem !important;
+  }
+
+  body.home-page-body .home-community-section .community-listing-card .va-listing-card__compensation .domain-listing-card__price-cta {
+    flex: 0 0 auto !important;
+    width: 1.85rem !important;
+    min-width: 1.85rem !important;
+    max-width: 1.85rem !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-community-section .community-listing-card .va-listing-card__compensation .price-section-v-icon {
+    height: 1.55rem !important;
+    width: auto !important;
+    max-width: 1.55rem !important;
+    max-height: 1.55rem !important;
+    margin: 0 0.35rem 0 0 !important;
+  }
 }
 
 .home-section-header__showcase-hint {
@@ -4107,17 +4436,23 @@ body.home-page-body .home-deltaos-services-nav .tech-service-card--home .tech-se
 
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn,
 .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid #fed7aa;
-  background: #fff7ed !important;
-  color: #c2410c;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc !important;
+  color: #64748b;
+  box-shadow: none;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
 }
 
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:hover,
-.home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:hover {
-  background: #ffedd5 !important;
-  color: #9a3412;
+.home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:hover,
+.home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:active,
+.home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:active {
+  border-color: #cbd5e1;
+  background: #f1f5f9 !important;
+  color: #334155;
 }
 
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__ends-in-row,
@@ -4325,8 +4660,12 @@ body.home-page-body .home-deltaos-services-nav .tech-service-card--home .tech-se
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn,
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn {
-    width: 1.7rem !important;
-    height: 1.7rem !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    border-radius: 999px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #f8fafc !important;
+    color: #64748b !important;
   }
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title-row,

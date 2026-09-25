@@ -138,13 +138,28 @@ body.home-page-body .home-marketplace-domains-section .domain-search-card--listi
 }
 
 body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button {
-  border-color: #e2e8f0 !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.25rem !important;
+  min-width: 2.25rem !important;
+  max-width: 2.25rem !important;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  max-height: 2.25rem !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  border: 1px solid #e2e8f0 !important;
   background: #f8fafc !important;
   color: #64748b !important;
+  box-shadow: none !important;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease !important;
 }
 
 body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:hover,
-body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:focus-visible {
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:focus-visible,
+body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:active {
   border-color: #cbd5e1 !important;
   background: #f1f5f9 !important;
   color: #334155 !important;
@@ -295,8 +310,15 @@ body.home-page-body .home-domains-section:not(.home-marketplace-domains-section)
   box-shadow: none !important;
 }
 
+/* Desktop/tablet: lightning bolt before DELTA (hidden on phone below). */
 body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .registry-premium-badge__spark {
-  color: #f97316 !important;
+  display: inline-block !important;
+  width: 0.72rem !important;
+  height: 0.72rem !important;
+  color: #9a3412 !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  flex-shrink: 0 !important;
 }
 
 body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3,
@@ -316,9 +338,31 @@ body.home-page-body .home-domains-section:not(.home-marketplace-domains-section)
 }
 
 body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .absolute button {
-  border-color: #e2e8f0 !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.25rem !important;
+  min-width: 2.25rem !important;
+  max-width: 2.25rem !important;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  max-height: 2.25rem !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  border: 1px solid #e2e8f0 !important;
   background: #f8fafc !important;
   color: #64748b !important;
+  box-shadow: none !important;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease !important;
+}
+
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .absolute button:hover,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .absolute button:focus-visible,
+body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .absolute button:active {
+  border-color: #cbd5e1 !important;
+  background: #f1f5f9 !important;
+  color: #334155 !important;
 }
 
 body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .mt-auto {
@@ -375,6 +419,8 @@ body.home-page-body .home-domains-section .registry-premium-badge {
 
 body.home-page-body .home-domains-section .registry-premium-badge__spark {
   color: #D99A00 !important;
+  stroke: currentColor !important;
+  fill: none !important;
 }
 
 /* Tech service badges ΓÇö fill dark saffron + white on hover, matching the icon */
@@ -1436,23 +1482,110 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   }
 }
 
+/*
+ * Tablet only (768–1023px): Domains, Delta Domains, Delta Ventures —
+ * move carousel arrows from the header to the sides of the card row.
+ * Desktop (≥1024) and mobile (≤767) stay unchanged.
+ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  body.home-page-body .home-marketplace-domains-section .home-section-header__actions,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__actions,
+  body.home-page-body .home-coventures-section .home-section-header__actions {
+    padding-right: 0 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure {
+    position: relative !important;
+    overflow: visible !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain > .home-cards-nav,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain > .home-cards-nav,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure > .home-cards-nav,
+  body.home-page-body .home-coventures-section .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav--next {
+    position: absolute !important;
+    top: var(--home-nav-center, 50%) !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    z-index: 50 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain > .home-cards-nav--prev,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain > .home-cards-nav--prev,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure > .home-cards-nav--prev,
+  body.home-page-body .home-coventures-section .home-cards-nav--prev {
+    left: 0.2rem !important;
+    right: auto !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav-wrap--domain > .home-cards-nav--next,
+  body.home-page-body .home-marketplace-domains-section .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav-wrap--domain > .home-cards-nav--next,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav-wrap--coventure > .home-cards-nav--next,
+  body.home-page-body .home-coventures-section .home-cards-nav--next {
+    right: 0.2rem !important;
+    left: auto !important;
+  }
+}
+
 /* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
    Domains + Delta Domains ΓÇö phone-only layout (max-width: 767px).
    Desktop / tablet (ΓëÑ768px) styles above stay unchanged.
    ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
+
+/*
+ * Phone only: tighter left/right gutter for the entire Home content column.
+ * Matches the compact reference (~0.75rem) without touching card gaps,
+ * card internals, or desktop/tablet spacing.
+ */
 @media (max-width: 767px) {
-  /*
-   * Slightly tighter outer inset only ( Domains / Delta Domains ).
-   * Parent align wrappers keep most of their padding; pull in just a little.
-   * Does NOT change card gap, card width, or peek behavior.
-   */
-  body.home-page-body .home-domains-section {
-    margin-inline: -0.5rem !important;
-    padding-top: 1.1rem !important;
-    padding-bottom: 1.35rem !important;
+  body.home-page-body .home-hero-align-outer {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    overflow-x: clip;
+  }
+
+  body.home-page-body .home-hero-align-inner {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Sections that add their own horizontal padding — align with the shared gutter */
+  body.home-page-body .home-deltaos-services,
+  body.home-page-body .home-deltaos-services.home-deltaos-services--ref {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body.home-page-body .home-domains-section,
+  body.home-page-body .home-marketplace-domains-section,
+  body.home-page-body .home-ventures-section,
+  body.home-page-body .home-coventures-section,
+  body.home-page-body .home-auctions-section,
+  body.home-page-body .home-community-section,
+  body.home-page-body .home-registrations-section,
+  body.home-page-body .home-operators-reference-section {
+    margin-inline: 0 !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
     max-width: none !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-domains-section {
+    padding-top: 1.1rem !important;
+    padding-bottom: 1.35rem !important;
     overflow-x: clip;
   }
 }
@@ -1621,6 +1754,14 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
     box-shadow: none !important;
     line-height: 0 !important;
     overflow: hidden !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:hover,
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:focus-visible,
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button:active {
+    border-color: #cbd5e1 !important;
+    background: #f1f5f9 !important;
+    color: #334155 !important;
   }
 
   body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .absolute button svg {
@@ -1820,6 +1961,14 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
     box-shadow: none !important;
     line-height: 0 !important;
     overflow: hidden !important;
+  }
+
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .absolute button:hover,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .absolute button:focus-visible,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .absolute button:active {
+    border-color: #cbd5e1 !important;
+    background: #f1f5f9 !important;
+    color: #334155 !important;
   }
 
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .absolute button svg {

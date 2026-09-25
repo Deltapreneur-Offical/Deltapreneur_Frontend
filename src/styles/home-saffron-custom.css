@@ -2337,3 +2337,57 @@ body.home-page-body .brand-search-play-icon {
   }
 }
 
+/*
+ * Homepage Domains + Delta Domains — iPad Pro 13 band (1024–1439).
+ * Wider 3/4-up cards (see home-cards-nav.css); keep titles/prices readable.
+ */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  body.home-page-body .home-domains-section .home-preview-row {
+    --home-domains-gap: 1rem;
+    gap: var(--home-domains-gap) !important;
+  }
+
+  body.home-page-body .home-domains-section .home-preview-row .home-preview-row__item {
+    width: calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    max-width: calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    flex: 0 0 calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    min-width: 0 !important;
+  }
+
+  body.home-page-body .home-domains-section .domain-search-card,
+  body.home-page-body .home-domains-section .domain-search-card--listing {
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3 {
+    font-size: 1.15rem !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__price-value,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-value {
+    font-size: clamp(0.85rem, 1.35vw, 1.05rem) !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-year-suffix {
+    display: inline !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+  }
+}
+

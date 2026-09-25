@@ -89,19 +89,48 @@
   flex-direction: column;
 }
 
-/* Domains + Delta Domains only: fit 5 cards across the visible row on desktop. */
+/* Domains + Delta Domains: fixed card width below desktop; equal slots from 1024 up. */
 .home-domains-section .home-preview-row .home-preview-row__item {
   width: 14.5rem !important;
   max-width: 14.5rem !important;
   flex: 0 0 14.5rem !important;
 }
 
-@media (min-width: 1024px) {
+/* iPad / tablet desktop band (incl. iPad Pro 13): wider cards, not 5 cramped slots. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .home-domains-section .home-preview-row {
+    --home-domains-visible: 3;
+  }
+
   .home-domains-section .home-preview-row .home-preview-row__item {
-    /* Exactly 5 cards + 4 gaps fill the row */
-    width: calc((100% - (4 * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
-    max-width: calc((100% - (4 * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
-    flex: 0 0 calc((100% - (4 * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    width: calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    max-width: calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    flex: 0 0 calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .home-domains-section .home-preview-row {
+    --home-domains-visible: 4;
+  }
+
+  .home-domains-section .home-preview-row .home-preview-row__item {
+    width: calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    max-width: calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    flex: 0 0 calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+  }
+}
+
+/* Large desktop: keep 5 across. */
+@media (min-width: 1440px) {
+  .home-domains-section .home-preview-row {
+    --home-domains-visible: 5;
+  }
+
+  .home-domains-section .home-preview-row .home-preview-row__item {
+    width: calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    max-width: calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
+    flex: 0 0 calc((100% - ((var(--home-domains-visible) - 1) * var(--home-domains-gap))) / var(--home-domains-visible)) !important;
   }
 }
 

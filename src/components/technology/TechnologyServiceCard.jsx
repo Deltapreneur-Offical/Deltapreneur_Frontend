@@ -93,7 +93,10 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
                 {techT(t, 'techCat_', service.category)}
               </span>
               {service.badge && (
-                <span className="tech-service-card__ref-badge tech-service-card__ref-badge--hot">
+                <span
+                  className="tech-service-card__ref-badge tech-service-card__ref-badge--hot"
+                  data-badge={String(service.badge).replace(/\s+/g, '_')}
+                >
                   {techT(t, 'techBadge_', service.badge)}
                 </span>
               )}

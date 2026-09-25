@@ -11,8 +11,9 @@ function readRowOverflow(el) {
 
 /**
  * Homepage card strip with left/right paging — same control as Delta Registrations.
- * Left arrow scrolls the visible cards. Right arrow pages/reveals more cards first;
- * when the track is already at the end and viewAllTo is set, it navigates to View All.
+ * Left/right arrows scroll the visible cards; at the right edge the arrow
+ * reveals more cards when a section supplies hasMore/onRevealMore. If no more
+ * cards can be revealed, viewAllTo can route to the full listing.
  * @param {string} [accent] section theme: domain | venture | coventure | auction | technology | operations | community | assistance
  * @param {string} [viewAllTo] react-router path used after the last card is reached
  */
@@ -33,6 +34,7 @@ export default function HomeCardsNavRow({
   const showPrev = itemCount > 1 || hasMore;
   const showNext = showPrev || Boolean(viewAllTo);
   const prevItemCountRef = useRef(itemCount);
+  const didInitScrollRef = useRef(false);
   const wrapRef = useRef(null);
   const scrollTargetRef = useRef(null);
   const navRafRef = useRef(0);
@@ -41,6 +43,52 @@ export default function HomeCardsNavRow({
   const getPreviewRow = useCallback(() => (
     wrapRef.current?.querySelector('.home-preview-row') || null
   ), []);
+
+  // Native `behavior: 'smooth'` is unreliable in some environments (embedded
+  // Chromium, reduced-motion settings): the call resolves but the row never
+  // moves. Animate the scroll with rAF ourselves so arrow paging always works.
+  const smoothAnimRef = useRef(0);
+  const animateScrollTo = useCallback((el, target) => {
+    const max = Math.max(0, el.scrollWidth - el.clientWidth);
+    const clamped = Math.min(max, Math.max(0, target));
+    const startPos = el.scrollLeft;
+    const distance = Math.abs(clamped - startPos);
+    if (smoothAnimRef.current) {
+      window.cancelAnimationFrame(smoothAnimRef.current);
+      smoothAnimRef.current = 0;
+    }
+    if (distance <= 2) {
+      el.scrollLeft = clamped;
+      scrollTargetRef.current = clamped;
+      return;
+    }
+    const startTime = performance.now();
+    const duration = Math.min(550, Math.max(240, distance * 0.45));
+    const step = (now) => {
+      const p = Math.min(1, (now - startTime) / duration);
+      const eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      el.scrollLeft = startPos + (clamped - startPos) * eased;
+      scrollTargetRef.current = el.scrollLeft;
+      if (p < 1) {
+        smoothAnimRef.current = window.requestAnimationFrame(step);
+      } else {
+        smoothAnimRef.current = 0;
+        scrollTargetRef.current = clamped;
+      }
+    };
+    smoothAnimRef.current = window.requestAnimationFrame(step);
+    // Occluded/hidden windows freeze requestAnimationFrame entirely. If the
+    // row has not started moving shortly after the click, snap instantly so
+    // the cards always move.
+    window.setTimeout(() => {
+      if (smoothAnimRef.current && Math.abs(el.scrollLeft - startPos) <= 1) {
+        window.cancelAnimationFrame(smoothAnimRef.current);
+        smoothAnimRef.current = 0;
+        el.scrollLeft = clamped;
+        scrollTargetRef.current = clamped;
+      }
+    }, 120);
+  }, []);
 
   const getPageStep = useCallback((el) => {
     const item = el.querySelector('.home-preview-row__item');
@@ -84,7 +132,19 @@ export default function HomeCardsNavRow({
         const wrapRect = wrap.getBoundingClientRect();
         const card = wrap.querySelector('.home-preview-row__item');
         if (card) {
-          const cardRect = card.getBoundingClientRect();
+          // Center the arrows on the VISIBLE card, not the item wrapper: some
+          // sections (Delta Ventures) stretch wrappers taller than the card
+          // (hidden shells below), which pushed the arrows too low.
+          let target = card;
+          let best = Number.POSITIVE_INFINITY;
+          for (const child of card.querySelectorAll(':scope > *')) {
+            const r = child.getBoundingClientRect();
+            if (r.height > 10 && r.height < best) {
+              best = r.height;
+              target = child;
+            }
+          }
+          const cardRect = target.getBoundingClientRect();
           const center = cardRect.top - wrapRect.top + cardRect.height / 2;
           wrap.style.setProperty('--home-nav-center', `${Math.round(center)}px`);
         }
@@ -94,55 +154,109 @@ export default function HomeCardsNavRow({
     });
   }, [getPreviewRow]);
 
+  const shakeViewAll = useCallback(() => {
+    // Arrow can't scroll further: jiggle the section's View All button so the
+    // user knows where to go instead.
+    const section = wrapRef.current?.closest('section');
+    const target = section?.querySelector(
+      '.home-section-header__view-all, .home-deltaos-services__view-all'
+    );
+    if (!target) return;
+    target.classList.remove('home-view-all-shake');
+    void target.offsetWidth; // restart the animation on rapid re-clicks
+    target.classList.add('home-view-all-shake');
+    window.setTimeout(() => target.classList.remove('home-view-all-shake'), 900);
+  }, []);
+
   const scrollCards = useCallback((dir) => {
     const el = getPreviewRow();
     if (!el) return;
     const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
-    if (maxScroll <= 2) return;
+    if (maxScroll <= 2) {
+      shakeViewAll();
+      return;
+    }
     const from = scrollTargetRef.current == null ? el.scrollLeft : scrollTargetRef.current;
     const next = Math.min(maxScroll, Math.max(0, from + dir * getPageStep(el)));
-    scrollTargetRef.current = next;
-    el.scrollTo({ left: next, behavior: 'smooth' });
+    animateScrollTo(el, next);
     setCanScrollLeft(next > 2);
     setCanScrollRight(next < maxScroll - 2);
-  }, [getPreviewRow, getPageStep]);
+  }, [animateScrollTo, getPageStep, getPreviewRow, shakeViewAll]);
+
+  const handlePrev = useCallback(() => {
+    const el = getPreviewRow();
+    const maxScroll = el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0;
+    const atStart = !el || maxScroll <= 2 || el.scrollLeft <= 2;
+    if (atStart) {
+      shakeViewAll();
+      return;
+    }
+    scrollCards(-1);
+  }, [getPreviewRow, scrollCards, shakeViewAll]);
 
   const handleNext = useCallback(() => {
     const el = getPreviewRow();
     const maxScroll = el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0;
     const atEnd = !el || maxScroll <= 2 || el.scrollLeft >= maxScroll - 2;
-    if (!atEnd) {
-      scrollCards(1);
-      return;
-    }
-    if (hasMore) {
+    if (atEnd && hasMore) {
+      // Reveal the next page of cards; the itemCount effect below pulls the
+      // row onto the newly committed cards once they are in the DOM.
       onRevealMore?.();
       return;
     }
-    if (viewAllTo) {
-      navigate(viewAllTo);
+    if (atEnd) {
+      if (viewAllTo) {
+        navigate(viewAllTo);
+        return;
+      }
+      // End of the row (or nothing to scroll): point the user at View All.
+      shakeViewAll();
+      return;
     }
-  }, [getPreviewRow, hasMore, navigate, onRevealMore, scrollCards, viewAllTo]);
+    scrollCards(1);
+  }, [getPreviewRow, hasMore, navigate, onRevealMore, scrollCards, shakeViewAll, viewAllTo]);
 
   useEffect(() => {
     if (itemCount > prevItemCountRef.current) {
-      const frame = window.requestAnimationFrame(() => scrollCards(1));
+      // Cards were just revealed: jump to the end of the row so the new cards
+      // are visible immediately. Runs after React commits the new children.
+      const frame = window.setTimeout(() => {
+        const el = getPreviewRow();
+        if (!el) return;
+        const max = Math.max(0, el.scrollWidth - el.clientWidth);
+        if (max > 2) {
+          el.scrollLeft = max;
+          scrollTargetRef.current = max;
+          setCanScrollLeft(true);
+          setCanScrollRight(el.scrollLeft < max - 2);
+        } else {
+          // The revealed cards still fit without overflowing (wide screens /
+          // mobile layouts): nothing moved visually, so point the user at
+          // View All right away.
+          shakeViewAll();
+        }
+        window.requestAnimationFrame(() => updateNavState());
+      }, 60);
       prevItemCountRef.current = itemCount;
-      return () => window.cancelAnimationFrame(frame);
+      return () => window.clearTimeout(frame);
     }
     prevItemCountRef.current = itemCount;
     return undefined;
-  }, [itemCount, scrollCards]);
+  }, [itemCount, getPreviewRow, shakeViewAll, updateNavState]);
 
   useEffect(() => {
     const el = getPreviewRow();
     if (!el) return undefined;
 
     const rafId = requestAnimationFrame(() => {
-      // DeltaOs services: ensure the track starts at the first card (no left clip).
-      if (wrapRef.current?.classList.contains('home-deltaos-services-nav') && el.scrollLeft !== 0) {
-        el.scrollLeft = 0;
-        scrollTargetRef.current = 0;
+      // DeltaOs services: ensure the track starts at the first card (no left
+      // clip) — mount-time only, so reveal updates are not reset to 0.
+      if (!didInitScrollRef.current) {
+        didInitScrollRef.current = true;
+        if (wrapRef.current?.classList.contains('home-deltaos-services-nav') && el.scrollLeft !== 0) {
+          el.scrollLeft = 0;
+          scrollTargetRef.current = 0;
+        }
       }
       updateNavState();
     });
@@ -261,8 +375,7 @@ export default function HomeCardsNavRow({
         <button
           type="button"
           className="home-cards-nav home-cards-nav--prev"
-          onClick={() => scrollCards(-1)}
-          disabled={!canScrollLeft}
+          onClick={handlePrev}
           aria-label="Scroll cards left"
         >
           <ChevronLeft size={22} strokeWidth={2.25} aria-hidden />
@@ -276,7 +389,6 @@ export default function HomeCardsNavRow({
           type="button"
           className="home-cards-nav home-cards-nav--next"
           onClick={handleNext}
-          disabled={!canScrollRight && !hasMore && !viewAllTo}
           aria-label={canScrollRight || hasMore ? 'Scroll cards right' : 'View all'}
         >
           <ChevronRight size={22} strokeWidth={2.25} aria-hidden />

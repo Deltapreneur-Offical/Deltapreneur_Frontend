@@ -2199,3 +2199,43 @@ body.home-page-body .reg-cards-row-wrap .reg-mini-card__price-play {
   }
 }
 
+
+/* Delta Registrations: match the DeltaOs (Operating System) header View All
+   - plain orange text + arrow, no pill button. */
+body.home-page-body .home-registrations-section .home-section-header__view-all {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.3rem !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #ea580c !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  transition: opacity 0.15s ease !important;
+  transform: none !important;
+}
+
+body.home-page-body .home-registrations-section .home-section-header__view-all:hover,
+body.home-page-body .home-registrations-section .home-section-header__view-all:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #ea580c !important;
+  opacity: 0.75 !important;
+  transform: none !important;
+  outline: none;
+}
+
+body.home-page-body .home-registrations-section .home-section-header__view-all .home-section-header__view-all-icon {
+  width: 0.875rem !important;
+  height: 0.875rem !important;
+  transform: none !important;
+  transition: none !important;
+}

@@ -243,7 +243,7 @@ export default function HomeRegistrationsSection() {
       ));
     return matched.slice(0, REGISTRATIONS_HOME_PREVIEW_LIMIT);
   }, [categoryFilter, allCategories]);
-  const { visible: visibleCategories } = useHomepageCardReveal(
+  const { visible: visibleCategories, hasMore, revealMore } = useHomepageCardReveal(
     filteredCategories,
     { pageSize: REGISTRATIONS_HOME_VISIBLE, previewLimit: REGISTRATIONS_HOME_PREVIEW_LIMIT },
   );
@@ -251,6 +251,59 @@ export default function HomeRegistrationsSection() {
   const getPreviewRow = useCallback(() => (
     rowWrapRef.current?.querySelector('.home-preview-row') || null
   ), []);
+
+  const shakeViewAll = useCallback(() => {
+    // Arrow can't scroll further: jiggle the section's View All button.
+    const section = rowWrapRef.current?.closest('section');
+    const target = section?.querySelector('.home-section-header__view-all');
+    if (!target) return;
+    target.classList.remove('home-view-all-shake');
+    void target.offsetWidth; // restart the animation on rapid re-clicks
+    target.classList.add('home-view-all-shake');
+    window.setTimeout(() => target.classList.remove('home-view-all-shake'), 900);
+  }, []);
+
+  // Native `behavior: 'smooth'` never starts in some environments (embedded
+  // Chromium, reduced-motion). Animate with rAF; snap if it cannot run.
+  const smoothAnimRef = useRef(0);
+  const animateScrollTo = useCallback((el, target) => {
+    const max = Math.max(0, el.scrollWidth - el.clientWidth);
+    const clamped = Math.min(max, Math.max(0, target));
+    const startPos = el.scrollLeft;
+    const distance = Math.abs(clamped - startPos);
+    if (smoothAnimRef.current) {
+      window.cancelAnimationFrame(smoothAnimRef.current);
+      smoothAnimRef.current = 0;
+    }
+    if (distance <= 2) {
+      el.scrollLeft = clamped;
+      scrollTargetRef.current = clamped;
+      return;
+    }
+    const startTime = performance.now();
+    const duration = Math.min(550, Math.max(240, distance * 0.45));
+    const step = (now) => {
+      const p = Math.min(1, (now - startTime) / duration);
+      const eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      el.scrollLeft = startPos + (clamped - startPos) * eased;
+      scrollTargetRef.current = el.scrollLeft;
+      if (p < 1) {
+        smoothAnimRef.current = window.requestAnimationFrame(step);
+      } else {
+        smoothAnimRef.current = 0;
+        scrollTargetRef.current = clamped;
+      }
+    };
+    smoothAnimRef.current = window.requestAnimationFrame(step);
+    window.setTimeout(() => {
+      if (smoothAnimRef.current && Math.abs(el.scrollLeft - startPos) <= 1) {
+        window.cancelAnimationFrame(smoothAnimRef.current);
+        smoothAnimRef.current = 0;
+        el.scrollLeft = clamped;
+        scrollTargetRef.current = clamped;
+      }
+    }, 120);
+  }, []);
 
   const getPageStep = useCallback((el) => {
     const item = el.querySelector('.home-preview-row__item');
@@ -307,24 +360,64 @@ export default function HomeRegistrationsSection() {
     const el = getPreviewRow();
     if (!el) return;
     const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
-    if (maxScroll <= 2) return;
+    if (maxScroll <= 2) {
+      shakeViewAll();
+      return;
+    }
     const from = scrollTargetRef.current == null ? el.scrollLeft : scrollTargetRef.current;
     const next = Math.min(maxScroll, Math.max(0, from + dir * getPageStep(el)));
-    scrollTargetRef.current = next;
-    el.scrollTo({ left: next, behavior: 'smooth' });
+    animateScrollTo(el, next);
     setCanScrollLeft(next > 2);
-  }, [getPreviewRow, getPageStep]);
+  }, [animateScrollTo, getPageStep, getPreviewRow, shakeViewAll]);
 
   useEffect(() => {
     const count = visibleCategories.length;
     if (count > prevVisibleCountRef.current) {
-      const frame = window.requestAnimationFrame(() => scrollCards(1));
+      // Cards were just revealed: jump to the end so the new cards are
+      // visible immediately (setTimeout keeps working when rAF is frozen).
+      const frame = window.setTimeout(() => {
+        const el = getPreviewRow();
+        if (!el) return;
+        const max = Math.max(0, el.scrollWidth - el.clientWidth);
+        if (max > 2) {
+          el.scrollLeft = max;
+          scrollTargetRef.current = max;
+          setCanScrollLeft(true);
+        }
+      }, 60);
       prevVisibleCountRef.current = count;
-      return () => window.cancelAnimationFrame(frame);
+      return () => window.clearTimeout(frame);
     }
     prevVisibleCountRef.current = count;
     return undefined;
-  }, [visibleCategories.length, scrollCards]);
+  }, [visibleCategories.length, getPreviewRow]);
+
+  const handlePrev = useCallback(() => {
+    const el = getPreviewRow();
+    const maxScroll = el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0;
+    const atStart = !el || maxScroll <= 2 || el.scrollLeft <= 2;
+    if (atStart) {
+      shakeViewAll();
+      return;
+    }
+    scrollCards(-1);
+  }, [getPreviewRow, scrollCards, shakeViewAll]);
+
+  const handleNext = useCallback(() => {
+    const el = getPreviewRow();
+    const maxScroll = el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0;
+    const atEnd = !el || maxScroll <= 2 || el.scrollLeft >= maxScroll - 2;
+    if (atEnd && hasMore) {
+      revealMore?.();
+      return;
+    }
+    if (atEnd) {
+      // End of the row (or nothing to scroll): point the user at View All.
+      shakeViewAll();
+      return;
+    }
+    scrollCards(1);
+  }, [getPreviewRow, hasMore, revealMore, scrollCards, shakeViewAll]);
 
   useEffect(() => {
     const el = getPreviewRow();
@@ -608,8 +701,7 @@ export default function HomeRegistrationsSection() {
               <button
                 type="button"
                 className="reg-cards-nav reg-cards-nav--prev"
-                onClick={() => scrollCards(-1)}
-                disabled={!canScrollLeft}
+                onClick={handlePrev}
                 aria-label="Scroll registration cards left"
               >
                 <ChevronLeft size={22} strokeWidth={2.25} aria-hidden />
@@ -623,13 +715,14 @@ export default function HomeRegistrationsSection() {
               ))}
             </HomePreviewRow>
             {visibleCategories.length > 0 ? (
-              <Link
-                to={REGISTRATIONS_PAGE_PATH}
+              <button
+                type="button"
                 className="reg-cards-nav reg-cards-nav--next"
-                aria-label="View all"
+                onClick={handleNext}
+                aria-label="Scroll registration cards right"
               >
                 <ChevronRight size={22} strokeWidth={2.25} aria-hidden />
-              </Link>
+              </button>
             ) : null}
           </div>
         )}

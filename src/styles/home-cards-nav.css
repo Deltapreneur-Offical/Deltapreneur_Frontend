@@ -255,3 +255,22 @@
     height: 2.25rem;
   }
 }
+
+
+/* Arrow pressed but the row can't scroll further: jiggle the section's
+   View All button (works for header + DeltaOs variants). */
+/* Animate the standalone `translate` property: several section themes set
+   `transform: none !important` on their View All link (saffron coventure,
+   auctions, operators), and !important transform would cancel a transform-
+   based shake. The independent `translate` property is not affected. */
+@keyframes home-view-all-shake {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -5px 0; }
+  40% { translate: 5px 0; }
+  60% { translate: -3px 0; }
+  80% { translate: 3px 0; }
+}
+
+.home-view-all-shake {
+  animation: home-view-all-shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}

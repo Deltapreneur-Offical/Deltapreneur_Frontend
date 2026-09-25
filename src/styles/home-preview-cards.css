@@ -4883,3 +4883,42 @@ body.home-page-body .home-deltaos-services-nav .tech-service-card--home .tech-se
 }
 
 
+
+/* Deltapreneurs View All - match the plain accent-text style used by the
+   other homepage sections (no pill button). */
+body.home-page-body .home-section-header--community .home-section-header__view-all {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.3rem !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #c2410c !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  transition: opacity 0.15s ease !important;
+  transform: none !important;
+}
+
+body.home-page-body .home-section-header--community .home-section-header__view-all:hover,
+body.home-page-body .home-section-header--community .home-section-header__view-all:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #c2410c !important;
+  opacity: 0.75 !important;
+  transform: none !important;
+  outline: none;
+}
+
+body.home-page-body .home-section-header--community .home-section-header__view-all .home-section-header__view-all-icon {
+  width: 0.875rem !important;
+  height: 0.875rem !important;
+  transform: none !important;
+}

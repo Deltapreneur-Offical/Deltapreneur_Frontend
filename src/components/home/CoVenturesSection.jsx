@@ -41,7 +41,7 @@ export default function CoVenturesSection() {
   }, []);
 
   const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', ventures);
-  const { visible } = useHomepageCardReveal(ventures);
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(ventures);
 
   const handleViewDetails = (ventureId) => {
     navigateToListingDetail(navigate, 'venture', ventureId);
@@ -88,7 +88,9 @@ export default function CoVenturesSection() {
             {t('noCoVenturesAvailable', { defaultValue: 'No co-ventures are available yet.' })}
           </p>
         ) : (
-          <HomeCardsNavRow accent="coventure" ariaLabel={sectionTitle} viewAllTo="/ventures?mode=co-venture">
+          <HomeCardsNavRow accent="coventure" ariaLabel={sectionTitle}
+  hasMore={hasMore}
+  onRevealMore={revealMore}>
             {visible.map((venture) => (
               <HomePreviewRowItem key={venture.id}>
                 {renderCoVentureCard(venture)}

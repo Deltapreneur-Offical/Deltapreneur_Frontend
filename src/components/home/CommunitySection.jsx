@@ -96,7 +96,7 @@ export default function CommunitySection() {
   );
 
   const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', previewCommunities);
-  const { visible } = useHomepageCardReveal(previewCommunities);
+  const { visible, hasMore, revealMore } = useHomepageCardReveal(previewCommunities);
   const hasCompletedLinkedInSignup = hasLinkedInAccount(myProfile);
   const hasCards = previewCommunities.length > 0;
 
@@ -146,7 +146,9 @@ export default function CommunitySection() {
           extraActions={headerAction}
         />
         {hasCards ? (
-          <HomeCardsNavRow accent="community" ariaLabel="Deltapreneurs" viewAllTo="/community">
+          <HomeCardsNavRow accent="community" ariaLabel="Deltapreneurs"
+  hasMore={hasMore}
+  onRevealMore={revealMore}>
             {visible.map((item) => (
               <HomePreviewRowItem key={item.id}>
                 {renderCommunityCard(item)}

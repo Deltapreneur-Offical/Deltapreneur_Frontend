@@ -1,0 +1,202 @@
+/*
+ * Homepage Share buttons — match Domains card Share UI & hover.
+ * Does NOT touch Domain / Delta Domains DomainCard ShareButtons
+ * (.domain-search-card > .absolute button). Home page only.
+ */
+
+html body.home-page-body .domain-listing-card__share-btn,
+html body.home-page-body .home-preview-row .domain-listing-card__share-btn,
+html body.home-page-body .home-auto-scroll-row .domain-listing-card__share-btn,
+html body.home-page-body .home-preview-card-border .domain-listing-card__share-btn,
+html body.home-page-body .home-ventures-section .domain-listing-card__share-btn,
+html body.home-page-body .home-coventures-section .domain-listing-card__share-btn,
+html body.home-page-body .home-auctions-section .domain-listing-card__share-btn,
+html body.home-page-body .home-community-section .domain-listing-card__share-btn,
+html body.home-page-body .home-operators-reference-row .domain-listing-card__share-btn,
+html body.home-page-body .home-operators-reference-section .domain-listing-card__share-btn,
+html body.home-page-body .home-preview-card-border--assistance .domain-listing-card__share-btn,
+html body.home-page-body .home-preview-card-border--venture .domain-listing-card__share-btn,
+html body.home-page-body .home-preview-card-border--coventure .domain-listing-card__share-btn,
+html body.home-page-body .home-preview-card-border--auction .domain-listing-card__share-btn,
+html body.home-page-body .home-preview-card-border--technology .domain-listing-card__share-btn,
+html body.home-page-body .home-registrations-section .reg-mini-card__share,
+html body.home-page-body .reg-cards-row-wrap .reg-mini-card__share {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.25rem !important;
+  min-width: 2.25rem !important;
+  max-width: 2.25rem !important;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  max-height: 2.25rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 999px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  background-image: none !important;
+  color: #64748b !important;
+  box-shadow: none !important;
+  line-height: 0 !important;
+  cursor: pointer !important;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease !important;
+}
+
+html body.home-page-body .domain-listing-card__share-btn:hover,
+html body.home-page-body .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .domain-listing-card__share-btn:active,
+html body.home-page-body .home-preview-row .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-preview-row .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-preview-row .domain-listing-card__share-btn:active,
+html body.home-page-body .home-auto-scroll-row .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-auto-scroll-row .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-auto-scroll-row .domain-listing-card__share-btn:active,
+html body.home-page-body .home-preview-card-border .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-preview-card-border .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-preview-card-border .domain-listing-card__share-btn:active,
+html body.home-page-body .home-ventures-section .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-ventures-section .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-ventures-section .domain-listing-card__share-btn:active,
+html body.home-page-body .home-coventures-section .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-coventures-section .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-coventures-section .domain-listing-card__share-btn:active,
+html body.home-page-body .home-auctions-section .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-auctions-section .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-auctions-section .domain-listing-card__share-btn:active,
+html body.home-page-body .home-community-section .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-community-section .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-community-section .domain-listing-card__share-btn:active,
+html body.home-page-body .home-operators-reference-row .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-operators-reference-row .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-operators-reference-row .domain-listing-card__share-btn:active,
+html body.home-page-body .home-operators-reference-section .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-operators-reference-section .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-operators-reference-section .domain-listing-card__share-btn:active,
+html body.home-page-body .home-preview-card-border--assistance .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-preview-card-border--assistance .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-preview-card-border--assistance .domain-listing-card__share-btn:active,
+html body.home-page-body .home-preview-card-border--venture .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-preview-card-border--venture .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-preview-card-border--venture .domain-listing-card__share-btn:active,
+html body.home-page-body .home-preview-card-border--coventure .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-preview-card-border--coventure .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-preview-card-border--coventure .domain-listing-card__share-btn:active,
+html body.home-page-body .home-preview-card-border--auction .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-preview-card-border--auction .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-preview-card-border--auction .domain-listing-card__share-btn:active,
+html body.home-page-body .home-preview-card-border--technology .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-preview-card-border--technology .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-preview-card-border--technology .domain-listing-card__share-btn:active,
+html body.home-page-body .home-registrations-section .reg-mini-card__share:hover,
+html body.home-page-body .home-registrations-section .reg-mini-card__share:focus-visible,
+html body.home-page-body .home-registrations-section .reg-mini-card__share:active,
+html body.home-page-body .reg-cards-row-wrap .reg-mini-card__share:hover,
+html body.home-page-body .reg-cards-row-wrap .reg-mini-card__share:focus-visible,
+html body.home-page-body .reg-cards-row-wrap .reg-mini-card__share:active {
+  border-color: #cbd5e1 !important;
+  background: #f1f5f9 !important;
+  background-image: none !important;
+  color: #334155 !important;
+  box-shadow: none !important;
+}
+
+html body.home-page-body .domain-listing-card__share-btn svg,
+html body.home-page-body .home-preview-row .domain-listing-card__share-btn svg,
+html body.home-page-body .home-auto-scroll-row .domain-listing-card__share-btn svg,
+html body.home-page-body .home-preview-card-border .domain-listing-card__share-btn svg,
+html body.home-page-body .home-ventures-section .domain-listing-card__share-btn svg,
+html body.home-page-body .home-coventures-section .domain-listing-card__share-btn svg,
+html body.home-page-body .home-auctions-section .domain-listing-card__share-btn svg,
+html body.home-page-body .home-community-section .domain-listing-card__share-btn svg,
+html body.home-page-body .home-operators-reference-row .domain-listing-card__share-btn svg,
+html body.home-page-body .home-operators-reference-section .domain-listing-card__share-btn svg,
+html body.home-page-body .home-registrations-section .reg-mini-card__share svg,
+html body.home-page-body .reg-cards-row-wrap .reg-mini-card__share svg {
+  width: 1rem !important;
+  height: 1rem !important;
+  flex: 0 0 auto !important;
+  color: currentColor !important;
+  stroke: currentColor !important;
+}
+
+/* Nested inline share wrappers used by Ventures / Delta Ventures / Auctions */
+html body.home-page-body .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
+html body.home-page-body .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn,
+html body.home-page-body .home-ventures-section .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
+html body.home-page-body .home-coventures-section .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
+html body.home-page-body .home-auctions-section .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn {
+  width: 2.25rem !important;
+  min-width: 2.25rem !important;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  border-radius: 999px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  color: #64748b !important;
+  box-shadow: none !important;
+}
+
+html body.home-page-body .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
+html body.home-page-body .venture-listing-card__share-container--inline .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active,
+html body.home-page-body .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:active,
+html body.home-page-body .home-ventures-section .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-ventures-section .venture-listing-card__share-container--inline .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-ventures-section .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active,
+html body.home-page-body .home-coventures-section .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-coventures-section .venture-listing-card__share-container--inline .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-coventures-section .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active,
+html body.home-page-body .home-auctions-section .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:hover,
+html body.home-page-body .home-auctions-section .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:focus-visible,
+html body.home-page-body .home-auctions-section .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:active {
+  border-color: #cbd5e1 !important;
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+}
+
+/* Mobile: match Domains circular Share control */
+@media (max-width: 767px) {
+  html body.home-page-body .domain-listing-card__share-btn,
+  html body.home-page-body .home-preview-row .domain-listing-card__share-btn,
+  html body.home-page-body .home-auto-scroll-row .domain-listing-card__share-btn,
+  html body.home-page-body .home-preview-card-border .domain-listing-card__share-btn,
+  html body.home-page-body .home-ventures-section .domain-listing-card__share-btn,
+  html body.home-page-body .home-coventures-section .domain-listing-card__share-btn,
+  html body.home-page-body .home-auctions-section .domain-listing-card__share-btn,
+  html body.home-page-body .home-community-section .domain-listing-card__share-btn,
+  html body.home-page-body .home-operators-reference-row .domain-listing-card__share-btn,
+  html body.home-page-body .home-operators-reference-section .domain-listing-card__share-btn,
+  html body.home-page-body .home-registrations-section .reg-mini-card__share,
+  html body.home-page-body .reg-cards-row-wrap .reg-mini-card__share,
+  html body.home-page-body .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
+  html body.home-page-body .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn {
+    width: 2rem !important;
+    min-width: 2rem !important;
+    max-width: 2rem !important;
+    height: 2rem !important;
+    min-height: 2rem !important;
+    max-height: 2rem !important;
+    border-radius: 999px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #f8fafc !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+  }
+
+  html body.home-page-body .domain-listing-card__share-btn svg,
+  html body.home-page-body .home-preview-row .domain-listing-card__share-btn svg,
+  html body.home-page-body .home-auto-scroll-row .domain-listing-card__share-btn svg,
+  html body.home-page-body .home-auctions-section .domain-listing-card__share-btn svg,
+  html body.home-page-body .home-registrations-section .reg-mini-card__share svg,
+  html body.home-page-body .reg-cards-row-wrap .reg-mini-card__share svg {
+    width: 0.9rem !important;
+    height: 0.9rem !important;
+  }
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ArrowRight, UserPlus } from 'lucide-react';
 import { communityAPI } from '../../api/services';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
@@ -96,6 +97,7 @@ export default function CommunitySection() {
   const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', previewCommunities);
   const { visible } = useHomepageCardReveal(previewCommunities);
   const hasCompletedLinkedInSignup = hasLinkedInAccount(myProfile);
+  const hasCards = previewCommunities.length > 0;
 
   const handleViewProfile = (communityId) => {
     navigateToListingDetail(navigate, 'community', communityId);
@@ -109,6 +111,7 @@ export default function CommunitySection() {
         likeState={getLike(item.id)}
         onLike={() => toggleLike(item.id)}
         onView={() => handleViewProfile(item.id)}
+        priceLabelOutside
       />
     </HomePreviewCardShell>
   );
@@ -131,18 +134,16 @@ export default function CommunitySection() {
   }
 
   return (
-    <section className="bg-white pt-2 pb-4 md:pt-3 md:pb-6 overflow-visible">
+    <section className="home-community-section bg-white pt-2 pb-4 md:pt-3 md:pb-6 overflow-visible">
       <div className="w-full">
         <HomeSectionHeader
           title="Deltapreneurs"
           to="/community"
           accent="community"
-          showViewAll
+          showViewAll={hasCards}
           extraActions={headerAction}
         />
-        {previewCommunities.length === 0 ? (
-          <p className="home-section-empty text-center text-gray-500">{t('noDisruptors')}</p>
-        ) : (
+        {hasCards ? (
           <HomeCardsNavRow accent="community" ariaLabel="Deltapreneurs" viewAllTo="/community">
             {visible.map((item) => (
               <HomePreviewRowItem key={item.id}>
@@ -150,6 +151,23 @@ export default function CommunitySection() {
               </HomePreviewRowItem>
             ))}
           </HomeCardsNavRow>
+        ) : (
+          <div className="home-community-empty" role="status">
+            <div className="home-community-empty__icon" aria-hidden="true">
+              <UserPlus size={22} strokeWidth={2.25} />
+            </div>
+            <p className="home-community-empty__title">{t('noDisruptors')}</p>
+            <p className="home-community-empty__text">
+              {t('deltapreneursEmptyHint', {
+                defaultValue:
+                  'Be the pioneer founder in this cohort. Register your profile to access pre-seed equity deals and operator privileges.',
+              })}
+            </p>
+            <Link to="/creator#connect-linkedin" className="home-community-empty__cta">
+              <span>{t('applyToJoinCohort', { defaultValue: 'Apply to Join Cohort' })}</span>
+              <ArrowRight size={16} strokeWidth={2.5} aria-hidden="true" />
+            </Link>
+          </div>
         )}
       </div>
     </section>

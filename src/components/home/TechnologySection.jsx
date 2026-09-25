@@ -73,6 +73,8 @@ export default function TechnologySection() {
   const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', previewSoftwares);
   const softwareReveal = useHomepageCardReveal(previewSoftwares);
   const serviceReveal = useHomepageCardReveal(featuredServices);
+  const servicesHaveMore = serviceReveal.hasMore;
+  const revealServices = serviceReveal.revealMore;
 
   const handleViewDetails = useCallback((softwareId) => {
     navigateToListingDetail(navigate, 'software', softwareId);
@@ -105,7 +107,8 @@ export default function TechnologySection() {
             <HomeCardsNavRow
               accent="technology"
               ariaLabel={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}
-              viewAllTo="/technology"
+              hasMore={softwareReveal.hasMore}
+              onRevealMore={softwareReveal.revealMore}
             >
               {Array.from({ length: 4 }).map((_, i) => (
                 <HomePreviewRowItem key={`software-skel-${i}`}>
@@ -120,7 +123,8 @@ export default function TechnologySection() {
             <HomeCardsNavRow
               accent="technology"
               ariaLabel={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })}
-              viewAllTo="/technology"
+              hasMore={softwareReveal.hasMore}
+              onRevealMore={softwareReveal.revealMore}
             >
               {softwareReveal.visible.map((item) => (
                 <HomePreviewRowItem key={item.id}>
@@ -158,7 +162,8 @@ export default function TechnologySection() {
             className="home-deltaos-services-nav"
             accent="technology"
             ariaLabel="Technology Register"
-            viewAllTo="/technology"
+            hasMore={servicesHaveMore}
+            onRevealMore={revealServices}
           >
             {servicesLoading
               ? Array.from({ length: 4 }).map((_, i) => (

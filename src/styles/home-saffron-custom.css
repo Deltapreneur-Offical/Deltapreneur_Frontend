@@ -545,7 +545,7 @@ body.home-page-body .home-coventures-section .home-preview-row__item,
 body.home-page-body .home-coventures-section .home-preview-row__card {
   width: 17rem !important;
   max-width: 17rem !important;
-  flex: 0 0 17rem !important;
+  /* flex: 0 0 17rem !important; */
   min-height: auto !important;
 }
 
@@ -2236,6 +2236,104 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .mt-auto .inline-flex > button:first-child svg {
     width: 0.95rem !important;
     height: 0.95rem !important;
+  }
+}
+
+/*
+ * Homepage hero only: language, currency, TLD marquee, search-tab text,
+ * and search-bar border follow the same 72s orange↔blue cycle as .glow-layer.
+ */
+@property --home-hero-sync-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #c2410c;
+}
+
+@property --home-hero-sync-color-bright {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ff9933;
+}
+
+@keyframes home-hero-sync-vars {
+  0%,
+  38% {
+    --home-hero-sync-color: #c2410c;
+    --home-hero-sync-color-bright: #ff9933;
+  }
+  48% {
+    --home-hero-sync-color: #0e7490;
+    --home-hero-sync-color-bright: #22d3ee;
+  }
+  58%,
+  80% {
+    --home-hero-sync-color: #0369a1;
+    --home-hero-sync-color-bright: #45d8ff;
+  }
+  90%,
+  100% {
+    --home-hero-sync-color: #c2410c;
+    --home-hero-sync-color-bright: #ff9933;
+  }
+}
+
+body.home-page-body {
+  animation: home-hero-sync-vars 72s linear infinite;
+}
+
+body.home-page-body.is-scrolling {
+  animation-play-state: paused;
+}
+
+body.home-page-body.is-scrolling * {
+  animation-play-state: running;
+}
+
+body.home-page-body .home-top-nav-actions .home-nav-util-language .home-nav-util-btn,
+body.home-page-body .home-top-nav-actions .home-nav-util-currency .home-nav-util-btn,
+body.home-page-body .home-top-nav-actions .home-nav-util-language .home-nav-util-btn svg,
+body.home-page-body .home-top-nav-actions .home-nav-util-currency .home-nav-util-btn svg,
+body.home-page-body .home-top-nav-actions .home-nav-util-language .home-nav-util-btn span,
+body.home-page-body .home-top-nav-actions .home-nav-util-currency .home-nav-util-btn span,
+body.home-page-body .app-layout-header-utils .home-nav-util-language .home-nav-util-btn,
+body.home-page-body .app-layout-header-utils .home-nav-util-currency .home-nav-util-btn,
+body.home-page-body .app-layout-header-utils .home-nav-util-language .home-nav-util-btn svg,
+body.home-page-body .app-layout-header-utils .home-nav-util-currency .home-nav-util-btn svg,
+body.home-page-body .app-layout-header-utils .home-nav-util-language .home-nav-util-btn span,
+body.home-page-body .app-layout-header-utils .home-nav-util-currency .home-nav-util-btn span,
+body.home-page-body .brand-search-tab-active,
+body.home-page-body .brand-search-tab-idle,
+body.home-page-body .brand-search-tab-active:hover,
+body.home-page-body .brand-search-tab-idle:hover,
+body.home-page-body .brand-search-tab-active:focus-visible,
+body.home-page-body .brand-search-tab-idle:focus-visible,
+body.home-page-body .tld-price-marquee-pill__tld,
+body.home-page-body .tld-price-marquee-skeleton-tld,
+body.home-page-body .tld-price-marquee-pill__yr,
+body.home-page-body .tld-price-marquee-skeleton-yr {
+  color: var(--home-hero-sync-color) !important;
+}
+
+body.home-page-body .tld-price-marquee-pill__price {
+  color: var(--home-hero-sync-color-bright) !important;
+}
+
+body.home-page-body .brand-search-shell,
+body.home-page-body .brand-search-frame:hover .brand-search-shell,
+body.home-page-body .brand-search-shell:hover,
+body.home-page-body .brand-search-shell:focus-within {
+  border-color: var(--home-hero-sync-color-bright) !important;
+}
+
+body.home-page-body .brand-search-play-icon {
+  color: var(--home-hero-sync-color-bright) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.home-page-body {
+    animation: none;
+    --home-hero-sync-color: #c2410c;
+    --home-hero-sync-color-bright: #ff9933;
   }
 }
 

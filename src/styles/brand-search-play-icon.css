@@ -1,0 +1,42 @@
+/* Hero search play triangle — same slot as pricesectionV.png (253×294). */
+.brand-search-play-icon {
+  display: block;
+  color: #ff9933;
+  fill: currentColor;
+  pointer-events: none;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.brand-search-submit:has(.brand-search-play-icon) {
+  position: relative !important;
+  width: 3.45rem !important;
+  min-width: 3.45rem !important;
+  max-width: 3.45rem !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  background-image: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  transform: none !important;
+}
+
+.brand-search-submit:has(.brand-search-play-icon) .brand-search-play-icon {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  height: 100% !important;
+  width: auto !important;
+  aspect-ratio: 253 / 294;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}

@@ -32,8 +32,7 @@ import AIDomainGrid from '../ai-domains/AIDomainGrid';
 import AIDomainLoader from '../ai-domains/AIDomainLoader';
 import RegistrarDomainLoader from './RegistrarDomainLoader';
 import DomainExtensionsLoader from './DomainExtensionsLoader';
-import PriceSectionIcon from './PriceSectionIcon';
-import priceSectionV from '../../assets/pricesectionV.png';
+import BrandSearchPlayIcon from './BrandSearchPlayIcon';
 import {
   heroSearchStackEnter,
   heroSubmitHover,
@@ -348,29 +347,8 @@ function BrandSearchSubmitButton({ label }) {
       className="brand-search-submit"
       {...motionProps}
     >
-      <span
-        className="brand-search-arrow"
-        style={{ '--search-arrow-mask': `url(${priceSectionV})` }}
-        aria-hidden="true"
-      >
-        <PriceSectionIcon className="brand-search-submit-icon" />
-        <svg
-          className="brand-search-arrow-tail"
-          viewBox="0 0 253 294"
-          preserveAspectRatio="none"
-          focusable="false"
-        >
-          <path
-            className="brand-search-arrow-tail-glow"
-            d="M20 3 H26 L244 140 V149 L26 286 H20 Q12 286 12 278 V11 Q12 3 20 3 Z"
-            pathLength="100"
-          />
-          <path
-            className="brand-search-arrow-tail-head"
-            d="M20 3 H26 L244 140 V149 L26 286 H20 Q12 286 12 278 V11 Q12 3 20 3 Z"
-            pathLength="100"
-          />
-        </svg>
+      <span className="brand-search-arrow" aria-hidden="true">
+        <BrandSearchPlayIcon className="brand-search-submit-icon" />
       </span>
     </ButtonTag>
   );
@@ -1838,7 +1816,8 @@ export default function DomainSearchBar({ className = '', embedded = false, onSe
         }
 
         .brand-search-submit:has(.brand-search-arrow) .brand-search-arrow .price-section-v-icon,
-        .brand-search-submit:has(.brand-search-arrow) .brand-search-arrow .brand-search-submit-icon {
+        .brand-search-submit:has(.brand-search-arrow) .brand-search-arrow .brand-search-submit-icon,
+        .brand-search-submit:has(.brand-search-arrow) .brand-search-arrow .brand-search-play-icon {
           position: relative !important;
           top: auto !important;
           right: auto !important;

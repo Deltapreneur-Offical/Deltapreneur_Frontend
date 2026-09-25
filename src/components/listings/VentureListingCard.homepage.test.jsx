@@ -128,7 +128,8 @@ describe('VentureListingCard homepage Ventures layout', () => {
     expect(queryByText('Ecommerce')).not.toBeInTheDocument();
     expect(queryByText('Investment Seeking')).not.toBeInTheDocument();
     expect(queryByText('1 Applicant')).not.toBeInTheDocument();
-    expect(getByText('Apply')).toBeInTheDocument();
+    const priceBox = container.querySelector('.domain-listing-card__price-box');
+    expect(priceBox).toContainElement(getByText('Apply'));
     expect(queryByText(/Offer Price/i)).not.toBeInTheDocument();
   });
 });

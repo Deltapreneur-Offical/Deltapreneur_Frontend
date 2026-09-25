@@ -1,24 +1,194 @@
 /*
  * Homepage Delta Ventures — mobile ONLY final lock.
  * Loaded from CoVenturesSection so it wins over shared price-cta / preview-card /
- * tech-service-card__ref-cta rules. Matches Main Ventures square arrow.
- * Desktop and dedicated co-venture pages are untouched.
+ * tech-service-card__ref-cta rules. Desktop and tablet are untouched.
  */
 @media (max-width: 767px) {
-  /* Keep the grey pill from clipping the arrow into a right-side D-shape. */
-  body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .venture-listing-card__price-block,
+  /* Stop overflow from clipping body padding (was making grey bar look edge-flush). */
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content,
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .domain-listing-card__body,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .domain-listing-card__body {
+    overflow: visible !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .domain-listing-card__body,
+  body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .domain-listing-card__body,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .domain-listing-card__body {
+    padding: 0.45rem 0.55rem 0.45rem !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Grey price BACKGROUND — clear inset from card border (not the ₹ text). */
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__footer,
+  body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__footer,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__footer,
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__footer.mt-auto {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: auto 0 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__price-block,
+  body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__price-block,
   body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__price-block,
-  body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .domain-listing-card__price-box,
-  body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .domain-listing-card__price-box--coventure,
+  body.home-page-body .home-coventures-section .home-preview-row .home-preview-card-shell:has(.venture-listing-card--homepage-delta-content) .venture-listing-card__price-block {
+    width: auto !important;
+    max-width: none !important;
+    height: 3.05rem !important;
+    min-height: 3.05rem !important;
+    max-height: 3.05rem !important;
+    margin: 0 0.2rem 0.35rem !important;
+    padding: 0.28rem 0.28rem 0.28rem 0.35rem !important;
+    border-radius: 0.55rem !important;
+    background: #f1f5f9 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .domain-listing-card__price-box,
   body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .domain-listing-card__price-box,
-  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .domain-listing-card__price-box--coventure,
   body.home-page-body .home-coventures-section .home-preview-row .home-preview-card-shell:has(.venture-listing-card--homepage-delta-content) .domain-listing-card__price-box {
     overflow: visible !important;
   }
 
-  body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .venture-listing-card__price-block,
-  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__price-block {
-    padding: 0.22rem 0.28rem 0.22rem 0.5rem !important;
+  /* Title row — full width; share is absolutely top-right on the card. */
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__title-row,
+  body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__title-row,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__title-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 1.2rem !important;
+    max-height: none !important;
+    margin: 0.35rem 0 0 !important;
+    padding-right: 2rem !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__title,
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__title--compact,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__title,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__title--compact {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+    /* Keep last glyph (e.g. "m" in .com) from being clipped at the edge */
+    padding-right: 0.35rem !important;
+    box-sizing: border-box !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__homepage-title-text,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__homepage-title-text {
+    display: inline-block !important;
+    max-width: none !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+    text-overflow: clip !important;
+    padding-right: 0.2rem !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__homepage-title-text > span:not(.venture-listing-card__homepage-title-suffix),
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__homepage-title-text > span:not(.venture-listing-card__homepage-title-suffix),
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__homepage-title-suffix,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__homepage-title-suffix {
+    display: inline !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__homepage-title-suffix,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__homepage-title-suffix {
+    padding-right: 0.12rem !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__title::-webkit-scrollbar,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__title::-webkit-scrollbar,
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__title--compact::-webkit-scrollbar,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__title--compact::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__title-actions,
+  body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__title-actions,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__title-actions {
+    display: inline-flex !important;
+    visibility: visible !important;
+    position: static !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Share — top-right of the card on mobile (above title / price). */
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline,
+  body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline {
+    position: absolute !important;
+    top: 0.4rem !important;
+    right: 0.4rem !important;
+    left: auto !important;
+    bottom: auto !important;
+    display: inline-flex !important;
+    visibility: visible !important;
+    flex: 0 0 auto !important;
+    z-index: 5 !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
+  body.home-page-body .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .domain-listing-card__share-btn {
+    display: inline-flex !important;
+    visibility: visible !important;
+    width: 1.65rem !important;
+    min-width: 1.65rem !important;
+    max-width: 1.65rem !important;
+    height: 1.65rem !important;
+    min-height: 1.65rem !important;
+    max-height: 1.65rem !important;
+  }
+
+  body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .domain-listing-card__price-text,
+  body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card--homepage-delta-content .domain-listing-card__price-text {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 0.12rem !important;
+  }
+
+  body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .venture-listing-card__price-label,
+  body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .venture-listing-card__price-label--apply,
+  body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .domain-listing-card__price-text .venture-listing-card__price-label--apply {
+    display: block !important;
+    color: #9ca3af !important;
+    font-size: 0.58rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .domain-listing-card__price-cta,
@@ -62,12 +232,7 @@
     padding: 0 !important;
     box-sizing: border-box !important;
     border: 0 !important;
-    /* Equal corners — kill base `0 999px 999px 0` pill-end shape. */
-    border-radius: 0.45rem 0.45rem 0.45rem 0.45rem !important;
-    border-top-left-radius: 0.45rem !important;
-    border-top-right-radius: 0.45rem !important;
-    border-bottom-right-radius: 0.45rem !important;
-    border-bottom-left-radius: 0.45rem !important;
+    border-radius: 0.45rem !important;
     background: #111827 !important;
     background-image: none !important;
     box-shadow: none !important;

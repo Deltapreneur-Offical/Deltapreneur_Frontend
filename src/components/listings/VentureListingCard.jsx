@@ -799,13 +799,23 @@ return (
 
           {showPriceBox && (
             <div className="venture-listing-card__price-block">
-              {!isAuction && showPriceText && !homepageVentureContentOnly && !homepageDeltaVentureContentOnly ? (
-                <span className={`venture-listing-card__price-label leading-none${homepageVentureContentOnly || (isHomePreview && isCoVenture) ? ' venture-listing-card__price-label--cta' : ' uppercase'}${homepageVentureContentOnly ? ' venture-listing-card__price-label--offer' : ''}${isHomePreview && isCoVenture ? ' venture-listing-card__price-label--apply' : ''}`}>
+              {!isAuction && showPriceText && (homepageVentureContentOnly || homepageDeltaVentureContentOnly) ? (
+                <span
+                  className={`venture-listing-card__price-label leading-none venture-listing-card__price-label--cta ${
+                    homepageVentureContentOnly
+                      ? 'venture-listing-card__price-label--offer'
+                      : 'venture-listing-card__price-label--apply'
+                  }`}
+                >
                   {homepageVentureContentOnly
                     ? t('listingCardOffer', 'Offer')
-                    : isHomePreview
-                      ? (isCoVenture ? t('listingCardApply', 'Apply') : t('listingCardAskingPrice', 'Asking Price'))
-                      : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
+                    : t('listingCardApply', 'Apply')}
+                </span>
+              ) : !isAuction && showPriceText ? (
+                <span className={`venture-listing-card__price-label leading-none${isHomePreview && isCoVenture ? ' venture-listing-card__price-label--cta venture-listing-card__price-label--apply' : ' uppercase'}`}>
+                  {isHomePreview
+                    ? (isCoVenture ? t('listingCardApply', 'Apply') : t('listingCardAskingPrice', 'Asking Price'))
+                    : (sellerAsk.dealTypeLabel || (isCoVenture ? 'Investment' : 'Asking Price'))}
                 </span>
               ) : null}
 
@@ -828,15 +838,6 @@ return (
               ) : showPriceText ? (
 
                 <div className="domain-listing-card__price-text min-w-0">
-                  {homepageVentureContentOnly ? (
-                    <span className="venture-listing-card__price-label venture-listing-card__price-label--offer leading-none">
-                      {t('listingCardOffer', 'Offer')}
-                    </span>
-                  ) : homepageDeltaVentureContentOnly ? (
-                    <span className="venture-listing-card__price-label venture-listing-card__price-label--apply leading-none">
-                      {t('listingCardApply', 'Apply')}
-                    </span>
-                  ) : null}
                   <span className={`domain-listing-card__price-value currency-display truncate ${compact ? 'venture-listing-card__price-value--compact' : ''
                     }`}>
 
@@ -857,7 +858,7 @@ return (
                   type="button"
 
                   className={homepageDeltaVentureContentOnly
-                    ? 'domain-listing-card__price-cta tech-service-card__ref-cta venture-listing-card__delta-ref-cta'
+                    ? 'domain-listing-card__price-cta venture-listing-card__delta-ref-cta'
                     : `domain-listing-card__price-cta${homepageVentureContentOnly ? ' venture-listing-card__homepage-offer-cta' : ' tech-service-card__price-arrow'}`}
 
                   aria-label={t('listingCardViewDetails', 'View details')}
@@ -865,12 +866,10 @@ return (
                   onClick={handleViewDetails}
 
                 >
-                  {homepageVentureContentOnly ? (
+                  {homepageVentureContentOnly || homepageDeltaVentureContentOnly ? (
                     <span className="venture-listing-card__price-arrow-glyph" aria-hidden>
                       <ArrowRight size={17} strokeWidth={2.45} />
                     </span>
-                  ) : homepageDeltaVentureContentOnly ? (
-                    <ArrowRight className="h-4 w-4" />
                   ) : (
                     <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
                   )}

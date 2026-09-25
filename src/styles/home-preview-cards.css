@@ -1068,17 +1068,23 @@ body.home-page-body .home-price-rupee-symbol {
 
 .home-ventures-section .home-preview-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
 .home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid #fed7aa;
-  background: #fff7ed !important;
-  color: #c2410c;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc !important;
+  color: #64748b;
+  box-shadow: none;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
 }
 
 .home-ventures-section .home-preview-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
-.home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover {
-  background: #ffedd5 !important;
-  color: #9a3412;
+.home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
+.home-ventures-section .home-preview-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active,
+.home-ventures-section .home-auto-scroll-row .venture-listing-card--homepage-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active {
+  border-color: #cbd5e1;
+  background: #f1f5f9 !important;
+  color: #334155;
 }
 
 .home-ventures-section .home-preview-row .venture-listing-card--homepage-content .venture-listing-card__metrics,
@@ -1223,17 +1229,23 @@ body.home-page-body .home-price-rupee-symbol {
 
 .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn,
 .home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid #5EEAD4;
-  background: #F0FDFA !important;
-  color: #0F766E;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc !important;
+  color: #64748b;
+  box-shadow: none;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
 }
 
 .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
-.home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover {
-  background: #CCFBF1 !important;
-  color: #115E59;
+.home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:hover,
+.home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active,
+.home-coventures-section .home-auto-scroll-row .venture-listing-card--homepage-delta-content .venture-listing-card__share-container--inline .domain-listing-card__share-btn:active {
+  border-color: #cbd5e1;
+  background: #f1f5f9 !important;
+  color: #334155;
 }
 
 .home-coventures-section .home-preview-row .venture-listing-card--homepage-delta-content .venture-listing-card__metrics,
@@ -4424,17 +4436,23 @@ body.home-page-body .home-deltaos-services-nav .tech-service-card--home .tech-se
 
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn,
 .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid #fed7aa;
-  background: #fff7ed !important;
-  color: #c2410c;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc !important;
+  color: #64748b;
+  box-shadow: none;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
 }
 
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:hover,
-.home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:hover {
-  background: #ffedd5 !important;
-  color: #9a3412;
+.home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:hover,
+.home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:active,
+.home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn:active {
+  border-color: #cbd5e1;
+  background: #f1f5f9 !important;
+  color: #334155;
 }
 
 .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__ends-in-row,
@@ -4642,8 +4660,12 @@ body.home-page-body .home-deltaos-services-nav .tech-service-card--home .tech-se
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn,
   .home-auctions-section .home-auto-scroll-row .home-auction-preview-card--homepage-content .home-auction-preview-card__share-container--inline .domain-listing-card__share-btn {
-    width: 1.7rem !important;
-    height: 1.7rem !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    border-radius: 999px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #f8fafc !important;
+    color: #64748b !important;
   }
 
   .home-auctions-section .home-preview-row .home-auction-preview-card--homepage-content .home-auction-preview-card__title-row,

@@ -1,4 +1,4 @@
-﻿/* Homepage Auctions reference treatment. Behavior remains in HomeAuctionPreviewCard. */
+/* Homepage Auctions reference treatment. Behavior remains in HomeAuctionPreviewCard. */
 body.home-page-body .home-auctions-section {
   background: #f5f7fb !important;
   padding-top: 1.5rem !important;
@@ -585,24 +585,34 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-c
   box-shadow: none !important;
 }
 
-/* Hover uses a full-card glow; the card border itself stays unchanged. */
-body.home-page-body .home-auctions-section .home-preview-card-border--auction,
-body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover,
-body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within {
-  border-color: transparent !important;
+/* Outer shell owns the border & glow */
+body.home-page-body .home-auctions-section .home-preview-card-border--auction {
+  border: 1px solid #e0e7ef !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  overflow: hidden !important;
   box-shadow: none !important;
+  transition: border-color 180ms ease, box-shadow 180ms ease !important;
 }
 
-body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card,
-body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover .home-auction-preview-card,
-body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card:hover,
-body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card:focus-visible {
-  border-color: #e0e7ef !important;
+body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover,
+body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within {
+  border-color: #c8dce8 !important;
   box-shadow:
     0 0 0 1px rgba(125, 211, 252, 0.16),
     0 8px 24px rgba(2, 132, 199, 0.08),
     0 0 22px rgba(56, 189, 248, 0.14) !important;
-  transform: translateY(-2px);
+}
+
+body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-preview-card-border__inner {
+  border-radius: 15px !important;
+  overflow: hidden !important;
+}
+
+body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card {
+  border: none !important;
+  border-radius: inherit !important;
+  box-shadow: none !important;
 }
 
 @media (min-width: 701px) {
@@ -829,14 +839,26 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
     padding: 0 !important;
   }
 
-  body.home-page-body .home-auctions-section .home-preview-card-border--auction,
+  body.home-page-body .home-auctions-section .home-preview-card-border--auction {
+    border: 1px solid #e0e7ef !important;
+    border-radius: 16px !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+    overflow: hidden !important;
+    transform: none !important;
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+  }
+
   body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover,
   body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within {
-    border: 0 !important;
-    border-radius: 16px !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    transform: none !important;
+    border-color: #c8dce8 !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-preview-card-border__inner {
+    border-radius: 15px !important;
+    overflow: hidden !important;
   }
 
   body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card {
@@ -844,25 +866,11 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
     height: 252px !important;
     min-height: 252px !important;
     max-height: 252px !important;
-    border: 1px solid #e0e7ef !important;
-    border-radius: 16px !important;
+    border: none !important;
+    border-radius: inherit !important;
     background: #ffffff !important;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+    box-shadow: none !important;
     transform: none !important;
-    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
-  }
-
-  body.home-page-body .home-auctions-section .home-preview-row .home-preview-card-shell:hover .home-preview-card-border--auction .home-auction-preview-card,
-  body.home-page-body .home-auctions-section .home-preview-row .home-preview-card-shell:focus-within .home-preview-card-border--auction .home-auction-preview-card,
-  body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-card-shell:hover .home-preview-card-border--auction .home-auction-preview-card,
-  body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-card-shell:focus-within .home-preview-card-border--auction .home-auction-preview-card,
-  body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover .home-auction-preview-card,
-  body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within .home-auction-preview-card,
-  body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card:hover,
-  body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card:focus-visible {
-    border-color: #c8dce8 !important;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12) !important;
-    transform: translateY(-2px) !important;
   }
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__body {
@@ -871,7 +879,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
     min-height: 0 !important;
     padding: 20px !important;
     gap: 8px !important;
-    border-radius: 16px !important;
+    border-radius: inherit !important;
     background: #ffffff !important;
     overflow: hidden !important;
   }
@@ -1308,19 +1316,19 @@ html body.home-page-body .home-auctions-section .home-auction-preview-card--home
   transform: none !important;
 }
 
-/* Match the DeltaOS card interaction: quiet resting card, lifted shadow on hover. */
 html body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content {
-  border-color: #e2e8f0 !important;
+  border: none !important;
+  border-color: transparent !important;
   background: #ffffff !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+  box-shadow: none !important;
   transform: none !important;
-  transition: border-color 150ms ease, box-shadow 150ms ease !important;
 }
 
 html body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover .home-auction-preview-card--homepage-content,
 html body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within .home-auction-preview-card--homepage-content,
 html body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content:hover {
-  border-color: #cbd5e1 !important;
+  border: none !important;
+  border-color: transparent !important;
   background: #ffffff !important;
   box-shadow: none !important;
   transform: none !important;
@@ -1541,9 +1549,17 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
   body.home-page-body .home-auctions-section .home-preview-card-border--auction,
   body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover,
   body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within {
+    border: 1px solid rgba(226, 232, 240, 0.95) !important;
     border-radius: 0.9rem !important;
-    box-shadow: none !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05) !important;
+    overflow: hidden !important;
     transform: none !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-preview-card-border__inner {
+    border-radius: calc(0.9rem - 1px) !important;
+    overflow: hidden !important;
   }
 
   body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card,
@@ -1555,10 +1571,10 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
     min-height: 0 !important;
     max-height: none !important;
     aspect-ratio: auto !important;
-    border: 1px solid rgba(226, 232, 240, 0.95) !important;
-    border-radius: 0.45rem !important;
+    border: none !important;
+    border-radius: inherit !important;
     background: #ffffff !important;
-    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05) !important;
+    box-shadow: none !important;
     flex: 0 0 auto !important;
     align-self: start !important;
     transform: none !important;
@@ -1570,7 +1586,7 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
     min-height: 0 !important;
     padding: 0.58rem 0.6rem !important;
     gap: 0.36rem !important;
-    border-radius: 0.45rem !important;
+    border-radius: inherit !important;
     overflow: hidden !important;
   }
 

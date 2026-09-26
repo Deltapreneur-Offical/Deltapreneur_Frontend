@@ -558,7 +558,7 @@ body.home-page-body .home-price-rupee-symbol {
   min-height: min-content;
   display: flex;
   flex-direction: column;
-  border-radius: inherit;
+  border-radius: calc(var(--home-card-inner-radius, 1.5rem) - 1px);
   overflow: hidden;
   isolation: isolate;
   background: #FFFCF8;

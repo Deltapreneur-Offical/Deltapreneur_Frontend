@@ -732,7 +732,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
     gap: 0.75rem !important;
     padding: 0 !important;
     color: #0f172a !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 30px !important;
     font-weight: 700 !important;
     line-height: 36px !important;
@@ -757,7 +757,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
     min-height: 0 !important;
     padding: 0 !important;
     color: #0087c1 !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 12px !important;
     font-weight: 700 !important;
     line-height: 16px !important;
@@ -896,7 +896,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
     gap: 4px !important;
     min-height: 23px !important;
     padding: 4px 10px !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 11px !important;
     font-weight: 700 !important;
     line-height: 13px !important;
@@ -933,7 +933,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title,
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text {
     color: #111827 !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 20px !important;
     font-weight: 700 !important;
     line-height: 26px !important;
@@ -1005,7 +1005,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-label {
     color: #64748b !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 13px !important;
     font-weight: 400 !important;
     line-height: 18px !important;
@@ -1013,7 +1013,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-value {
     color: #0f172a !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 14px !important;
     font-weight: 700 !important;
     line-height: 18px !important;
@@ -1030,7 +1030,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__ends-in-compact {
     gap: 3px !important;
     color: #0087c1 !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 11px !important;
     font-weight: 500 !important;
     line-height: 18px !important;
@@ -1042,7 +1042,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
   }
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__ends-in-label {
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 11px !important;
     font-weight: 500 !important;
   }
@@ -1051,19 +1051,19 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
     min-height: 20px !important;
     padding: 2px 7px !important;
     gap: 3px !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 11px !important;
     line-height: 14px !important;
   }
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__countdown-num {
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 12px !important;
     font-weight: 700 !important;
   }
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__countdown-unit {
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 10px !important;
   }
 
@@ -1088,7 +1088,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-label {
     margin: 0 0 5px !important;
     color: #64748b !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 11px !important;
     font-weight: 700 !important;
     line-height: 12px !important;
@@ -1118,7 +1118,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-value {
     color: #0f172a !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 18px !important;
     font-weight: 700 !important;
     line-height: 22px !important;
@@ -1154,7 +1154,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__total-bids {
     gap: 5px !important;
     color: #64748b !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 11px !important;
     font-weight: 600 !important;
     line-height: 16px !important;
@@ -1168,7 +1168,7 @@ body.home-page-body .home-auctions-section .home-auto-scroll-row .home-auction-p
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__total-bids-count,
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__total-bids-label {
     color: inherit !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 11px !important;
     font-weight: 600 !important;
   }
@@ -1434,7 +1434,7 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
   body.home-page-body .home-auctions-section .home-section-header__title {
     gap: 0.38rem !important;
     color: #0f172a !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 0.95rem !important;
     font-weight: 700 !important;
     line-height: 1.2 !important;
@@ -1628,7 +1628,7 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title .cb-overflow-marquee,
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title .cb-overflow-marquee__plain {
     color: #111827 !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 0.9rem !important;
     font-weight: 800 !important;
     line-height: 1.15 !important;
@@ -1765,7 +1765,7 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
     background: #111827 !important;
     color: #ffffff !important;
     box-shadow: none !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 0.56rem !important;
     font-weight: 800 !important;
     line-height: 1 !important;
@@ -1969,7 +1969,7 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title .cb-overflow-marquee__plain,
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text {
     color: #111827 !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 1.1rem !important;
     font-weight: 800 !important;
     line-height: 1.12 !important;

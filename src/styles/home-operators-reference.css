@@ -1,6 +1,6 @@
 /* Homepage Operator reference layout only. */
 body.home-page-body .home-operators-reference-section {
-  /* Blend with Home page canvas (#f8fafc) ù no separate white section box */
+  /* Blend with Home page canvas (#f8fafc) ? no separate white section box */
   background: #f8fafc !important;
   padding-top: 1.15rem !important;
   padding-bottom: 1.75rem !important;
@@ -22,11 +22,45 @@ body.home-page-body .home-operators-reference-section .home-section-header {
   margin-bottom: 1.25rem;
 }
 
-body.home-page-body .home-operators-reference-section .home-section-header__top {
-  border-bottom: none !important;
+/* Mobile only ? desktop keeps Domains-style underline under the heading */
+@media (max-width: 1023px) {
+  body.home-page-body .home-operators-reference-section .home-section-header__top {
+    border-bottom: none !important;
+  }
 }
 
-/* Blue accent bar left of "DeltaOp (Operators)" ù matches reference heading. */
+@media (min-width: 1024px) {
+  body.home-page-body .home-operators-reference-section .home-section-header__top,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__top {
+    align-items: center !important;
+    padding-bottom: 0.28rem !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  }
+
+  /* Match Domains vertical bar thickness; keep DeltaOp blue */
+  body.home-page-body .home-operators-reference-section .home-section-header__title {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding-left: 0 !important;
+  }
+
+  body.home-page-body .home-operators-reference-section .home-section-header__title::before {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 0.375rem !important;
+    min-width: 0.375rem !important;
+    height: 1.5rem !important;
+    flex: 0 0 0.375rem !important;
+    border-radius: 9999px !important;
+    background: #2f80ed !important;
+  }
+}
+
+/* Blue accent bar left of "DeltaOp (Operators)" ? matches reference heading. */
 body.home-page-body .home-operators-reference-section .home-section-header__title {
   position: relative;
   display: inline-flex;
@@ -409,7 +443,7 @@ body.home-page-body .home-operators-reference-row .virtual-assistant-listing-car
   line-height: 1.05 !important;
 }
 
-/* Compact compensation box ù matches second reference (not outlined pill). */
+/* Compact compensation box ? matches second reference (not outlined pill). */
 body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation,
 body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .domain-listing-card__price-box.va-listing-card__compensation,
 body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance:hover .virtual-assistant-listing-card .domain-listing-card__price-box.va-listing-card__compensation,
@@ -576,7 +610,7 @@ body.home-page-body .home-operators-reference-row .home-preview-card-border--ass
   filter: none !important;
 }
 
-/* Kill the shared play-mask (::before) ù it clips as a white triangle inside the blue square. */
+/* Kill the shared play-mask (::before) ? it clips as a white triangle inside the blue square. */
 body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::before,
 body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::before,
 body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover::before,
@@ -708,7 +742,8 @@ body.home-page-body .home-operators-reference-roster {
   flex: 0 0 auto;
 }
 
-body.home-page-body .home-operators-reference-roster span {
+body.home-page-body .home-operators-reference-roster > span,
+body.home-page-body .home-operators-reference-roster__item {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -720,19 +755,41 @@ body.home-page-body .home-operators-reference-roster span {
   color: #ffffff;
   font-size: 0.7rem;
   font-weight: 900;
+  overflow: hidden;
 }
 
-body.home-page-body .home-operators-reference-roster span:first-child {
+body.home-page-body .home-operators-reference-roster > span:first-child,
+body.home-page-body .home-operators-reference-roster__item:first-child {
   margin-left: 0;
+}
+
+body.home-page-body .home-operators-reference-roster__item:nth-child(1) {
   background: #ff604c;
 }
 
-body.home-page-body .home-operators-reference-roster span:nth-child(2) {
+body.home-page-body .home-operators-reference-roster__item:nth-child(2) {
   background: #0f172a;
 }
 
-body.home-page-body .home-operators-reference-roster span:nth-child(3) {
+body.home-page-body .home-operators-reference-roster__item:nth-child(3) {
   background: #1597d3;
+}
+
+body.home-page-body .home-operators-reference-roster__item:nth-child(4) {
+  background: #0f9f6e;
+}
+
+body.home-page-body .home-operators-reference-roster__initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 body.home-page-body .home-operators-reference-roster-text {
@@ -1171,7 +1228,7 @@ body.home-page-body .home-operators-reference-info__cta {
     display: none !important;
   }
 
-  /* Work type as one horizontal line directly under Role ù Experience */
+  /* Work type as one horizontal line directly under Role ? Experience */
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__stats-grid,
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__stats-grid--two-col {
     grid-area: meta;
@@ -1378,6 +1435,68 @@ body.home-page-body .home-operators-reference-info__cta {
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-value {
     font-size: 0.88rem !important;
+  }
+}
+
+/*
+ * Desktop homepage DeltaOp only (?1024): Lucide white ArrowRight inside black
+ * rounded square ? same glyph pattern as Registrations / Ventures CTAs.
+ * Phone + tablet keep the unicode ? treatment above.
+ */
+@media (min-width: 1024px) {
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 2.15rem !important;
+    width: 2.15rem !important;
+    min-width: 2.15rem !important;
+    max-width: 2.15rem !important;
+    height: 2.15rem !important;
+    min-height: 2.15rem !important;
+    max-height: 2.15rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0.55rem !important;
+    background-color: #111827 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.45' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'%3E%3C/line%3E%3Cpolyline points='12 5 19 12 12 19'%3E%3C/polyline%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 1.05rem 1.05rem !important;
+    color: transparent !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    transform: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-shell:hover .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-shell:focus-within .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:hover .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:focus-within .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card:hover .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card:focus-visible .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible {
+    background-color: #ff553b !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.45' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'%3E%3C/line%3E%3Cpolyline points='12 5 19 12 12 19'%3E%3C/polyline%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 1.05rem 1.05rem !important;
+    color: transparent !important;
+  }
+
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after {
+    content: none !important;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    font-size: 0 !important;
   }
 }
 

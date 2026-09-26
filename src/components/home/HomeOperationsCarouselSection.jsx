@@ -21,6 +21,26 @@ import OperationsRequestSuccess from '../operations/OperationsRequestSuccess';
 import '../../styles/domain-listing-cards.css';
 import '../../styles/home-saffron.css';
 
+const HERO_OPERATOR_AVATAR_LIMIT = 4;
+
+function getOperatorDisplayName(profile) {
+  return (
+    profile?.name
+    || profile?.fullName
+    || profile?.full_name
+    || profile?.referenceNumber
+    || profile?.reference_number
+    || ''
+  );
+}
+
+function getOperatorInitials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0][0]?.toUpperCase() || '?';
+  return `${parts[0][0] || ''}${parts[1][0] || ''}`.toUpperCase() || '?';
+}
+
 /**
  * Homepage Operations carousel section (Virtual Assistance or Compliance).
  *
@@ -90,6 +110,15 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const accent = isAssistanceSection ? 'assistance' : 'operations';
   const viewAllPath = operationsPathForSection(sectionId);
   const { visible: visibleServices, hasMore: servicesHaveMore, revealMore: revealServices } = useHomepageCardReveal(services);
+  const activeOperatorProfiles = vaFeatured.cards;
+  const heroOperatorAvatars = activeOperatorProfiles.slice(0, HERO_OPERATOR_AVATAR_LIMIT);
+  const additionalActiveOperatorCount = Math.max(
+    0,
+    activeOperatorProfiles.length - heroOperatorAvatars.length,
+  );
+  const additionalActiveOperatorLabel = additionalActiveOperatorCount === 1
+    ? 'active operator'
+    : 'active operators';
 
   const openServiceRequest = (service) => {
     operationsAPI.get(service.id)
@@ -159,12 +188,30 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
                 </p>
               </div>
               <div className="home-operators-reference-info__footer">
-                <div className="home-operators-reference-roster" aria-label="2+ active operator roster">
-                  <span>OP</span>
-                  <span>HQ</span>
-                  <span>AI</span>
-                </div>
-                <span className="home-operators-reference-roster-text">2+ active operator roster</span>
+                {heroOperatorAvatars.length > 0 ? (
+                  <div
+                    className="home-operators-reference-roster"
+                    aria-label={`${activeOperatorProfiles.length} active operators`}
+                  >
+                    {heroOperatorAvatars.map((profile, index) => (
+                      <span
+                        key={profile.id || profile.referenceNumber || profile.reference_number || `operator-${index}`}
+                        className="home-operators-reference-roster__item"
+                        aria-label={getOperatorDisplayName(profile) || 'DeltaOperator'}
+                        title={getOperatorDisplayName(profile) || 'DeltaOperator'}
+                      >
+                        <span className="home-operators-reference-roster__initials" aria-hidden="true">
+                          {getOperatorInitials(getOperatorDisplayName(profile))}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                {additionalActiveOperatorCount > 0 ? (
+                  <span className="home-operators-reference-roster-text">
+                    +{additionalActiveOperatorCount} {additionalActiveOperatorLabel}
+                  </span>
+                ) : null}
                 <Link to={viewAllPath} className="home-operators-reference-info__cta">
                   Request Operator
                 </Link>

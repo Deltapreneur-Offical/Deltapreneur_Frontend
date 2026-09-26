@@ -172,6 +172,8 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
                 className="home-operators-reference-nav"
                 rowClassName="home-operators-reference-row"
                 showAvailabilityBadge
+                priceLabelOutside
+                compensationLabel="COMPENSATION"
               />
             </div>
             <aside className="home-operators-reference-info" aria-label={title}>

@@ -9,6 +9,7 @@ export default function CreatorExpectedRateCard({
   hireLabel = 'Hire',
   variant = 'default',
   labelOutside = false,
+  compensationLabel = 'Compensation',
 }) {
   const { formatPrice } = useCurrency();
   const expectedRate = readCreatorExpectedRate(profile);
@@ -30,8 +31,8 @@ export default function CreatorExpectedRateCard({
   }
 
   if (variant === 'domain') {
-    const compensationLabel = (
-      <span className="va-listing-card__compensation-label">Compensation</span>
+    const compensationLabelNode = (
+      <span className="va-listing-card__compensation-label">{compensationLabel}</span>
     );
 
     const compensationPill = (
@@ -40,7 +41,7 @@ export default function CreatorExpectedRateCard({
         aria-label="Compensation"
       >
         <div className="domain-listing-card__price-text min-w-0">
-          {!labelOutside ? compensationLabel : null}
+          {!labelOutside ? compensationLabelNode : null}
           <span className="domain-listing-card__price-value truncate">
             {displayAmount}
             {displayPeriod ? (
@@ -64,7 +65,7 @@ export default function CreatorExpectedRateCard({
     if (labelOutside) {
       return (
         <div className="va-listing-card__compensation-block">
-          {compensationLabel}
+          {compensationLabelNode}
           {compensationPill}
         </div>
       );

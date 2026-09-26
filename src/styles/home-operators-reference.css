@@ -200,8 +200,16 @@ body.home-page-body .home-operators-reference-row .home-preview-card-border__inn
   flex: 1 1 auto;
 }
 
-body.home-page-body .home-operators-reference-row .home-preview-card-border,
-body.home-page-body .home-operators-reference-row .home-preview-card-border:hover {
+body.home-page-body .home-operators-reference-row .home-preview-card-border {
+  overflow: hidden !important;
+  border: 1px solid #dfe6ee !important;
+  border-radius: 1.35rem !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.07) !important;
+  transform: none !important;
+}
+
+body.home-page-body .home-operators-reference-row .home-preview-card-border:not(.home-preview-card-border--assistance):hover {
   overflow: hidden !important;
   border: 1px solid #dfe6ee !important;
   border-radius: 1.35rem !important;
@@ -212,14 +220,20 @@ body.home-page-body .home-operators-reference-row .home-preview-card-border:hove
 @media (min-width: 768px) {
   body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance {
     transition:
-      transform 0.18s ease,
-      box-shadow 0.18s ease,
-      border-color 0.18s ease !important;
+      transform 0.12s ease-out,
+      box-shadow 0.12s ease-out,
+      border-color 0.12s ease-out !important;
   }
 
+  /* Match Home Delta Registrations: the card lifts; the price CTA stays put. */
   body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:hover,
   body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:focus-within {
-    transform: translateY(-4px) !important;
+    border-color: #d5dde8 !important;
+    background: #ffffff !important;
+    box-shadow:
+      0 2px 4px rgba(15, 23, 42, 0.05),
+      0 14px 30px rgba(15, 23, 42, 0.075) !important;
+    transform: translateY(-2px) !important;
   }
 
   body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card,
@@ -462,7 +476,7 @@ body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.
   height: auto !important;
   min-height: 3.35rem !important;
   max-height: none !important;
-  margin-top: 0.55rem !important;
+  margin-top: 0 !important;
   padding: 0.7rem 0.7rem 0.7rem 0.9rem !important;
   overflow: hidden !important;
   border: 0 !important;

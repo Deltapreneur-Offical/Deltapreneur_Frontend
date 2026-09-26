@@ -17,6 +17,8 @@ import './styles/home-share-button-unify.css'
 import './styles/price-section-icon.css'
 import './styles/home-features-section.css'
 import './styles/listing-card-stats-footer.css'
+import './styles/home-operators-label-fix.css'
+import './styles/home-mobile-card-typography.css'
 import './i18n/index';
 import App from './App.jsx'
 import ErrorBoundary from './components/common/ErrorBoundary.jsx'

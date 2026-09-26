@@ -83,6 +83,7 @@ export default function CommunityListingCard({
   /** Homepage DeltaOp cards: show existing availability as a top-left status badge. */
   showAvailabilityBadge = false,
   priceLabelOutside = false,
+  compensationLabel = 'Compensation',
   hideStatsFooter = false,
   /** Homepage Deltapreneurs strip — enables mobile layout lock class. */
   homepageContent = false,
@@ -257,6 +258,7 @@ export default function CommunityListingCard({
             profile={profile}
             variant="domain"
             labelOutside={priceLabelOutside}
+            compensationLabel={compensationLabel}
             onView={interactive && !onHire ? () => onView() : undefined}
             onHire={interactive && onHire ? () => onHire() : undefined}
             hireLabel={onHire ? 'Hire virtual assistant' : undefined}

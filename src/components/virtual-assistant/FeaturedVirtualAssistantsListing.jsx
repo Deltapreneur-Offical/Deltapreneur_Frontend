@@ -85,6 +85,8 @@ export function FeaturedVirtualAssistantCard({
   onLike,
   accent = 'assistance',
   showAvailabilityBadge = false,
+  priceLabelOutside = false,
+  compensationLabel = 'Compensation',
 }) {
   return (
     <HomePreviewCardShell accent={accent}>
@@ -97,6 +99,8 @@ export function FeaturedVirtualAssistantCard({
         likeState={likeState}
         onLike={onLike}
         showAvailabilityBadge={showAvailabilityBadge}
+        priceLabelOutside={priceLabelOutside}
+        compensationLabel={compensationLabel}
       />
     </HomePreviewCardShell>
   );
@@ -120,6 +124,8 @@ export default function FeaturedVirtualAssistantsListing({
   className = '',
   rowClassName = '',
   showAvailabilityBadge = false,
+  priceLabelOutside = false,
+  compensationLabel = 'Compensation',
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -161,6 +167,8 @@ export default function FeaturedVirtualAssistantsListing({
       likeState={getLike(profile.id)}
       onLike={() => toggleLike(profile.id)}
       showAvailabilityBadge={showAvailabilityBadge}
+      priceLabelOutside={priceLabelOutside}
+      compensationLabel={compensationLabel}
     />
   );
 

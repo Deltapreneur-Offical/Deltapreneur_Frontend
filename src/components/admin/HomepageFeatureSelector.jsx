@@ -411,10 +411,14 @@ export default function HomepageFeatureSelector({ type, toast }) {
   };
 
   if (loading) {
+    const loadingTypeLabel =
+      type === 'coventure' || type === 'software' || type === 'virtual-assistant'
+        ? t(SECTION_KEYS[type], { defaultValue: SECTION_DEFAULTS[type] })
+        : typeLabel;
     return (
       <div className="admin-feature-card admin-feature-card--loading">
         <div className="admin-feature-spinner" />
-        <p className="admin-feature-loading-text">{t('homepageFeatureLoading', { type: typeLabel })}</p>
+        <p className="admin-feature-loading-text">{t('homepageFeatureLoading', { type: loadingTypeLabel })}</p>
       </div>
     );
   }

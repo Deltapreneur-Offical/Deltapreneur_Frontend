@@ -144,12 +144,17 @@
     transform: none !important;
   }
 
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .home-preview-card-border__inner {
+    border-radius: calc(0.95rem - 1px) !important;
+    overflow: hidden !important;
+  }
+
   body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content {
     display: flex !important;
     flex-direction: column !important;
     border: 0 !important;
     border-color: transparent !important;
-    border-radius: 0.95rem !important;
+    border-radius: inherit !important;
     background: #ffffff !important;
     box-shadow: none !important;
     overflow: hidden !important;
@@ -593,3 +598,82 @@
     margin-left: auto !important;
   }
 }
+
+/*
+ * Homepage Deltapreneurs — Desktop ONLY corner border lock.
+ * Ensures outer shell border is visible properly at all 4 corners without inner card border collision or corner clipping.
+ */
+@media (min-width: 768px) {
+  /* Outer shell container on desktop homepage */
+  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community,
+  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community {
+    border: 1px solid #F6C98F !important;
+    border-color: #F6C98F !important;
+    border-radius: 1.5rem !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+    background: #FFFCF8 !important;
+    box-shadow: 0 8px 24px rgba(246, 201, 143, 0.10) !important;
+  }
+
+  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover {
+    border-color: #F59E0B !important;
+    background: #FFF7ED !important;
+    box-shadow: 0 12px 28px rgba(245, 158, 11, 0.15) !important;
+  }
+
+  /* Inner border wrapper cleanly clipped */
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .home-preview-card-border__inner {
+    border-radius: calc(1.5rem - 1px) !important;
+    overflow: hidden !important;
+  }
+
+  /* Eliminate inner card border, box-shadow, glow, and corner radius mismatch */
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card {
+    border: none !important;
+    border-width: 0 !important;
+    border-color: transparent !important;
+    outline: none !important;
+    border-radius: inherit !important;
+    box-shadow: none !important;
+    transform: none !important;
+    overflow: hidden !important;
+    background: transparent !important;
+  }
+
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content:hover,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card:hover,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card:hover {
+    border: none !important;
+    border-width: 0 !important;
+    border-color: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    background: transparent !important;
+  }
+
+  /* Kill internal glow ::after and ::before overlays so they don't clip corners */
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card::after,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card::before,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card::after,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card::before,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card::after,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card::before {
+    content: none !important;
+    display: none !important;
+    opacity: 0 !important;
+  }
+
+  /* Header and cover inside the card fit seamlessly within inherited rounded inner wrapper */
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__header,
+  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__cover {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+

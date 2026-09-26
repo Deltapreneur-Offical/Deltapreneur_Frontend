@@ -200,3 +200,18 @@ html body.home-page-body .home-auctions-section .home-auction-preview-card__shar
     height: 0.9rem !important;
   }
 }
+
+/*
+ * Homepage typography guard.
+ * Keep all Home UI text on the same brand family used by the logo, even when
+ * section cards import older reference styles that hard-code Inter/Arial.
+ */
+html body.home-page-body,
+html body.home-page-body #root#root *:not(svg):not(svg *) {
+  font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
+}
+
+html body.home-page-body #root#root input::placeholder,
+html body.home-page-body #root#root textarea::placeholder {
+  font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
+}

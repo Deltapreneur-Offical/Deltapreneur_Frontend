@@ -461,7 +461,7 @@ body.home-page-body .home-coventures-section .home-section-header__title {
   align-items: center !important;
   gap: 0.75rem !important;
   color: #0f172a !important;
-  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
   font-size: 1.5rem !important;
   line-height: 2rem !important;
   font-weight: 700 !important;
@@ -485,7 +485,7 @@ body.home-page-body .home-section-header--coventure .home-section-header__view-a
   background: transparent !important;
   color: #ea580c !important;
   box-shadow: none !important;
-  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
   font-size: 0.875rem !important;
   font-weight: 600 !important;
   transform: none !important;
@@ -692,7 +692,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__equity-badge-value,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__equity-badge-label {
   color: #ea580c !important;
-  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
   font-size: 0.72rem !important;
   font-weight: 700 !important;
   letter-spacing: 0.04em !important;
@@ -808,7 +808,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title--compact,
 body.home-page-body .home-coventures-section .home-preview-card-border--coventure .venture-listing-card__title .cb-overflow-marquee__plain {
-  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
   color: #ff4d30 !important;
   font-size: 1.25rem !important;
   line-height: 1.25 !important;
@@ -938,7 +938,7 @@ body.home-page-body .home-coventures-section .venture-listing-card--homepage-del
   margin: 0 !important;
   padding: 0 !important;
   line-height: 1 !important;
-  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
 }
 
 /* Price text is price-only now (label lives above the grey box) */
@@ -1090,7 +1090,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   font-size: 1.25rem !important;
   line-height: 1.15 !important;
   font-weight: 800 !important;
-  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif) !important;
+  font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
   letter-spacing: -0.02em !important;
 }
 
@@ -1249,7 +1249,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   body.home-page-body .home-coventures-section .home-section-header__title {
     gap: 0.38rem !important;
     color: #0f172a !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 0.95rem !important;
     font-weight: 700 !important;
     line-height: 1.2 !important;
@@ -1490,7 +1490,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
     -ms-overflow-style: none !important;
     touch-action: pan-x !important;
     color: #111827 !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 0.98rem !important;
     font-weight: 500 !important;
     line-height: 1.2rem !important;
@@ -1523,7 +1523,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
     min-width: max-content !important;
     max-width: none !important;
     color: #111827 !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 0.98rem !important;
     font-weight: 500 !important;
     line-height: 1.2rem !important;
@@ -1643,7 +1643,7 @@ body.home-page-body .home-coventures-section .home-preview-card-border--coventur
   body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .venture-listing-card__price-value--compact,
   body.home-page-body .home-coventures-section .venture-listing-card--homepage-delta-content .domain-listing-card__price-value.currency-display {
     color: #111827 !important;
-    font-family: Inter, Arial, sans-serif !important;
+    font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 0.78rem !important;
     font-weight: 800 !important;
     line-height: 1 !important;
@@ -2555,7 +2555,10 @@ body.home-page-body .brand-search-play-icon {
 
   /* Registrations catalog clears the divider — restore Domains underline on desktop */
   body.home-page-body .home-registrations-section .home-section-header__top,
-  body.home-page-body .home-section-header--operations .home-section-header__top {
+  body.home-page-body .home-section-header--operations .home-section-header__top,
+  body.home-page-body .home-operators-reference-section .home-section-header__top,
+  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__top,
+  body.home-page-body .home-section-header--assistance .home-section-header__top {
     border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
     padding-bottom: 0.28rem !important;
   }

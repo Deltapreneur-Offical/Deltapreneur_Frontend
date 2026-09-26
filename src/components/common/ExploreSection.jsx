@@ -60,13 +60,14 @@ export default function ExploreSection({ searchMode = 'new' }) {
           <IndependentSection
             title={t('homeDomainRegister', { defaultValue: 'Delta Domains' })}
             to="/domains"
+            accent="domain"
           >
             <DomainsSection />
           </IndependentSection>
         </div>
       </div>
 
-      <IndependentSection title={t('homeVentureRegister', { defaultValue: 'Ventures' })} to="/ventures">
+      <IndependentSection title={t('homeVentureRegister', { defaultValue: 'Ventures' })} to="/ventures" accent="venture">
         <VenturesSection />
       </IndependentSection>
 
@@ -74,15 +75,16 @@ export default function ExploreSection({ searchMode = 'new' }) {
         title={t('homeCoVenturesRegister', { defaultValue: 'Delta Ventures' })}
         to="/ventures?mode=co-venture"
         compact
+        accent="coventure"
       >
         <CoVenturesSection />
       </IndependentSection>
 
-      <IndependentSection title={t('homeRegistryAuctions', { defaultValue: 'Auctions' })} to="/auctions" variant="auction">
+      <IndependentSection title={t('homeRegistryAuctions', { defaultValue: 'Auctions' })} to="/auctions" variant="auction" accent="auction">
         <AuctionsSection />
       </IndependentSection>
 
-      <IndependentSection title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology">
+      <IndependentSection title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology" accent="technology">
         <TechnologySection />
       </IndependentSection>
 
@@ -92,6 +94,7 @@ export default function ExploreSection({ searchMode = 'new' }) {
           title={section.homeLabel || t(section.labelKey, { defaultValue: section.defaultLabel })}
           to={operationsPathForSection(section.id)}
           compact
+          accent={section.id === 'assistance' ? 'assistance' : 'operations'}
         >
           <HomeOperationsCarouselSection sectionId={section.id} />
         </IndependentSection>
@@ -101,11 +104,12 @@ export default function ExploreSection({ searchMode = 'new' }) {
         title={t('homeRegistrationsTitle', { defaultValue: 'Delta Registrations' })}
         to="/registrations"
         compact
+        accent="operations"
       >
         <HomeRegistrationsSection />
       </IndependentSection>
 
-      <IndependentSection title="Deltapreneur" to="/community" compact>
+      <IndependentSection title="Deltapreneur" to="/community" compact accent="community">
         <CommunitySection />
       </IndependentSection>
 

@@ -2391,3 +2391,148 @@ body.home-page-body .brand-search-play-icon {
   }
 }
 
+/*
+ * Homepage desktop (≥1024): unify section heading chrome to match Domains.
+ * - Vertical accent bar: same thickness/height/pill as Domains (keep each section’s color)
+ * - Horizontal divider under every heading row (same as Domains)
+ * Mobile / tablet (<1024) unchanged.
+ */
+@media (min-width: 1024px) {
+  body.home-page-body .home-section-header__top {
+    align-items: center !important;
+    padding-bottom: 0.28rem !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  }
+
+  /* Registrations catalog clears the divider — restore Domains underline on desktop */
+  body.home-page-body .home-registrations-section .home-section-header__top,
+  body.home-page-body .home-section-header--operations .home-section-header__top {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    padding-bottom: 0.28rem !important;
+  }
+
+  body.home-page-body .home-section-header__title {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Domains reference size: width 0.375rem (6px), height 1.5rem, full pill */
+  body.home-page-body .home-section-header__title::before,
+  body.home-page-body .home-marketplace-domains-section .home-section-header__title::before,
+  body.home-page-body .home-domains-section .home-section-header__title::before,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header__title::before,
+  body.home-page-body .home-ventures-section .home-section-header__title::before,
+  body.home-page-body .home-coventures-section .home-section-header__title::before,
+  body.home-page-body .home-auctions-section .home-section-header__title::before,
+  body.home-page-body .home-community-section .home-section-header__title::before,
+  body.home-page-body .home-deltapreneurs-section .home-section-header__title::before,
+  body.home-page-body .home-registrations-section .home-section-header__title::before,
+  body.home-page-body .home-operators-reference-section .home-section-header__title::before,
+  body.home-page-body .home-section-header--domain .home-section-header__title::before,
+  body.home-page-body .home-section-header--venture .home-section-header__title::before,
+  body.home-page-body .home-section-header--coventure .home-section-header__title::before,
+  body.home-page-body .home-section-header--auction .home-section-header__title::before,
+  body.home-page-body .home-section-header--operations .home-section-header__title::before,
+  body.home-page-body .home-section-header--assistance .home-section-header__title::before,
+  body.home-page-body .home-section-header--technology .home-section-header__title::before,
+  body.home-page-body .home-section-header--community .home-section-header__title::before {
+    content: '' !important;
+    display: inline-block !important;
+    width: 0.375rem !important;
+    min-width: 0.375rem !important;
+    height: 1.5rem !important;
+    flex: 0 0 0.375rem !important;
+    border-radius: 9999px !important;
+    box-sizing: border-box !important;
+    /* Fallback until a section-specific color wins below */
+    background: #f97316 !important;
+  }
+
+  /* Preserve / restore each section’s accent color (Domains thickness only above) */
+  body.home-page-body .home-marketplace-domains-section .home-section-header__title::before,
+  body.home-page-body .home-domains-section .home-section-header__title::before,
+  body.home-page-body .home-section-header--domain .home-section-header__title::before {
+    background: #f97316 !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-section-header__title::before,
+  body.home-page-body .home-section-header--venture .home-section-header__title::before {
+    background: #0b86c6 !important;
+  }
+
+  body.home-page-body .home-coventures-section .home-section-header__title::before,
+  body.home-page-body .home-section-header--coventure .home-section-header__title::before {
+    background: #ff4d30 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-section-header__title::before,
+  body.home-page-body .home-section-header--auction .home-section-header__title::before {
+    background: #0798d1 !important;
+  }
+
+  body.home-page-body .home-registrations-section .home-section-header__title::before,
+  body.home-page-body .home-section-header--operations .home-section-header__title::before {
+    background: #f97316 !important;
+  }
+
+  body.home-page-body .home-operators-reference-section .home-section-header__title::before,
+  body.home-page-body .home-section-header--assistance .home-section-header__title::before {
+    background: #0d9488 !important;
+  }
+
+  body.home-page-body .home-section-header--technology .home-section-header__title::before {
+    background: #f97316 !important;
+  }
+
+  body.home-page-body .home-community-section .home-section-header__title::before,
+  body.home-page-body .home-deltapreneurs-section .home-section-header__title::before,
+  body.home-page-body .home-section-header--community .home-section-header__title::before {
+    background: #ea580c !important;
+  }
+
+  /* Registrations: drop absolute positioning so Domains-sized flex gap bar works */
+  body.home-page-body .home-registrations-section .home-section-header__title {
+    position: relative !important;
+    padding-left: 0 !important;
+  }
+
+  body.home-page-body .home-registrations-section .home-section-header__title::before {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+  }
+
+  /* DeltaOs custom header: Domains-thickness bar + same underline */
+  body.home-page-body .home-deltaos-services__header,
+  body.home-page-body .home-deltaos-services--ref .home-deltaos-services__header {
+    align-items: flex-end !important;
+    padding-bottom: 0.28rem !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  body.home-page-body .home-deltaos-services__title,
+  body.home-page-body .home-deltaos-services--ref .home-deltaos-services__title {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding-left: 0 !important;
+    border-left: 0 !important;
+  }
+
+  body.home-page-body .home-deltaos-services__title::before,
+  body.home-page-body .home-deltaos-services--ref .home-deltaos-services__title::before {
+    content: '' !important;
+    display: inline-block !important;
+    width: 0.375rem !important;
+    min-width: 0.375rem !important;
+    height: 1.5rem !important;
+    flex: 0 0 0.375rem !important;
+    border-radius: 9999px !important;
+    background: #f97316 !important;
+    box-sizing: border-box !important;
+  }
+}
+

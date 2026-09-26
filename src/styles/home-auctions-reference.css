@@ -2416,3 +2416,100 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
     left: auto !important;
   }
 }
+
+/* ============================================================
+   HOME PAGE — DESKTOP + TABLET ONLY (≥768 px)
+   Move "CURRENT BID" label ABOVE the grey price/bid pill.
+   Strategy: strip the grey background from __price-section and
+   move it to __metrics-row, so the label sits in normal document
+   flow above the pill — identical to the "APPLY" pattern.
+   Mobile (≤767 px) is intentionally untouched.
+   ============================================================ */
+@media (min-width: 768px) {
+
+  /* ── Step 1: Make __price-section a transparent flex-column wrapper ── */
+  html body.home-page-body .home-auctions-section .home-preview-row .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section,
+  html body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section,
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section,
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section,
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content:hover .home-auction-preview-card__price-section,
+  html body.home-page-body .home-auctions-section .home-preview-row .home-preview-card-shell:hover .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section,
+  html body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-card-shell:hover .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section,
+  html body.home-page-body .home-auctions-section .home-preview-row .home-preview-card-shell:focus-within .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section,
+  html body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-card-shell:focus-within .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__price-section {
+    display: flex !important;
+    flex-direction: column !important;
+    /* Let height be driven by content (label + pill) */
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    /* Remove the grey — it moves to __metrics-row */
+    background: transparent !important;
+    padding: 0 !important;
+    /* Gap between "CURRENT BID" text and the grey pill */
+    gap: 5px !important;
+    overflow: visible !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ── Step 2: "CURRENT BID" label — normal flow, above the pill ── */
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-label {
+    /* Undo any absolute positioning from other rules */
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* ── Step 3: __metrics-row becomes the grey pill ── */
+  /* Also set position:relative so the absolute arrow button anchors here
+     (nearest positioned ancestor), centering it inside the pill. */
+  html body.home-page-body .home-auctions-section .home-preview-row .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row,
+  html body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row,
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row,
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row,
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content:hover .home-auction-preview-card__metrics-row,
+  html body.home-page-body .home-auctions-section .home-preview-row .home-preview-card-shell:hover .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row,
+  html body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-card-shell:hover .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row,
+  html body.home-page-body .home-auctions-section .home-preview-row .home-preview-card-shell:focus-within .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row,
+  html body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-card-shell:focus-within .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__metrics-row {
+    position: relative !important;
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-height: 46px !important;
+    box-sizing: border-box !important;
+    /* Grey pill styles (moved from __price-section) */
+    background: #eaf0f7 !important;
+    border-radius: 12px !important;
+    /* Left/top/bottom padding; right side reserves space for the arrow button */
+    padding: 9px 52px 9px 12px !important;
+    transform: none !important;
+  }
+
+  /* ── Step 4: Arrow button — re-centered inside the new grey pill ── */
+  /* position:absolute with top:50% now resolves against __metrics-row
+     (nearest positioned ancestor), placing it at the pill's vertical center. */
+  html body.home-page-body .home-auctions-section .home-preview-row .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta,
+  html body.home-page-body .home-auctions-section .home-auto-scroll-row .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta {
+    position: absolute !important;
+    top: 50% !important;
+    right: 10px !important;
+    bottom: auto !important;
+    left: auto !important;
+    inset: 50% 10px auto auto !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+  }
+
+  /* Keep hover/focus CTA transform consistent */
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta,
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta,
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:hover,
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction .home-auction-preview-card--homepage-content .home-auction-preview-card__nav-cta:focus-visible {
+    transform: translate(2px, -50%) !important;
+  }
+}

@@ -1,0 +1,96 @@
+@media (max-width: 767px) {
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .registry-standard-badge,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .registry-premium-badge {
+    font-weight: 500 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name,
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name > span,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3 > span {
+    font-weight: 500 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pr-9 > p:not(.domain-search-card__name):not(.domain-search-card__price),
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .pr-9 > p:not(.domain-card-price-line) {
+    font-weight: 450 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__price::before,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-line::before {
+    font-weight: 450 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__price,
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__price-value,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-line,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-value,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-value .home-price-rupee-symbol {
+    font-weight: 550 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card__featured-badge,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__featured-badge--inline,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__mobile-state-pill,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__mobile-state-label,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__mobile-state-value {
+    font-weight: 400 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card__title,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__title-text,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__title-text span,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__title-suffix {
+    font-weight: 700 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card__current-bid-label,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__live-bid-label,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summary-label,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__ends-in-label,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__countdown,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__countdown-num,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__countdown-unit,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__total-bids-label {
+    font-weight: 400 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card__current-bid-value,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__live-bid-value,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summary-value,
+  body.home-page-body .home-auctions-section .home-auction-preview-card__total-bids-count {
+    font-weight: 400 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card__nav-cta {
+    font-weight: 400 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content :where(
+    span,
+    p,
+    div,
+    button,
+    .font-semibold,
+    .font-bold,
+    .font-extrabold,
+    .currency-display
+  ) {
+    font-weight: 400 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text span,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-suffix {
+    font-weight: 700 !important;
+    color: #111827 !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-label,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-label,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__bid-summary-label {
+    font-weight: 400 !important;
+  }
+}

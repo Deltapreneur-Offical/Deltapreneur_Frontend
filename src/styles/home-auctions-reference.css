@@ -5,6 +5,29 @@ body.home-page-body .home-auctions-section {
   padding-bottom: 3rem !important;
 }
 
+@media (max-width: 767px) {
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title,
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text,
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text span,
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-suffix {
+    font-weight: 700 !important;
+    color: #111827 !important;
+  }
+
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-label,
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-label,
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__bid-summary-label {
+    font-weight: 400 !important;
+  }
+
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-value,
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid-value .home-price-rupee-symbol,
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__live-bid-value,
+  html body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__bid-summary-value {
+    font-weight: 400 !important;
+  }
+}
+
 body.home-page-body .home-auctions-section > .w-full {
   max-width: 100% !important;
 }
@@ -1646,10 +1669,19 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
     color: #111827 !important;
     font-family: var(--font-body, 'Deltapreneur Rupee', 'Newsreader', Georgia, serif) !important;
     font-size: 0.9rem !important;
-    font-weight: 800 !important;
+    font-weight: 600 !important;
     line-height: 1.15 !important;
     letter-spacing: -0.01em !important;
     white-space: nowrap !important;
+  }
+
+  /* Full domain title (domain name + suffix) - bold */
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-text span,
+  body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__title-suffix {
+    font-weight: 700 !important;
+    color: #111827 !important;
   }
 
   body.home-page-body .home-auctions-section .home-auction-preview-card--homepage-content .home-auction-preview-card__current-bid {

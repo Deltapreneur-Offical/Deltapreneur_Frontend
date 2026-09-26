@@ -1818,8 +1818,11 @@ body.home-page-body .home-registrations-section .home-section-header {
   margin-bottom: 0.7rem;
 }
 
-body.home-page-body .home-registrations-section .home-section-header__top {
-  border-bottom: none !important;
+/* Mobile only: catalog search chrome is dense; divider comes back on desktop via homepage rules */
+@media (max-width: 1023px) {
+  body.home-page-body .home-registrations-section .home-section-header__top {
+    border-bottom: none !important;
+  }
 }
 
 body.home-page-body .home-registrations-section .home-section-header__title {

@@ -2066,6 +2066,39 @@ body.home-page-body .reg-cards-row-wrap .reg-mini-card__price-play {
   display: none;
 }
 
+/* Home Delta Registrations desktop/tablet: show FEE above the grey price box.
+   Mobile keeps the existing compact in-box label from the max-width rules. */
+@media (min-width: 768px) {
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__footer {
+    padding-top: 1.72rem;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-box {
+    position: relative;
+    overflow: visible;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-box::before {
+    content: 'FEE';
+    position: absolute;
+    left: 0.15rem;
+    bottom: calc(100% + 0.38rem);
+    color: #64748b;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    line-height: 1;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-label {
+    display: none;
+  }
+
+  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-copy {
+    gap: 0;
+  }
+}
+
 /*
  * Desktop ONLY — Home Delta Registrations long category badge text scroll.
  * Mobile (@media max-width: 767px) and dedicated /registrations page are untouched.

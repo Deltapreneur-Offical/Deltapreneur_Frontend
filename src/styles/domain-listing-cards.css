@@ -389,6 +389,12 @@
   box-shadow: none;
 }
 
+/* Homepage DeltaOp (Operators) cards: button must NOT lift — only the card lifts */
+.home-operators-reference-section .domain-listing-card__price-cta:hover,
+.home-operators-reference-section .domain-listing-card__price-cta:focus-visible {
+  transform: none;
+}
+
 .domain-listing-card__price-cta:hover svg,
 .domain-listing-card__price-cta:focus-visible svg {
   color: currentColor;

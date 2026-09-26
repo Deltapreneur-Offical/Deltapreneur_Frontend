@@ -102,7 +102,8 @@ describe('VentureListingCard homepage Ventures layout', () => {
     expect(metrics).toBeInTheDocument();
     expect(titleRow).toBeInTheDocument();
     expect([...content.children].indexOf(metrics)).toBeLessThan([...content.children].indexOf(titleRow));
-    expect(priceBox).toContainElement(getByText('Offer'));
+    expect(priceBox).not.toContainElement(getByText('Offer'));
+    expect(container.querySelector('.venture-listing-card__price-block')).toContainElement(getByText('Offer'));
     expect(priceBox.querySelector('.venture-listing-card__price-arrow-glyph svg')).toBeInTheDocument();
     expect(priceBox.querySelector('.price-section-v-icon')).not.toBeInTheDocument();
   });
@@ -129,7 +130,10 @@ describe('VentureListingCard homepage Ventures layout', () => {
     expect(queryByText('Investment Seeking')).not.toBeInTheDocument();
     expect(queryByText('1 Applicant')).not.toBeInTheDocument();
     const priceBox = container.querySelector('.domain-listing-card__price-box');
-    expect(priceBox).toContainElement(getByText('Apply'));
+    expect(priceBox).not.toContainElement(getByText('Apply'));
+    expect(container.querySelector('.venture-listing-card__price-block')).toContainElement(getByText('Apply'));
+    expect(priceBox.querySelector('.venture-listing-card__price-arrow-glyph svg')).toBeInTheDocument();
+    expect(priceBox.querySelector('.price-section-v-icon')).not.toBeInTheDocument();
     expect(queryByText(/Offer Price/i)).not.toBeInTheDocument();
   });
 });

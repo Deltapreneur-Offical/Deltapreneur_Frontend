@@ -3615,24 +3615,28 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   min-height: 0 !important;
 }
 
+/* OFFER above grey: price-block is a transparent stack; grey lives on price-box. */
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block {
   position: relative !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 0.24rem !important;
+  align-items: stretch !important;
+  gap: 0.35rem !important;
   width: 100% !important;
-  min-height: 4.45rem !important;
+  min-height: 0 !important;
   margin: 0 !important;
-  padding: 0.78rem 4.2rem 0.78rem 1rem !important;
-  border: 1px solid #dce6ee !important;
-  border-radius: 0.78rem !important;
-  background: #edf3f7 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   background-image: none !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+  box-shadow: none !important;
+  overflow: visible !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-label,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-label--offer {
+body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block > .venture-listing-card__price-label,
+body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block > .venture-listing-card__price-label--offer {
+  display: block !important;
   color: #718091 !important;
   font-size: 0.62rem !important;
   font-weight: 800 !important;
@@ -3647,6 +3651,7 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box--venture,
 body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .domain-listing-card__price-box,
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content:hover .domain-listing-card__price-box {
+  position: relative !important;
   display: flex !important;
   align-items: center !important;
   gap: 0.5rem !important;
@@ -3654,12 +3659,12 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   height: auto !important;
   min-height: 0 !important;
   max-height: none !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
+  padding: 0.78rem 4.2rem 0.78rem 1rem !important;
+  border: 1px solid #dce6ee !important;
+  border-radius: 0.78rem !important;
+  background: #edf3f7 !important;
   background-image: none !important;
-  box-shadow: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
   overflow: visible !important;
 }
 
@@ -3737,7 +3742,7 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block {
   display: flex !important;
   flex-direction: column !important;
-  gap: 0.36rem !important;
+  gap: 0.35rem !important;
   min-height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -3878,7 +3883,7 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block {
-  gap: 0.36rem !important;
+  gap: 0.35rem !important;
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-label,
@@ -3956,10 +3961,19 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   margin: 0.08rem 0 0 !important;
 }
 
-/* Hide any legacy label outside the grey panel; keep OFFER inside .price-text. */
+/* OFFER sits above the grey price panel (sibling of .price-box). */
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block > .venture-listing-card__price-label,
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block > .venture-listing-card__price-label--offer {
-  display: none !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #64748b !important;
+  font-family: var(--font-body, system-ui, sans-serif) !important;
+  font-size: 0.625rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__footer,
@@ -3968,7 +3982,10 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block {
-  gap: 0 !important;
+  gap: 0.35rem !important;
+  background: transparent !important;
+  padding: 0 !important;
+  border: 0 !important;
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box,
@@ -4371,8 +4388,14 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block {
-  gap: 0 !important;
+  gap: 0.35rem !important;
   width: 100% !important;
+  background: transparent !important;
+  background-image: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box,
@@ -4403,24 +4426,16 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   display: flex !important;
   flex: 1 1 auto !important;
   min-width: 0 !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
-  gap: 0.26rem !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
   line-height: 1 !important;
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label,
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label--offer {
-  display: block !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  color: #64748b !important;
-  font-size: 0.62rem !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.08em !important;
-  line-height: 1 !important;
-  text-transform: uppercase !important;
+  display: none !important;
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-value,
@@ -4538,29 +4553,20 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   display: flex !important;
   flex: 1 1 auto !important;
   min-width: 0 !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
-  gap: 0.16rem !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
   line-height: 1 !important;
   transform: none !important;
   transition: none !important;
 }
 
+/* Labels live above the grey box — never re-show inside price-text. */
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label,
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label--offer,
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box:hover .venture-listing-card__price-label--offer {
-  display: block !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  color: #64748b !important;
-  font-size: 0.64rem !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.06em !important;
-  line-height: 1 !important;
-  text-transform: uppercase !important;
-  transform: none !important;
-  transition: none !important;
+  display: none !important;
 }
 
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-value,
@@ -4807,10 +4813,10 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box:hover .domain-listing-card__price-text,
 body.home-page-body .home-ventures-section .venture-listing-card--homepage-content:hover .domain-listing-card__price-text {
   display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
-  gap: 0.14rem !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
   min-width: 0 !important;
   transform: none !important;
   transition: none !important;
@@ -6121,17 +6127,17 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text {
     display: flex !important;
     flex: 1 1 auto !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
-    gap: 0.22rem !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
     min-width: 0 !important;
     padding: 0 !important;
   }
 
   body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-label,
   body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-label--offer,
-  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label--offer {
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-block > .venture-listing-card__price-label--offer {
     display: block !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -6142,6 +6148,11 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
     letter-spacing: 0.08em !important;
     line-height: 1 !important;
     text-transform: uppercase !important;
+  }
+
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label,
+  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label--offer {
+    display: none !important;
   }
 
   body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-label--offer::before,

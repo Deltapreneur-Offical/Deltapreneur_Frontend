@@ -333,6 +333,7 @@ body.home-page-body .home-operators-reference-section .home-operators-reference-
   transition: background-color 0.12s ease-out, color 0.12s ease-out !important;
 }
 
+
 /* Price row never translates — only the operator card chrome lifts. */
 html body.home-page-body #root .home-operators-reference-section .home-operators-reference-row .domain-listing-card__price-box.va-listing-card__compensation,
 html body.home-page-body #root .home-operators-reference-section .home-operators-reference-row .domain-listing-card__price-box.va-listing-card__compensation:hover,
@@ -341,4 +342,64 @@ html body.home-page-body #root .home-operators-reference-section .home-operators
 html body.home-page-body #root .home-operators-reference-section .home-operators-reference-row .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
 html body.home-page-body #root .home-operators-reference-section .home-operators-reference-row .va-listing-card__compensation .domain-listing-card__price-cta:active {
   transform: none !important;
+}
+
+/* Mobile only: dark navy circle button with centered arrow — must stay last to win cascade */
+@media (max-width: 767px) {
+  html body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  html body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  html body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  html body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
+  html body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 2.4rem !important;
+    width: 2.4rem !important;
+    min-width: 2.4rem !important;
+    max-width: 2.4rem !important;
+    height: 2.4rem !important;
+    min-height: 2.4rem !important;
+    max-height: 2.4rem !important;
+    border-radius: 50% !important;
+    background: #111827 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    position: relative !important;
+    cursor: pointer !important;
+  }
+
+  html body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::before,
+  html body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  html body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after,
+  html body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after {
+    content: '\2192' !important;
+    display: inline-block !important;
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    inset: auto !important;
+    transform: none !important;
+    color: #ffffff !important;
+    font-size: 1.1rem !important;
+    font-weight: 400 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    background: transparent !important;
+  }
 }

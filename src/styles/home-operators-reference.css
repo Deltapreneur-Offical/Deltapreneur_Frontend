@@ -1127,10 +1127,20 @@ body.home-page-body .home-operators-reference-info__cta {
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__header,
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .domain-listing-card__body,
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__title-block,
-  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__name-row {
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__name-row,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation-block {
     display: contents !important;
     padding: 0 !important;
     margin: 0 !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation-block {
+    display: contents !important;
+    grid-area: price !important;
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__cover {
@@ -1318,7 +1328,8 @@ body.home-page-body .home-operators-reference-info__cta {
   body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card) .domain-listing-card__price-box.va-listing-card__compensation,
   body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card):hover .domain-listing-card__price-box.va-listing-card__compensation,
   body.home-page-body .home-operators-reference-row .home-preview-card-shell:has(.virtual-assistant-listing-card) .va-listing-card__compensation {
-    grid-area: price;
+    grid-area: price !important;
+    grid-column: 1 / -1 !important;
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -1329,8 +1340,8 @@ body.home-page-body .home-operators-reference-info__cta {
     min-height: 2.85rem !important;
     max-height: none !important;
     height: auto !important;
-    margin-top: 0.35rem !important;
-    padding: 0.55rem 0.55rem 0.55rem 0.75rem !important;
+    margin-top: 0.5rem !important;
+    padding: 0.55rem 0.65rem 0.55rem 0.85rem !important;
     overflow: hidden !important;
     border: 0 !important;
     outline: 0 !important;
@@ -1338,10 +1349,23 @@ body.home-page-body .home-operators-reference-info__cta {
     background: #f1f5f9 !important;
     background-image: none !important;
     box-shadow: none !important;
+    transform: none !important;
   }
 
-  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation-label {
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation-label,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation-block > .va-listing-card__compensation-label,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .domain-listing-card__price-text .va-listing-card__compensation-label,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation-label {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
   }
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-text {
@@ -1349,26 +1373,32 @@ body.home-page-body .home-operators-reference-info__cta {
     flex: 1 1 auto !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    align-items: baseline !important;
+    align-items: center !important;
     justify-content: flex-start !important;
-    gap: 0.3rem !important;
     min-width: 0 !important;
     padding: 0 !important;
+    margin: 0 !important;
   }
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-value {
+    display: inline-flex !important;
+    align-items: baseline !important;
+    gap: 0.35rem !important;
     color: #0f172a !important;
     font-size: 1.05rem !important;
     font-weight: 800 !important;
-    line-height: 1.1 !important;
+    line-height: 1.2 !important;
     white-space: nowrap !important;
   }
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation-period {
+    display: inline !important;
     color: #0f172a !important;
-    font-size: 0.9rem !important;
+    font-size: 0.88rem !important;
     font-weight: 700 !important;
+    line-height: 1.2 !important;
     white-space: nowrap !important;
+    margin-left: 0.15rem !important;
   }
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
@@ -1376,20 +1406,38 @@ body.home-page-body .home-operators-reference-info__cta {
   body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
   body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
   body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active {
-    flex: 0 0 auto !important;
-    width: 2.15rem !important;
-    min-width: 2.15rem !important;
-    max-width: 2.15rem !important;
-    height: 2.15rem !important;
-    min-height: 2.15rem !important;
-    max-height: 2.15rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 2.4rem !important;
+    width: 2.4rem !important;
+    min-width: 2.4rem !important;
+    max-width: 2.4rem !important;
+    height: 2.4rem !important;
+    min-height: 2.4rem !important;
+    max-height: 2.4rem !important;
     margin: 0 !important;
-    border-radius: 999px !important;
-    background: #2f80ed !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 50% !important;
+    background: #111827 !important;
     box-shadow: none !important;
+    cursor: pointer !important;
+    transform: none !important;
+    transition: background 0.12s ease-out !important;
+    position: relative !important;
+  }
+
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover {
+    background: #1f2937 !important;
   }
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta img,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta svg,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta .price-section-v-icon,
+  body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta .domain-listing-card__price-cta-icon,
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::before {
     display: none !important;
     content: none !important;
@@ -1398,9 +1446,16 @@ body.home-page-body .home-operators-reference-info__cta {
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after,
   body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after {
     content: '\2192' !important;
+    position: static !important;
+    display: inline-block !important;
     color: #ffffff !important;
     font-size: 1.1rem !important;
+    font-weight: 400 !important;
     line-height: 1 !important;
+    text-align: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
   }
 }
 

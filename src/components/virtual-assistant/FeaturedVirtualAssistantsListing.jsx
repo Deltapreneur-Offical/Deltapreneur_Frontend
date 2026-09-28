@@ -5,6 +5,7 @@ import { virtualAssistantAPI } from '../../api/services';
 import { asArray } from '../../utils/asArray';
 import { unwrapApiList } from '../../utils/apiResponse';
 import { navigateToVirtualAssistantDetail } from '../../utils/listingNavigation';
+import { isActiveListing } from '../../utils/homepageListings';
 import { mapVirtualAssistantToCreatorCard, normalizeHomepageListing } from '../../utils/homepagePreview';
 import { useHomepageCardReveal } from '../../utils/homepageCardReveal';
 import { useLikes } from '../../hooks/useLikes';
@@ -14,9 +15,65 @@ import HomeCardsNavRow from '../home/HomeCardsNavRow';
 import { HomePreviewRowItem } from '../home/HomePreviewRow';
 import PageContentSkeleton from '../common/PageContentSkeleton';
 
-export function useFeaturedVirtualAssistants(pageSize = 48, { enabled = true, featuredOnly = false } = {}) {
+const INACTIVE_OPERATOR_STATUSES = new Set([
+  'inactive',
+  'archived',
+  'deleted',
+  'removed',
+  'unpublished',
+  'draft',
+]);
+
+function operatorStatusValues(item) {
+  return [
+    item?.publishStatus,
+    item?.publish_status,
+    item?.overallStatus,
+    item?.overall_status,
+    item?.profileStatus,
+    item?.profile_status,
+    item?.listingStatus,
+    item?.listing_status,
+  ]
+    .map((value) => String(value ?? '').trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/** Published DeltaOperators only — excludes inactive, deleted, and archived records. */
+export function isActiveDeltaOperator(item) {
+  if (!item || typeof item !== 'object') return false;
+  if (item.deleted === true || item.isDeleted === true || item.is_deleted === true) return false;
+  if (item.archived === true || item.isArchived === true || item.is_archived === true) return false;
+  if (item.active === false || item.isActive === false || item.is_active === false) return false;
+  if (operatorStatusValues(item).some((status) => INACTIVE_OPERATOR_STATUSES.has(status))) return false;
+  return isActiveListing(item, 'virtual-assistant');
+}
+
+/**
+ * Total active operators from the published DeltaOperators payload.
+ * Uses the API total when the page is truncated, minus any inactive rows in that page.
+ * When the page contains the full roster, counts only rows that pass the active filter.
+ */
+export function readActiveOperatorTotal(response) {
+  const body = response?.data ?? {};
+  const items = unwrapApiList(response);
+  const activeCount = items.filter((item) => isActiveDeltaOperator(item)).length;
+  const reported = Number(body?.meta?.total);
+  if (Number.isFinite(reported) && items.length < reported) {
+    const inactiveInPage = Math.max(0, items.length - activeCount);
+    return Math.max(0, reported - inactiveInPage);
+  }
+  return activeCount;
+}
+
+export function useFeaturedVirtualAssistants(pageSize = 48, {
+  enabled = true,
+  featuredOnly = false,
+  includeActiveTotal = false,
+} = {}) {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(enabled);
+  const [activeTotal, setActiveTotal] = useState(null);
 
   useEffect(() => {
     if (!enabled) {
@@ -58,6 +115,29 @@ export function useFeaturedVirtualAssistants(pageSize = 48, { enabled = true, fe
     };
   }, [pageSize, enabled, featuredOnly]);
 
+  useEffect(() => {
+    if (!enabled || !includeActiveTotal) {
+      setActiveTotal(null);
+      return undefined;
+    }
+
+    let cancelled = false;
+    virtualAssistantAPI.getPublicList({
+      page: 1,
+      page_size: Math.max(Number(pageSize) || 1, 48),
+    })
+      .then((response) => {
+        if (!cancelled) setActiveTotal(readActiveOperatorTotal(response));
+      })
+      .catch(() => {
+        if (!cancelled) setActiveTotal(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, includeActiveTotal, pageSize]);
+
   const patchProfile = useCallback((id, patch) => {
     setProfiles((prev) => prev.map((item) => (
       String(item.id) === String(id) ? { ...item, ...patch } : item
@@ -74,7 +154,7 @@ export function useFeaturedVirtualAssistants(pageSize = 48, { enabled = true, fe
     [profiles],
   );
 
-  return { cards, loading, count: cards.length, patchProfile };
+  return { cards, loading, count: cards.length, activeTotal, patchProfile };
 }
 
 export function FeaturedVirtualAssistantCard({

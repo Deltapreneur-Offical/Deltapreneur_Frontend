@@ -2,6 +2,16 @@
  * Homepage Deltapreneurs - mobile ONLY final lock.
  * Loaded from CommunitySection. Desktop + dedicated /community page untouched.
  */
+
+/*
+ * Reused Venture-homepage arrow button (same markup as .home-ventures-section):
+ * hide the glyph everywhere by default so mobile keeps its existing CSS arrow.
+ * The desktop/tablet block below re-enables it with the exact Venture values.
+ */
+body.home-page-body .home-deltapreneurs-section .community-listing-card .venture-listing-card__price-arrow-glyph {
+  display: none !important;
+}
+
 @media (max-width: 767px) {
   body.home-page-body .home-deltapreneurs-section {
     padding-top: 0.7rem !important;
@@ -850,6 +860,101 @@
     -webkit-mask: none !important;
     mask: none !important;
     transform: none !important;
+  }
+
+  /*
+   * 10. Homepage Deltapreneur arrow button — EXACT reuse of the Venture homepage
+   * card's arrow implementation (same markup: .venture-listing-card__homepage-offer-cta
+   * + .venture-listing-card__price-arrow-glyph > ArrowRight SVG, same winning
+   * computed values as .home-ventures-section: 2rem square, 9px radius,
+   * #1f2937 at rest, #ff553b on hover, 17px white stroke arrow).
+   */
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:focus-visible,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:active {
+    position: absolute !important;
+    top: calc(50% - 1rem) !important;
+    right: 0.62rem !important;
+    bottom: auto !important;
+    left: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2rem !important;
+    min-width: 2rem !important;
+    max-width: 2rem !important;
+    height: 2rem !important;
+    min-height: 2rem !important;
+    max-height: 2rem !important;
+    flex: 0 0 2rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: #1f2937 !important;
+    background-color: #1f2937 !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    color: #ffffff !important;
+    transform: none !important;
+    transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+  }
+
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:focus-visible,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:active,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta {
+    background: #ff553b !important;
+    background-color: #ff553b !important;
+    box-shadow: none !important;
+    color: #ffffff !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* Same button, same glyph treatment as the Venture homepage arrow. */
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta .venture-listing-card__price-arrow-glyph,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover .venture-listing-card__price-arrow-glyph,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:focus-visible .venture-listing-card__price-arrow-glyph {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 17px !important;
+    height: 17px !important;
+    color: #ffffff !important;
+    line-height: 0 !important;
+    transform: none !important;
+  }
+
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta .venture-listing-card__price-arrow-glyph svg {
+    display: block !important;
+    width: 17px !important;
+    height: 17px !important;
+    stroke: #ffffff !important;
+    color: #ffffff !important;
+    fill: none !important;
+    transform: none !important;
+  }
+
+  /* No CSS-drawn arrow on the reused button — the SVG glyph is the only arrow. */
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::before,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::before,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover::before,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::after,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::after,
+  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover::after {
+    content: none !important;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    background: none !important;
+    -webkit-mask: none !important;
+    mask: none !important;
   }
 
   /*

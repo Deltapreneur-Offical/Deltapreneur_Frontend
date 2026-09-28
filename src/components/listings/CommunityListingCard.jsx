@@ -87,6 +87,8 @@ export default function CommunityListingCard({
   hideStatsFooter = false,
   /** Homepage Deltapreneurs strip — enables mobile layout lock class. */
   homepageContent = false,
+  /** Homepage Deltapreneurs desktop/tablet: reuse the Venture homepage arrow button implementation. */
+  homepageArrow = false,
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -262,6 +264,7 @@ export default function CommunityListingCard({
             onView={interactive && !onHire ? () => onView() : undefined}
             onHire={interactive && onHire ? () => onHire() : undefined}
             hireLabel={onHire ? 'Hire virtual assistant' : undefined}
+            homepageArrow={homepageArrow}
           />
 
           {!hideStatsFooter ? (
@@ -383,6 +386,7 @@ export default function CommunityListingCard({
           onView={interactive && !onHire ? () => onView() : undefined}
           onHire={interactive && onHire ? () => onHire() : undefined}
           hireLabel={onHire ? 'Hire virtual assistant' : undefined}
+          homepageArrow={homepageArrow}
         />
 
         {!hideStatsFooter ? (

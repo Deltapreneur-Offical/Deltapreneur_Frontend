@@ -114,6 +114,7 @@ export default function CommunitySection() {
         onView={() => handleViewProfile(item.id)}
         priceLabelOutside
         homepageContent
+        homepageArrow
       />
     </HomePreviewCardShell>
   );

@@ -1,3 +1,4 @@
+import { ArrowRight } from 'lucide-react';
 import PriceSectionIcon from '../common/PriceSectionIcon';
 import useCurrency from '../../context/CurrencyContext';
 import { readCreatorExpectedRate, parseCreatorExpectedRate } from '../../utils/creatorExpectedRate';
@@ -10,6 +11,8 @@ export default function CreatorExpectedRateCard({
   variant = 'default',
   labelOutside = false,
   compensationLabel = 'Compensation',
+  /** Homepage Deltapreneurs: reuse the exact Venture homepage arrow button implementation. */
+  homepageArrow = false,
 }) {
   const { formatPrice } = useCurrency();
   const expectedRate = readCreatorExpectedRate(profile);
@@ -50,14 +53,27 @@ export default function CreatorExpectedRateCard({
           </span>
         </div>
         {action ? (
-          <button
-            type="button"
-            className="domain-listing-card__price-cta"
-            aria-label={onHire ? hireLabel : 'View Deltapreneur details'}
-            onClick={action}
-          >
-            <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
-          </button>
+          homepageArrow ? (
+            <button
+              type="button"
+              className="domain-listing-card__price-cta venture-listing-card__homepage-offer-cta"
+              aria-label={onHire ? hireLabel : 'View Deltapreneur details'}
+              onClick={action}
+            >
+              <span className="venture-listing-card__price-arrow-glyph" aria-hidden>
+                <ArrowRight size={17} strokeWidth={2.45} />
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="domain-listing-card__price-cta"
+              aria-label={onHire ? hireLabel : 'View Deltapreneur details'}
+              onClick={action}
+            >
+              <PriceSectionIcon className="domain-listing-card__price-cta-icon" />
+            </button>
+          )
         ) : null}
       </div>
     );

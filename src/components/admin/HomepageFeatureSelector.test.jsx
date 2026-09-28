@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import HomepageFeatureSelector from './HomepageFeatureSelector';
 import { HOMEPAGE_FEATURE_MAX_MESSAGE } from '../../utils/homepageFeatureLimit';
 
+const futureAuctionEndTime = () => new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
 const mocks = vi.hoisted(() => ({
   getDomains: vi.fn(),
   getVentures: vi.fn(),
@@ -270,14 +272,14 @@ describe('HomepageFeatureSelector max 8 featured', () => {
           id: i + 1,
           status: 'ACTIVE',
           featured: true,
-          endTime: '2026-06-30T00:00:00Z',
+          endTime: futureAuctionEndTime(),
           domain: { fullDomain: `featured${i}.com` },
         })),
         {
           id: 9,
           status: 'ACTIVE',
           featured: false,
-          endTime: '2026-06-30T00:00:00Z',
+          endTime: futureAuctionEndTime(),
           domain: { fullDomain: 'ninth.com' },
         },
       ],

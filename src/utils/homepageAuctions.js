@@ -1,4 +1,4 @@
-import { resolveAuctionEndTime } from './auctionDate';
+import { parseAuctionDate, resolveAuctionEndTime } from './auctionDate';
 import { resolveAuctionDomainTitle } from './domainDisplay';
 import { pickMediaUrl } from './mediaUrl';
 import { HOMEPAGE_PREVIEW_LIMIT } from './homepageListings';
@@ -355,7 +355,10 @@ export function normalizeCommunityAuction(raw) {
 export function isLiveHomepageAuction(auction) {
   if (!auction?.id) return false;
   const status = String(auction.status || '').toUpperCase();
-  return status === 'ACTIVE' || status === 'EXTENDED';
+  if (status !== 'ACTIVE' && status !== 'EXTENDED') return false;
+  const end = parseAuctionDate(resolveAuctionEndTime(auction));
+  if (end && end.getTime() <= Date.now()) return false;
+  return true;
 }
 
 export function resolveHomeAuctionTitle(auction) {

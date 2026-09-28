@@ -625,7 +625,13 @@ export default function DomainListingCard({
               disabled
               className="inline-flex w-fit min-w-[8.5rem] px-4 py-2.5 rounded-lg font-bold text-sm bg-gray-100 text-gray-400 cursor-not-allowed whitespace-nowrap"
             >
-              {statusKey === 'SOLD' ? t('listingCardSold') : statusKey === 'AVAILABLE' ? t('listingCardVerificationPending') : t('listingCardUnavailable')}
+              {statusKey === 'SOLD'
+                ? t('listingCardSold')
+                : statusKey === 'AVAILABLE'
+                  && !domain.verified
+                  && String(domain.verificationStatus ?? domain.verification_status ?? '').toUpperCase() !== 'VERIFIED'
+                  ? t('listingCardVerificationPending')
+                  : t('listingCardUnavailable')}
             </button>
           )}
         </div>

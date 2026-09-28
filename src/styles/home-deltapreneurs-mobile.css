@@ -14,6 +14,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
 
 @media (max-width: 767px) {
   body.home-page-body .home-deltapreneurs-section {
+    --home-deltapreneurs-mobile-orange: #ea580c;
     padding-top: 0.7rem !important;
     padding-bottom: 0.85rem !important;
     background: #ffffff !important;
@@ -138,12 +139,12 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:has(.community-listing-card--homepage-content):focus-within,
   html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover,
   html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:focus-within {
-    --home-card-border: #e2e8f0 !important;
-    --home-card-border-hover: #e2e8f0 !important;
+    --home-card-border: var(--home-deltapreneurs-mobile-orange) !important;
+    --home-card-border-hover: var(--home-deltapreneurs-mobile-orange) !important;
     --home-card-shadow: rgba(15, 23, 42, 0.06) !important;
     --home-card-shadow-hover: rgba(15, 23, 42, 0.06) !important;
-    border: 1px solid #e2e8f0 !important;
-    border-color: #e2e8f0 !important;
+    border: 1px solid var(--home-deltapreneurs-mobile-orange) !important;
+    border-color: var(--home-deltapreneurs-mobile-orange) !important;
     outline: none !important;
     border-radius: 0.95rem !important;
     background: #ffffff !important;
@@ -230,14 +231,14 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover .creator-profile-card__avatar {
     width: 2.75rem !important;
     height: 2.75rem !important;
-    border: 2px solid #ffffff !important;
+    border: 2px solid var(--home-deltapreneurs-mobile-orange) !important;
     border-radius: 9999px !important;
     box-shadow: 0 1px 4px rgba(92, 61, 46, 0.12) !important;
     background: #f5e6d3 !important;
   }
 
   body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover .creator-profile-card__avatar--fallback {
-    color: #5c3d2e !important;
+    color: var(--home-deltapreneurs-mobile-orange) !important;
     font-size: 1.05rem !important;
     font-weight: 800 !important;
     background: #f5e6d3 !important;
@@ -512,13 +513,20 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
 
   html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-value,
   html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-period {
-    color: #5c3d2e !important;
     font-size: 0.95rem !important;
     font-weight: 800 !important;
     line-height: 1.2 !important;
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
+  }
+
+  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-value {
+    color: var(--home-deltapreneurs-mobile-orange) !important;
+  }
+
+  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-period {
+    color: #5c3d2e !important;
   }
 
   html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-period {

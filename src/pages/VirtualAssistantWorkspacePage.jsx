@@ -47,6 +47,12 @@ const AVAILABILITY_OPTIONS = [
   { value: 'busy', label: 'Busy' },
   { value: 'temporarily_unavailable', label: 'Temporarily Unavailable' },
 ];
+const PROFILE_AVAILABILITY_OPTIONS = [
+  ...AVAILABILITY_OPTIONS,
+  { value: 'full_time', label: 'Full-time' },
+  { value: 'part_time', label: 'Part-time' },
+  { value: 'flexible', label: 'Flexible' },
+];
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -396,7 +402,7 @@ function VirtualAssistantWorkspacePage() {
                     onChange={(e) => setAvail(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
-                    {AVAILABILITY_OPTIONS.map((o) => (
+                    {PROFILE_AVAILABILITY_OPTIONS.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}
                   </select>

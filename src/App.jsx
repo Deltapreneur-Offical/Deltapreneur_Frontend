@@ -1,9 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import lightFavicon from './assets/Deltapreneur_favicon_48.png';
-import darkFavicon from './assets/Deltapreneur_favicon_48.png';
-import { applyThemeFavicon } from './utils/applyThemeFavicon';
 import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
 import PageLoader from './components/common/PageLoader';
@@ -165,14 +162,6 @@ const getCountryBasename = () => {
 const currentCountryBase = getCountryBasename();
 
 export default function App() {
-  useEffect(() => {
-    const darkModeMatcher = window.matchMedia('(prefers-color-scheme: dark)');
-    const applyFavicon = () => applyThemeFavicon(lightFavicon, darkFavicon);
-    applyFavicon();
-    darkModeMatcher.addEventListener('change', applyFavicon);
-    return () => darkModeMatcher.removeEventListener('change', applyFavicon);
-  }, []);
-
   return (
     <BrowserRouter 
       basename={currentCountryBase} 

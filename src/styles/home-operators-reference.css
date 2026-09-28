@@ -219,21 +219,16 @@ body.home-page-body .home-operators-reference-row .home-preview-card-border:not(
 }
 @media (min-width: 768px) {
   body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance {
-    transition:
-      transform 0.12s ease-out,
-      box-shadow 0.12s ease-out,
-      border-color 0.12s ease-out !important;
+    transition: box-shadow 150ms ease !important;
   }
 
-  /* Match Home Delta Registrations: the card lifts; the price CTA stays put. */
+  /* Match Home Auctions: NO lift — the card only blinks its shadow/border. */
   body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:hover,
   body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:focus-within {
-    border-color: #d5dde8 !important;
+    border-color: #c8dce8 !important;
     background: #ffffff !important;
-    box-shadow:
-      0 2px 4px rgba(15, 23, 42, 0.05),
-      0 14px 30px rgba(15, 23, 42, 0.075) !important;
-    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
+    transform: none !important;
   }
 
   body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card,

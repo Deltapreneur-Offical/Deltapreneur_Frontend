@@ -817,3 +817,43 @@ body.home-page-body .tech-service-card:hover .tech-service-card__icon,
     box-shadow: none !important;
   }
 }
+
+/* Desktop and tablet: hover the truncated description on Home DeltaOs
+   (Operating System) cards to reveal the full description. Mobile (<768px)
+   never gets the tooltip. The bubble hangs on the card root via :has() (the
+   description <p> itself is overflow:hidden), sits over the description,
+   and is pointer-events:none — no layout shift, no click interception.
+   Text color matches .tech-service-card__ref-desc (#6b7280). Width shrinks
+   to the copy instead of stretching across the card. */
+@media (min-width: 768px) {
+  /* Hide the clamped description while its tooltip is open. The box keeps
+     its size so the card does not jump; only the glyphs disappear. */
+  body.home-page-body .home-deltaos-services--ref .tech-service-card__ref-desc:hover {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  body.home-page-body .home-deltaos-services--ref .tech-service-card:has(.tech-service-card__ref-desc:hover)::after {
+    content: attr(data-full-desc);
+    position: absolute;
+    left: 1.25rem;
+    right: auto;
+    bottom: 4.35rem;
+    z-index: 30;
+    width: max-content;
+    max-width: min(11rem, calc(100% - 2.5rem));
+    padding: 0.15rem 0.2rem;
+    border: none;
+    border-radius: 0;
+    background: #ffffff;
+    color: #6b7280;
+    font-size: 0.62rem;
+    font-weight: 400;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: break-word;
+    box-shadow: none;
+    pointer-events: none;
+  }
+}

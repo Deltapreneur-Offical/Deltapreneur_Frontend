@@ -18,12 +18,15 @@ import {
   hasHomeAuctionViewCount,
 } from './homepageAuctions';
 
+const futureAuctionEndTime = (days = 365) => new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+const pastAuctionEndTime = () => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
 describe('homepageAuctions', () => {
   it('normalizes and merges auction rows across categories', () => {
     const merged = mergeHomepageAuctions({
-      domains: [{ id: 'd1', status: 'ACTIVE', verified: true, endTime: '2027-06-30T00:00:00Z', domain: { fullDomain: 'alpha.com' } }],
-      community: [{ id: 'c1', status: 'ACTIVE', community: { name: 'Creator One' }, endTime: '2027-06-25T00:00:00Z' }],
-      software: [{ id: 's1', status: 'ACTIVE', software: { name: 'Tool One', verified: true }, endTime: '2027-06-20T00:00:00Z' }],
+      domains: [{ id: 'd1', status: 'ACTIVE', verified: true, endTime: futureAuctionEndTime(3), domain: { fullDomain: 'alpha.com' } }],
+      community: [{ id: 'c1', status: 'ACTIVE', community: { name: 'Creator One' }, endTime: futureAuctionEndTime(2) }],
+      software: [{ id: 's1', status: 'ACTIVE', software: { name: 'Tool One', verified: true }, endTime: futureAuctionEndTime(1) }],
     });
 
     expect(merged.map((a) => a.id)).toEqual(['s1', 'c1', 'd1']);
@@ -32,8 +35,8 @@ describe('homepageAuctions', () => {
   it('drops clock-ended auctions even when the API status is still ACTIVE', () => {
     const merged = mergeHomepageAuctions({
       domains: [
-        { id: 'live', status: 'ACTIVE', endTime: '2027-06-30T00:00:00Z', domain: { fullDomain: 'live.com' } },
-        { id: 'ended', status: 'ACTIVE', endTime: '2026-09-17T06:48:26Z', domain: { fullDomain: 'drygrains.com' } },
+        { id: 'live', status: 'ACTIVE', endTime: futureAuctionEndTime(), domain: { fullDomain: 'live.com' } },
+        { id: 'ended', status: 'ACTIVE', endTime: pastAuctionEndTime(), domain: { fullDomain: 'drygrains.com' } },
       ],
     });
 
@@ -43,8 +46,8 @@ describe('homepageAuctions', () => {
   it('selects only featured live auctions for the homepage', () => {
     const picked = pickHomepagePreviewAuctions({
       domains: [
-        { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: '2027-06-30T00:00:00Z' },
-        { id: 'd2', status: 'ACTIVE', verified: true, featured: true, endTime: '2027-06-29T00:00:00Z' },
+        { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: futureAuctionEndTime(2) },
+        { id: 'd2', status: 'ACTIVE', verified: true, featured: true, endTime: futureAuctionEndTime(1) },
       ],
     }, 6);
 
@@ -54,13 +57,13 @@ describe('homepageAuctions', () => {
   it('returns an empty homepage row when no live auctions are featured', () => {
     const picked = pickHomepagePreviewAuctions({
       domains: [
-        { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: '2027-06-30T00:00:00Z' },
+        { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: futureAuctionEndTime(3) },
       ],
       community: [
-        { id: 'c1', status: 'ACTIVE', featured: false, community: { name: 'Creator One' }, endTime: '2027-06-25T00:00:00Z' },
+        { id: 'c1', status: 'ACTIVE', featured: false, community: { name: 'Creator One' }, endTime: futureAuctionEndTime(2) },
       ],
       software: [
-        { id: 's1', status: 'ACTIVE', featured: false, software: { name: 'Tool One' }, endTime: '2027-06-20T00:00:00Z' },
+        { id: 's1', status: 'ACTIVE', featured: false, software: { name: 'Tool One' }, endTime: futureAuctionEndTime(1) },
       ],
     }, 6);
 
@@ -106,7 +109,7 @@ describe('homepageAuctions', () => {
       total_bids: 8,
       current_highest_bid: 1250000,
       min_bid_price: 500000,
-      endTime: '2026-06-30T00:00:00Z',
+      endTime: futureAuctionEndTime(),
       domain: {
         fullDomain: 'alpha.com',
         pricing_demand: 'NEGOTIABLE',
@@ -163,7 +166,7 @@ describe('homepageAuctions', () => {
     const auction = normalizeDomainAuction({
       id: 'd1',
       status: 'ACTIVE',
-      endTime: '2026-06-30T00:00:00Z',
+      endTime: futureAuctionEndTime(),
       domain: { fullDomain: 'alpha.com', pricingDemand: 'FIXED' },
     });
     const badges = resolveHomeAuctionBadges(auction);

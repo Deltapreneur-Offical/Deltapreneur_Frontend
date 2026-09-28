@@ -719,6 +719,28 @@ body.home-page-body .home-operators-reference-info__eyebrow span {
   background: #ff604c;
 }
 
+@keyframes deltaop-venture-talent-dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.78);
+  }
+}
+
+/* Desktop + tablet only. Phone keeps the existing orange ring in the max-width: 767px block. */
+@media (min-width: 768px) {
+  body.home-page-body .home-operators-reference-info__eyebrow span {
+    background: #16a34a;
+    box-shadow: none;
+    transform-origin: center;
+    animation: deltaop-venture-talent-dot-pulse 1.8s ease-in-out infinite;
+  }
+}
+
 body.home-page-body .home-operators-reference-info__title {
   margin: 0;
   color: #0f172a;

@@ -5285,13 +5285,8 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
     transform: translateY(-2px) !important;
   }
 
-  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):has(.domain-listing-card__price-box:hover),
-  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):has(.domain-listing-card__price-cta:hover),
-  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):has(.venture-listing-card__homepage-offer-cta:hover) {
-    border-color: #cbd5e1 !important;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
-    transform: translateY(-2px) !important;
-  }
+  /* Price pill + arrow CTA sit INSIDE the card: no separate pill-triggered card
+     hover state — the card's own :hover is the single hover target. */
 
   body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content) .venture-listing-card--homepage-content,
   body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):hover .venture-listing-card--homepage-content,

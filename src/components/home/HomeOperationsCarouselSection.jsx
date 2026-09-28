@@ -5,6 +5,7 @@ import { operationsAPI, hubRegistrarOfficeAPI } from '../../api/services';
 import { asArray } from '../../utils/asArray';
 import { OPERATIONS_SECTIONS, operationsPathForSection } from '../../utils/operationsSections';
 import FeaturedVirtualAssistantsListing, {
+  isActiveDeltaOperator,
   useFeaturedVirtualAssistants,
 } from '../virtual-assistant/FeaturedVirtualAssistantsListing';
 import HomePreviewCardShell from './HomePreviewCardShell';
@@ -62,6 +63,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const vaFeatured = useFeaturedVirtualAssistants(HOMEPAGE_PREVIEW_LIMIT, {
     enabled: isAssistanceSection,
     featuredOnly: true,
+    includeActiveTotal: true,
   });
   const [offices, setOffices] = useState([]);
   const [officesLoading, setOfficesLoading] = useState(false);
@@ -110,15 +112,11 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
   const accent = isAssistanceSection ? 'assistance' : 'operations';
   const viewAllPath = operationsPathForSection(sectionId);
   const { visible: visibleServices, hasMore: servicesHaveMore, revealMore: revealServices } = useHomepageCardReveal(services);
-  const activeOperatorProfiles = vaFeatured.cards;
-  const heroOperatorAvatars = activeOperatorProfiles.slice(0, HERO_OPERATOR_AVATAR_LIMIT);
-  const additionalActiveOperatorCount = Math.max(
-    0,
-    activeOperatorProfiles.length - heroOperatorAvatars.length,
-  );
-  const additionalActiveOperatorLabel = additionalActiveOperatorCount === 1
-    ? 'active operator'
-    : 'active operators';
+  const heroOperatorAvatars = vaFeatured.cards.slice(0, HERO_OPERATOR_AVATAR_LIMIT);
+  const loadedActiveOperatorCount = vaFeatured.cards.filter((profile) => isActiveDeltaOperator(profile)).length;
+  const activeOperatorCount = vaFeatured.activeTotal == null
+    ? loadedActiveOperatorCount
+    : vaFeatured.activeTotal;
 
   const openServiceRequest = (service) => {
     operationsAPI.get(service.id)
@@ -193,7 +191,7 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
                 {heroOperatorAvatars.length > 0 ? (
                   <div
                     className="home-operators-reference-roster"
-                    aria-label={`${activeOperatorProfiles.length} active operators`}
+                    aria-label={`${activeOperatorCount} active operators`}
                   >
                     {heroOperatorAvatars.map((profile, index) => (
                       <span
@@ -209,9 +207,9 @@ export default function HomeOperationsCarouselSection({ sectionId }) {
                     ))}
                   </div>
                 ) : null}
-                {additionalActiveOperatorCount > 0 ? (
+                {activeOperatorCount > 0 ? (
                   <span className="home-operators-reference-roster-text">
-                    +{additionalActiveOperatorCount} {additionalActiveOperatorLabel}
+                    {activeOperatorCount}+ active operators roster
                   </span>
                 ) : null}
                 <Link to={viewAllPath} className="home-operators-reference-info__cta">

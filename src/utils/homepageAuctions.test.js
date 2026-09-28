@@ -21,19 +21,30 @@ import {
 describe('homepageAuctions', () => {
   it('normalizes and merges auction rows across categories', () => {
     const merged = mergeHomepageAuctions({
-      domains: [{ id: 'd1', status: 'ACTIVE', verified: true, endTime: '2026-06-30T00:00:00Z', domain: { fullDomain: 'alpha.com' } }],
-      community: [{ id: 'c1', status: 'ACTIVE', community: { name: 'Creator One' }, endTime: '2026-06-25T00:00:00Z' }],
-      software: [{ id: 's1', status: 'ACTIVE', software: { name: 'Tool One', verified: true }, endTime: '2026-06-20T00:00:00Z' }],
+      domains: [{ id: 'd1', status: 'ACTIVE', verified: true, endTime: '2027-06-30T00:00:00Z', domain: { fullDomain: 'alpha.com' } }],
+      community: [{ id: 'c1', status: 'ACTIVE', community: { name: 'Creator One' }, endTime: '2027-06-25T00:00:00Z' }],
+      software: [{ id: 's1', status: 'ACTIVE', software: { name: 'Tool One', verified: true }, endTime: '2027-06-20T00:00:00Z' }],
     });
 
     expect(merged.map((a) => a.id)).toEqual(['s1', 'c1', 'd1']);
   });
 
+  it('drops clock-ended auctions even when the API status is still ACTIVE', () => {
+    const merged = mergeHomepageAuctions({
+      domains: [
+        { id: 'live', status: 'ACTIVE', endTime: '2027-06-30T00:00:00Z', domain: { fullDomain: 'live.com' } },
+        { id: 'ended', status: 'ACTIVE', endTime: '2026-09-17T06:48:26Z', domain: { fullDomain: 'drygrains.com' } },
+      ],
+    });
+
+    expect(merged.map((a) => a.id)).toEqual(['live']);
+  });
+
   it('selects only featured live auctions for the homepage', () => {
     const picked = pickHomepagePreviewAuctions({
       domains: [
-        { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: '2026-06-30T00:00:00Z' },
-        { id: 'd2', status: 'ACTIVE', verified: true, featured: true, endTime: '2026-06-29T00:00:00Z' },
+        { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: '2027-06-30T00:00:00Z' },
+        { id: 'd2', status: 'ACTIVE', verified: true, featured: true, endTime: '2027-06-29T00:00:00Z' },
       ],
     }, 6);
 
@@ -43,13 +54,13 @@ describe('homepageAuctions', () => {
   it('returns an empty homepage row when no live auctions are featured', () => {
     const picked = pickHomepagePreviewAuctions({
       domains: [
-        { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: '2026-06-30T00:00:00Z' },
+        { id: 'd1', status: 'ACTIVE', verified: true, featured: false, endTime: '2027-06-30T00:00:00Z' },
       ],
       community: [
-        { id: 'c1', status: 'ACTIVE', featured: false, community: { name: 'Creator One' }, endTime: '2026-06-25T00:00:00Z' },
+        { id: 'c1', status: 'ACTIVE', featured: false, community: { name: 'Creator One' }, endTime: '2027-06-25T00:00:00Z' },
       ],
       software: [
-        { id: 's1', status: 'ACTIVE', featured: false, software: { name: 'Tool One' }, endTime: '2026-06-20T00:00:00Z' },
+        { id: 's1', status: 'ACTIVE', featured: false, software: { name: 'Tool One' }, endTime: '2027-06-20T00:00:00Z' },
       ],
     }, 6);
 

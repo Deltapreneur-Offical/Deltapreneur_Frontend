@@ -9,7 +9,7 @@ import { auctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { payAuctionCreationFee, fetchListingFeesAndCharges } from '../utils/auctionFees';
-import { formatCountdown, formatAuctionDate, formatAuctionDateTime, formatAuctionTime, resolveAuctionEndTime } from '../utils/auctionDate';
+import { formatCountdown, formatAuctionDate, formatAuctionDateTime, formatAuctionTime, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
 import { isDomainAuctionLister, resolveAuctionLister } from '../utils/auctionLister';
 import { validateBidAmount, formatBidRangeLabel } from '../utils/auctionBidLimits';
 import useCurrency from '../context/CurrencyContext';
@@ -115,7 +115,10 @@ export default function AuctionPage() {
     isDomainAuctionLister(auction, user?.id),
     participation,
   );
-  const isActive = LIVE_AUCTION_STATUSES.has(auction?.status);
+  const auctionEndMs = parseAuctionDate(resolveAuctionEndTime(auction))?.getTime() ?? null;
+  const clockStillOpen = auctionEndMs == null || auctionEndMs > Date.now();
+  const isActive = LIVE_AUCTION_STATUSES.has(auction?.status) && clockStillOpen;
+  const isAwaitingClose = LIVE_AUCTION_STATUSES.has(auction?.status) && !clockStillOpen;
   const isPaymentPending = auction?.status === 'PAYMENT_PENDING';
   const isCompleted = auction?.status === 'COMPLETED';
   const isWinner = Boolean(
@@ -417,12 +420,14 @@ export default function AuctionPage() {
                   )}
                   <StatusBadge status={auction.status} />
                 </div>
+                {isActive && (
                 <div className="flex items-center gap-2 mt-1">
                   <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${connected ? 'bg-green-500 animate-blink-out' : 'bg-amber-400'}`} />
                   <span className={`text-[0.8rem] font-semibold ${connected ? 'text-green-600' : 'text-amber-600'}`}>
                     {connected ? t('auctionDetailLiveNow', { defaultValue: 'Auction Live Now' }) : t('auctionDetailLivePaused')}
                   </span>
                 </div>
+                )}
               </div>
 
               {/* Countdown card */}
@@ -672,6 +677,17 @@ export default function AuctionPage() {
 
             {/* ── Right Column: Place Your Bid ── */}
             <div className="sticky top-6 flex flex-col gap-4">
+
+              {isAwaitingClose && (
+                <div className="p-5 bg-amber-50 border border-amber-200 rounded-xl">
+                  <div className="font-semibold text-amber-800 mb-1">Auction ended</div>
+                  <p className="text-[0.875rem] text-amber-900/80">
+                    {Number(auction.totalBids) > 0
+                      ? 'The winning bidder must pay before this domain can transfer. It is not available for a new purchase until that payment is completed or forfeited.'
+                      : 'No bids were placed. This domain is being returned to regular purchase and is not held for admin approval.'}
+                  </p>
+                </div>
+              )}
 
               {/* Bid form — only for non-owner, active auction */}
               {isActive && !isOwner && (

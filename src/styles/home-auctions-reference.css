@@ -2545,3 +2545,9 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
     transform: translate(2px, -50%) !important;
   }
 }
+
+@media (min-width: 768px) {
+  body.home-page-body .home-auctions-section {
+    padding-bottom: 1.5rem !important;
+  }
+}

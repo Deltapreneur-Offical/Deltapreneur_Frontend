@@ -295,6 +295,13 @@ body.home-page-body .tech-service-card:hover .tech-service-card__icon,
   margin-bottom: 0.5rem;
 }
 
+@media (min-width: 768px) {
+  body.home-page-body .home-deltaos-services--ref {
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+}
+
 /* Header row */
 .home-deltaos-services__header {
   display: flex;
@@ -836,9 +843,43 @@ body.home-page-body .tech-service-card:hover .tech-service-card__icon,
     height: auto;
     max-height: none;
     white-space: normal;
+    margin-bottom: calc(0.72rem + 0.48rem) !important;
   }
 
   body.home-page-body .home-deltaos-services--ref .tech-service-card::after {
     content: none;
+  }
+
+  /* Grey price pill — same fill as Home DeltaOp. Label sits above the pill. */
+  body.home-page-body .home-deltaos-services--ref .tech-service-card__ref-footer {
+    position: relative !important;
+    align-items: center !important;
+    gap: 0.55rem !important;
+    margin-top: auto !important;
+    padding: 0.7rem 0.7rem 0.7rem 0.9rem !important;
+    border: 0 !important;
+    border-radius: 0.8rem !important;
+    background: #f1f5f9 !important;
+  }
+
+  body.home-page-body .home-deltaos-services--ref .tech-service-card__ref-price-block {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.15rem !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  body.home-page-body .home-deltaos-services--ref .tech-service-card__ref-price-label {
+    position: absolute !important;
+    left: 0.15rem !important;
+    bottom: calc(100% + 0.16rem) !important;
+    display: block !important;
+    margin: 0 !important;
+    font-size: 0.58rem !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
   }
 }

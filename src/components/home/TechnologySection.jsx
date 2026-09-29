@@ -97,7 +97,7 @@ export default function TechnologySection() {
   }
 
   return (
-    <section className="bg-white pt-2 pb-6 md:pt-4 md:pb-10 min-w-0 overflow-visible">
+    <section className="bg-white pt-2 pb-6 md:pt-4 md:pb-6 min-w-0 overflow-visible">
       <div className="w-full min-w-0 space-y-8">
 
         {/* 1. Marketplace Technology Listings */}

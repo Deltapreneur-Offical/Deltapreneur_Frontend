@@ -814,7 +814,7 @@ export default function CommunityPage() {
                 ) : null}
               </div>
             ) : profilesForDisplay.length > 0 ? (
-              <div className="listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
+              <div className="community-page-listing-grid listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
                 {profilesForDisplay.map((p, idx) => (
                   <ListingCardShell key={p.id ? String(p.id) : `creator-${idx}`} className="community-listing-card-shell">
                     <CommunityListingCard

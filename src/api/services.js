@@ -370,7 +370,7 @@ export const adminAPI = {
     api.post('/api/v1/admin/showcase/unselect', { id }),
   removeShowcaseDomain: (id) =>
     api.delete(`/api/v1/admin/showcase/${id}`),
-  refreshShowcase: () => api.post('/api/v1/admin/showcase/refresh'),
+  refreshShowcase: (config) => api.post('/api/v1/admin/showcase/refresh', null, config),
   backfillShowcaseRenewals: () => api.post('/api/v1/admin/showcase/renewals/backfill'),
   updateShowcaseConfig: (data) =>
     api.put('/api/v1/admin/showcase/config', data),

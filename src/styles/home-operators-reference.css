@@ -8,6 +8,12 @@ body.home-page-body .home-operators-reference-section {
   clip-path: none;
 }
 
+@media (min-width: 768px) {
+  body.home-page-body .home-operators-reference-section {
+    padding-bottom: 1.5rem !important;
+  }
+}
+
 body.home-page-body .home-operators-reference-section > div,
 body.home-page-body .home-operators-reference-shell,
 body.home-page-body .home-operators-reference-rail,

@@ -804,6 +804,13 @@ body.home-page-body .home-domains-section:not(.home-marketplace-domains-section)
   padding-bottom: 2.5rem !important;
 }
 
+@media (min-width: 768px) {
+  body.home-page-body .home-marketplace-domains-section,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) {
+    padding-bottom: 1.5rem !important;
+  }
+}
+
 body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header {
   margin-bottom: 1.5rem;
 }
@@ -1435,6 +1442,12 @@ body.home-page-body .home-ventures-section {
   background: #f8fafc !important;
   padding-top: 2rem !important;
   padding-bottom: 2.5rem !important;
+}
+
+@media (min-width: 768px) {
+  body.home-page-body .home-ventures-section {
+    padding-bottom: 1.5rem !important;
+  }
 }
 
 body.home-page-body .home-ventures-section .home-section-header {

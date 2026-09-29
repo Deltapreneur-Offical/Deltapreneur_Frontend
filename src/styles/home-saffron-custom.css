@@ -223,6 +223,13 @@ body.home-page-body .home-domains-section:not(.home-marketplace-domains-section)
   padding-bottom: 2.5rem !important;
 }
 
+@media (min-width: 768px) {
+  body.home-page-body .home-marketplace-domains-section,
+  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) {
+    padding-bottom: 1.5rem !important;
+  }
+}
+
 body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .home-section-header {
   margin-bottom: 1.5rem;
 }
@@ -442,7 +449,7 @@ body.home-page-body .home-coventures-section {
    Mobile (≤767px) keeps its own tighter padding and is unchanged. */
 @media (min-width: 768px) {
   body.home-page-body .home-coventures-section {
-    padding-bottom: 0 !important;
+    padding-bottom: 1.5rem !important;
   }
 }
 

@@ -179,6 +179,42 @@ export function hasLinkedInAccount(profile) {
   );
 }
 
+/**
+ * Simplified-profile completion (SIMPLIFIED_CREATOR_PROFILE mode).
+ * A profile counts as complete iff the three simplified required fields exist:
+ * Full Name, Company Name, and LinkedIn Profile URL. Industry, Headline,
+ * Website, Featured Links, and every legacy hidden field are NOT required.
+ * The old role-based logic above is untouched and still used in legacy mode.
+ */
+export function evaluateSimplifiedProfileCompletion(profile) {
+  const missingFields = [];
+  if (!profile) {
+    return {
+      isComplete: false,
+      missingFields: [
+        { field: 'name', label: 'Full Name' },
+        { field: 'company_name', label: 'Company Name' },
+        { field: 'linked_in_profile_url', label: 'LinkedIn Profile URL' },
+      ],
+    };
+  }
+
+  const name = readProfileField(profile, CREATOR_FIELD_REQUIREMENTS.name);
+  if (!name) missingFields.push({ field: 'name', label: 'Full Name' });
+
+  const companyName = readProfileField(profile, CREATOR_FIELD_REQUIREMENTS.companyName);
+  if (!companyName) missingFields.push({ field: 'company_name', label: 'Company Name' });
+
+  if (!getLinkedInProfileUrl(profile)) {
+    missingFields.push({ field: 'linked_in_profile_url', label: 'LinkedIn Profile URL' });
+  }
+
+  return {
+    isComplete: missingFields.length === 0,
+    missingFields,
+  };
+}
+
 /** Mirrors backend profile completeness — used when API metadata is absent. */
 export function evaluateCreatorProfileCompletion(profile) {
   const requiredFields = getRoleRequiredFields(profile);

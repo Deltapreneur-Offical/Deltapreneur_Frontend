@@ -272,7 +272,8 @@
   box-shadow: 0 12px 28px rgba(217, 119, 6, 0.22) !important;
 }
 
-.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card) {
+/* Concept 5 Deltapreneur cards define their own chrome (community-concept5-card.css). */
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card):not(.concept5-card) {
   border: 1px solid #F6C98F !important;
   border-radius: 1rem;
   overflow: hidden;
@@ -285,7 +286,7 @@
   background: none !important;
 }
 
-.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card):hover:not(.creator-profile-card) {
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card):hover:not(.creator-profile-card):not(.concept5-card) {
   border-color: #F59E0B !important;
   background-color: #FFF7ED !important;
   box-shadow: 0 12px 32px rgba(245, 158, 11, 0.12) !important;
@@ -297,7 +298,7 @@
   overflow: hidden;
 }
 
-.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card):hover {
+.domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card):hover:not(.concept5-card) {
   transform: translateY(-3px) translateZ(0);
   border-color: #F59E0B !important;
   background: linear-gradient(165deg, #FFFCF8 0%, #FFF7ED 40%, #FFF7ED 100%) !important;

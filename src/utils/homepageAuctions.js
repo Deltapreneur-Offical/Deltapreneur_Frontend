@@ -2,6 +2,7 @@ import { parseAuctionDate, resolveAuctionEndTime } from './auctionDate';
 import { resolveAuctionDomainTitle } from './domainDisplay';
 import { pickMediaUrl } from './mediaUrl';
 import { HOMEPAGE_PREVIEW_LIMIT } from './homepageListings';
+import { CREATOR_AUCTIONS_ENABLED } from '../config/featureFlags';
 
 const toNum = (value, fallback = 0) => {
   const n = Number(value);
@@ -545,7 +546,11 @@ export function mergeHomepageAuctions({
   };
 
   extractActiveList(domains).map(normalizeDomainAuction).filter(Boolean).forEach(add);
-  extractActiveList(community).map(normalizeCommunityAuction).filter(Boolean).forEach(add);
+  // Deltapreneur (community) auctions are UI-hidden while the creator-auction
+  // feature flag is off — flip CREATOR_AUCTIONS_ENABLED to restore.
+  if (CREATOR_AUCTIONS_ENABLED) {
+    extractActiveList(community).map(normalizeCommunityAuction).filter(Boolean).forEach(add);
+  }
   extractActiveList(software).map(normalizeSoftwareAuction).filter(Boolean).forEach(add);
 
   return merged.sort((a, b) => {

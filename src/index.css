@@ -600,7 +600,8 @@ select:focus {
 }
 
 .checkbox-label input[type="checkbox"],
-input[type="checkbox"] {
+input[type="checkbox"],
+input[type="radio"] {
   width: 18px;
   height: 18px;
   margin-top: 2px;
@@ -609,6 +610,11 @@ input[type="checkbox"] {
   appearance: auto;
   padding: 0;
   background: transparent;
+}
+
+input[type="radio"] {
+  width: 16px;
+  height: 16px;
 }
 
 .required {
@@ -14607,3 +14613,117 @@ body.app-layout-body .fa-map-link:hover {
   background: var(--home-saffron-100);
   color: var(--home-saffron-ink);
 }
+
+/* =============================================================
+   Deltapreneur onboarding surfaces (revenue gate, apply, invite)
+   — modern SaaS polish: soft glows, gentle motion, premium serif
+   ============================================================= */
+
+.dp-fade-in {
+  animation: dp-fade-in 0.25s ease-out both;
+}
+
+.dp-scale-in {
+  animation: dp-scale-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.dp-live {
+  animation: dp-live 0.3s ease-out both;
+}
+
+@keyframes dp-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dp-scale-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dp-live {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+  opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dp-gate-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fffdf9 100%);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 24px 64px -16px rgba(15, 23, 42, 0.22);
+}
+
+.dp-gate-halo {
+  background: radial-gradient(120px circle at 50% 0%, rgba(255, 153, 51, 0.16), transparent 70%);
+}
+
+.dp-checker {
+  background-image: linear-gradient(45deg, rgba(15, 23, 42, 0.025) 25%, transparent 25%, transparent 50%, rgba(15, 23, 42, 0.025) 50%, rgba(15, 23, 42, 0.025) 75%, transparent 75%, transparent);
+  background-size: 8px 8px;
+}
+
+/* Confetti burst for the Deltapreneur welcome card */
+.dp-confetti {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: dp-confetti-fall 2.8s ease-in infinite;
+}
+
+@keyframes dp-confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0) rotate(0deg);
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--dp-drift, 20px), 190px, 0) rotate(540deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-confetti {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* One-shot confetti burst (apply-form success screen) — plays once, no loop */
+.dp-confetti-burst {
+  position: absolute;
+  top: -14px;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0;
+  animation-name: dp-confetti-fall;
+  animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+  animation-fill-mode: both;
+  animation-iteration-count: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-confetti-burst {
+    animation: none;
+    opacity: 0;
+  }
+}
+

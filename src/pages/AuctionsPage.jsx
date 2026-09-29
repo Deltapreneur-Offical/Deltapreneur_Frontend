@@ -24,6 +24,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/auctions-page.css';
+import { CREATOR_AUCTIONS_ENABLED } from '../config/featureFlags';
 
 const VIEW_IDS = new Set(['browse', 'yours', 'bids']);
 
@@ -408,9 +409,12 @@ export default function AuctionsPage() {
     setLoading(true);
     Promise.all([
       auctionAPI.getActive().then(({ data }) => asItems(data)).catch(() => []),
-      communityAuctionAPI.getActive()
-        .then(({ data }) => extractActiveList(data).map(normalizeCommunityAuction).filter(Boolean))
-        .catch(() => []),
+      // Deltapreneur auctions are UI-hidden while CREATOR_AUCTIONS_ENABLED is off.
+      CREATOR_AUCTIONS_ENABLED
+        ? communityAuctionAPI.getActive()
+          .then(({ data }) => extractActiveList(data).map(normalizeCommunityAuction).filter(Boolean))
+          .catch(() => [])
+        : Promise.resolve([]),
       softwareAuctionAPI.getActive()
         .then(({ data }) => extractActiveList(data).map(normalizeSoftwareAuction))
         .catch(() => []),
@@ -449,12 +453,14 @@ export default function AuctionsPage() {
               approvalStatus: row.approvalStatus,
             })))
             .catch(() => []),
-          communityAuctionAPI.getMyAuctions()
-            .then(({ data }) => extractTrackedList(data).map((row) => ({
-              ...normalizeCommunityAuction(row),
-              auctionType: row.auctionType || 'CREATOR',
-            })).filter(Boolean))
-            .catch(() => []),
+          CREATOR_AUCTIONS_ENABLED
+            ? communityAuctionAPI.getMyAuctions()
+              .then(({ data }) => extractTrackedList(data).map((row) => ({
+                ...normalizeCommunityAuction(row),
+                auctionType: row.auctionType || 'CREATOR',
+              })).filter(Boolean))
+              .catch(() => [])
+            : Promise.resolve([]),
         ]);
         setMyListed([...domains, ...software, ...creators]);
       } else if (mode === 'bids') {
@@ -479,16 +485,18 @@ export default function AuctionsPage() {
               paymentPending: row.paymentPending,
             })))
             .catch(() => []),
-          communityAuctionAPI.getMyBids()
-            .then(({ data }) => extractTrackedList(data).map((row) => ({
-              ...normalizeCommunityAuction(row),
-              auctionType: row.auctionType || 'CREATOR',
-              userHighestBid: row.userHighestBid,
-              isLeading: row.isLeading,
-              isWinner: row.isWinner,
-              paymentPending: row.paymentPending,
-            })).filter(Boolean))
-            .catch(() => []),
+          CREATOR_AUCTIONS_ENABLED
+            ? communityAuctionAPI.getMyBids()
+              .then(({ data }) => extractTrackedList(data).map((row) => ({
+                ...normalizeCommunityAuction(row),
+                auctionType: row.auctionType || 'CREATOR',
+                userHighestBid: row.userHighestBid,
+                isLeading: row.isLeading,
+                isWinner: row.isWinner,
+                paymentPending: row.paymentPending,
+              })).filter(Boolean))
+              .catch(() => [])
+            : Promise.resolve([]),
         ]);
         setMyBids([...domains, ...software, ...creators]);
       }

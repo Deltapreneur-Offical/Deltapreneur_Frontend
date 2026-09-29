@@ -102,8 +102,11 @@ export const creatorAPI = {
   update:           (id, data)=> api.put(`/api/v1/creator/${id}`, data),
   delete:           (id)      => api.delete(`/api/v1/creator/${id}`),
   deleteMy:         ()        => api.delete('/api/v1/creator/my'),
-  linkedInAuthUrl:  ()        => api.get('/api/v1/community/linkedin/auth', {
-    params: typeof window !== 'undefined' ? { return_origin: window.location.origin } : undefined,
+  linkedInAuthUrl:  (params) => api.get('/api/v1/community/linkedin/auth', {
+    params: {
+      ...(typeof window !== 'undefined' ? { return_origin: window.location.origin } : {}),
+      ...(params || {}),
+    },
   }),
   syncPhotoAuthUrl: ()        => api.get('/api/v1/community/linkedin/sync-photo/auth', {
     params: typeof window !== 'undefined' ? { return_origin: window.location.origin } : undefined,
@@ -119,6 +122,38 @@ export const creatorFollowAPI = {
 
 /** @deprecated Use creatorAPI */
 export const communityAPI = creatorAPI;
+
+// ─── Deltapreneur onboarding (revenue gate / apply / invitations) ────────────
+export const deltapreneurOnboardingAPI = {
+  /** Declare annual revenue; backend returns eligible=true or nextStep=APPLY. */
+  declareRevenue: (declaredRevenueInr) =>
+    api.post('/api/v1/deltapreneur-onboarding/eligibility', { declaredRevenueInr }),
+  /** Public: validate a secret invitation token for the landing page. */
+  validateInvitation: (token) =>
+    api.get('/api/v1/deltapreneur-onboarding/invitation/validate', { params: { token } }),
+  /** Public: submit Apply-to-Become-Deltapreneur (below 40L route). */
+  submitApplication: (payload) =>
+    api.post('/api/v1/deltapreneur-onboarding/applications', payload),
+};
+
+export const deltapreneurAdminAPI = {
+  listApplications: (status) =>
+    api.get('/api/v1/admin/deltapreneur-applications', { params: status ? { status } : {} }),
+  approveApplication: (id) => api.post(`/api/v1/admin/deltapreneur-applications/${id}/approve`),
+  rejectApplication: (id, reason) =>
+    api.post(`/api/v1/admin/deltapreneur-applications/${id}/reject`, reason ? { reason } : {}),
+  generateInvitation: (id) =>
+    api.post(`/api/v1/admin/deltapreneur-applications/${id}/invitation`),
+  /** Undo an approval/onboarding — application returns to Pending Review. */
+  revokeApplication: (id, discardActiveLink = true, reason) =>
+    api.post(`/api/v1/admin/deltapreneur-applications/${id}/revoke`, {
+      discardActiveLink,
+      ...(reason ? { reason } : {}),
+    }),
+  /** Move a rejected application back to Pending Review. */
+  reopenApplication: (id) =>
+    api.post(`/api/v1/admin/deltapreneur-applications/${id}/reopen`),
+};
 
 
 

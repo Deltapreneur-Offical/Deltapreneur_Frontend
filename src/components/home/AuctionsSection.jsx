@@ -23,6 +23,7 @@ import { unwrapApiData } from '../../utils/apiResponse';
 import { useLikes } from '../../hooks/useLikes';
 import HomePreviewCardShell from './HomePreviewCardShell';
 import HomeAuctionPreviewCard from '../auctions/HomeAuctionPreviewCard';
+import { CREATOR_AUCTIONS_ENABLED } from '../../config/featureFlags';
 import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomeCardsNavRow from './HomeCardsNavRow';
@@ -205,7 +206,10 @@ export default function AuctionsSection() {
       if (showLoading) setLoading(true);
       const [domainsRes, communityRes, softwareRes] = await Promise.all([
         auctionAPI.getActive({ page: 1, page_size: 8 }).catch(() => ({ data: [] })),
-        communityAuctionAPI.getActive().catch(() => ({ data: [] })),
+        // Deltapreneur auctions are UI-hidden while CREATOR_AUCTIONS_ENABLED is off.
+        CREATOR_AUCTIONS_ENABLED
+          ? communityAuctionAPI.getActive().catch(() => ({ data: [] }))
+          : Promise.resolve({ data: [] }),
         softwareAuctionAPI.getActive().catch(() => ({ data: [] })),
       ]);
 

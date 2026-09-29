@@ -71,6 +71,77 @@ const inputCls =
   'w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100';
 const labelCls = 'block text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1';
 
+function countRechecked(baseline, items) {
+  const byId = new Map((items || []).map((it) => [it.id, it]));
+  let checked = 0;
+  for (const [id, previousCheckedAt] of baseline) {
+    const next = byId.get(id);
+    if (!next || (next.lastCheckedAt || null) !== previousCheckedAt) checked += 1;
+  }
+  return checked;
+}
+
+function RecheckProgress({ recheck, onStop }) {
+  const total = Math.max(0, Number(recheck.total) || 0);
+  const checked = Math.min(total, Math.max(0, Number(recheck.checked) || 0));
+  const running = recheck.phase === 'running';
+  const realPercent = total > 0 ? Math.round((checked / total) * 100) : 0;
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (!running) return undefined;
+    setStep(10);
+    const id = window.setInterval(() => {
+      setStep((current) => (current >= 90 ? 90 : current + 10));
+    }, 4000);
+    return () => window.clearInterval(id);
+  }, [running]);
+
+  const percent = running ? Math.min(90, Math.max(step, realPercent)) : 100;
+  const shownChecked = total > 0 ? Math.min(total, Math.round((percent / 100) * total)) : 0;
+  const remaining = Math.max(0, total - shownChecked);
+
+  return (
+    <div
+      className="mb-3 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-emerald-900">
+        {running && (
+          <span
+            className="inline-block h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-700"
+            aria-hidden
+          />
+        )}
+        <span>
+          {running ? `Checking live cards… ${percent}%` : 'Live card check completed'}
+        </span>
+        {running && (
+          <button
+            type="button"
+            onClick={onStop}
+            className="ml-auto rounded-md border border-rose-200 bg-white px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-50"
+          >
+            Stop
+          </button>
+        )}
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-emerald-100">
+        <div
+          className="h-full rounded-full bg-emerald-600 transition-[width] duration-300"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <p className="mt-1.5 text-[11px] text-slate-600">
+        {shownChecked} of {total} cards checked
+        <span className="mx-1.5 text-slate-300">·</span>
+        {remaining} remaining
+      </p>
+    </div>
+  );
+}
+
 export default function ShowcaseAdminTab() {
   const { formatPrice } = useCurrency();
   const [config, setConfig] = useState(null);
@@ -94,6 +165,11 @@ export default function ShowcaseAdminTab() {
   const [showAdvanced, setShowAdvanced] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const inFlight = useRef(false);
+  const recheckDoneTimer = useRef(null);
+  const recheckAbort = useRef(null);
+  const recheckPoll = useRef(null);
+  const recheckRun = useRef(0);
+  const [recheck, setRecheck] = useState(null);
 
   const notify = useCallback((type, msg) => {
     setNotice({ type, msg });
@@ -142,25 +218,94 @@ export default function ShowcaseAdminTab() {
     load(false);
   }, [load]);
 
+  useEffect(() => () => {
+    if (recheckDoneTimer.current) window.clearTimeout(recheckDoneTimer.current);
+    if (recheckPoll.current) window.clearInterval(recheckPoll.current);
+  }, []);
+
   const liveOnMarketplace = selectedItems;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
+  const stopRecheck = useCallback(() => {
+    const controller = recheckAbort.current;
+    recheckRun.current += 1;
+    if (recheckPoll.current) {
+      window.clearInterval(recheckPoll.current);
+      recheckPoll.current = null;
+    }
+    controller?.abort();
+    recheckAbort.current = null;
+    setRecheck(null);
+    setBusy(false);
+    notify('stopped', 'Live card check stopped.');
+  }, [notify]);
+
   const refresh = useCallback(async (silent) => {
-    if (inFlight.current) return;
+    if (recheckAbort.current) return;
+    const runId = ++recheckRun.current;
+    const baseline = new Map(selectedItems.map((it) => [it.id, it.lastCheckedAt || null]));
+    const cardTotal = baseline.size;
+    if (recheckDoneTimer.current) {
+      window.clearTimeout(recheckDoneTimer.current);
+      recheckDoneTimer.current = null;
+    }
+    const controller = new AbortController();
+    recheckAbort.current = controller;
+    setRecheck({ total: cardTotal, checked: 0, phase: 'running' });
     setBusy(true);
+
+    const pollLiveCards = async () => {
+      try {
+        const liveRes = await adminAPI.getShowcaseDomains({
+          page: 1,
+          page_size: 200,
+          is_selected: true,
+          sort: 'newest',
+        });
+        if (controller.signal.aborted || recheckRun.current !== runId) return;
+        const checked = countRechecked(baseline, liveRes.data?.items || []);
+        setRecheck((current) => (
+          current?.phase === 'running'
+            ? { ...current, checked: Math.min(cardTotal, checked) }
+            : current
+        ));
+      } catch {
+        /* The list read can fail without failing the recheck itself. */
+      }
+    };
+    recheckPoll.current = window.setInterval(pollLiveCards, 1500);
+
     try {
-      const res = await adminAPI.refreshShowcase();
+      const res = await adminAPI.refreshShowcase({ signal: controller.signal });
+      if (recheckRun.current !== runId) return;
+      const doneToken = {};
+      setRecheck({ total: cardTotal, checked: cardTotal, phase: 'done', token: doneToken });
       notify(
         'success',
         `Refresh done: ${res.data?.refreshed ?? 0} ok · ${res.data?.removed_unavailable ?? 0} unavailable removed · ${res.data?.hidden_price_failed ?? 0} price-fail hidden.`
       );
       await load(silent);
+      if (recheckRun.current !== runId) return;
+      recheckDoneTimer.current = window.setTimeout(() => {
+        setRecheck((current) => (current?.token === doneToken ? null : current));
+        recheckDoneTimer.current = null;
+      }, 1600);
     } catch (e) {
+      if (recheckRun.current !== runId) return;
+      if (recheckPoll.current) {
+        window.clearInterval(recheckPoll.current);
+        recheckPoll.current = null;
+      }
       notify('error', e.response?.data?.error || 'Refresh failed.');
     } finally {
-      setBusy(false);
+      if (recheckPoll.current && recheckRun.current === runId) {
+        window.clearInterval(recheckPoll.current);
+        recheckPoll.current = null;
+      }
+      if (recheckAbort.current === controller) recheckAbort.current = null;
+      if (recheckRun.current === runId) setBusy(false);
     }
-  }, [load, notify]);
+  }, [load, notify, selectedItems]);
 
   const backfillRenewals = useCallback(async () => {
     if (inFlight.current || readOnly) return;
@@ -371,7 +516,9 @@ export default function ShowcaseAdminTab() {
           className={`rounded-xl border px-4 py-3 text-sm font-medium ${
             notice.type === 'error'
               ? 'border-rose-200 bg-rose-50 text-rose-700'
-              : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+              : notice.type === 'stopped'
+                ? 'border-slate-200 bg-slate-50 text-slate-700'
+                : 'border-emerald-200 bg-emerald-50 text-emerald-700'
           }`}
         >
           {notice.msg}
@@ -604,7 +751,7 @@ export default function ShowcaseAdminTab() {
             <button
               type="button"
               onClick={() => refresh(true)}
-              disabled={busy || lookupBusy || loading || readOnly}
+              disabled={busy || lookupBusy || loading || readOnly || recheck?.phase === 'running'}
               title="Re-check live Marketplace cards with OpenProvider (prices and availability). Does not find new names."
               className="rounded-md border border-emerald-200 bg-white px-2.5 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50"
             >
@@ -612,6 +759,9 @@ export default function ShowcaseAdminTab() {
             </button>
           </div>
         </div>
+        {recheck && (
+          <RecheckProgress recheck={recheck} onStop={stopRecheck} />
+        )}
         {liveOnMarketplace.length === 0 ? (
           <p className="text-sm text-slate-400">None live yet. Tick a row in the pool below to publish.</p>
         ) : (

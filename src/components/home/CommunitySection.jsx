@@ -115,6 +115,7 @@ export default function CommunitySection() {
         priceLabelOutside
         homepageContent
         homepageArrow
+        hideStatsFooter
       />
     </HomePreviewCardShell>
   );

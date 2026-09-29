@@ -5269,20 +5269,20 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 
 /*
  * Desktop + iPad Home Ventures hover only.
- * Card lifts on hover; offer pill / arrow stay visually unchanged (no pill hover).
+ * Same as Auctions: no lift, shadow only. Offer pill / arrow stay unchanged.
  */
 @media (min-width: 768px) {
   body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content) {
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
     transform: none !important;
-    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease !important;
+    transition: border-color 180ms ease, box-shadow 180ms ease !important;
   }
 
   body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):hover,
   body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):focus-within {
-    border-color: #cbd5e1 !important;
+    border-color: #dbe5ee !important;
     box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
-    transform: translateY(-2px) !important;
+    transform: none !important;
   }
 
   /* Price pill + arrow CTA sit INSIDE the card: no separate pill-triggered card

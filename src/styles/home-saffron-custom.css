@@ -2541,6 +2541,12 @@ body.home-page-body .brand-search-play-icon {
  * Mobile / tablet (<1024) unchanged.
  */
 @media (min-width: 1024px) {
+  body.home-page-body .home-deltaos-services,
+  body.home-page-body .home-deltaos-services.home-deltaos-services--ref {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
   body.home-page-body .home-section-header__top {
     align-items: center !important;
     padding-bottom: 0.28rem !important;

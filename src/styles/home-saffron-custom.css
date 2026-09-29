@@ -857,10 +857,10 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture:ha
 @media (min-width: 768px) {
   body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):hover,
   body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):focus-within {
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid #dbe5ee !important;
     background: #ffffff !important;
     box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
-    transform: translateY(-2px) !important;
+    transform: none !important;
   }
 
   /* Price pill + arrow CTA sit INSIDE the card: no separate pill-triggered card

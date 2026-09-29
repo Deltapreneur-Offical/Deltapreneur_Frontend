@@ -70,15 +70,11 @@ export default function TechnologyServiceCard({ service, compact = false, homeLa
     navigate(`/technologies/${service.slug}`);
   };
 
-  // Full description string — exposed as data-full-desc for the desktop and
-  // tablet CSS tooltip on Home DeltaOs (Operating System) cards. CSS-only
-  // tooltip; no layout impact, and hidden below 768px (mobile untouched).
   const fullDesc = techT(t, `techDesc_${service.slug}_`, service.short_description);
 
   return (
     <div
       onClick={handleCardClick}
-      data-full-desc={homeLayout ? fullDesc : undefined}
       className={`tech-service-card group relative flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm transition-[transform,border-color,box-shadow] duration-[120ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg cursor-pointer overflow-hidden ${
         homeLayout ? 'tech-service-card--home justify-start p-5' : 'justify-between p-6'
       }`}

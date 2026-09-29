@@ -15,6 +15,7 @@ import { AdminGuard, AdminOrAuctionModeratorGuard, CoBrotherGuard, VirtualAssist
 import WhatsAppFloatingButton from './components/common/WhatsAppFloatingButton';
 import Home from './pages/Home';
 import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
+import { CREATOR_AUCTIONS_ENABLED } from './config/featureFlags';
 
 /** Preserve query + hash (e.g. #connect-linkedin) when redirecting legacy /community URLs. */
 function LegacyCommunityRedirect() {
@@ -54,6 +55,8 @@ const VentureDealPage = lazy(() => import('./pages/VentureDealPage'));
 const NewCoVenturePage = lazy(() => import('./pages/NewCoVenturePage'));
 const CommunityAuctionPage = lazy(() => import('./pages/CommunityAuctionPage'));
 const MeetingsPage = lazy(() => import('./pages/MeetingsPage'));
+const DeltapreneurApplyPage = lazy(() => import('./pages/DeltapreneurApplyPage'));
+const InviteLandingPage = lazy(() => import('./pages/InviteLandingPage'));
 const JoinForm = lazy(() => import('./pages/JoinForm'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const SoftwareAuctionPage = lazy(() => import('./pages/SoftwareAuctionPage'));
@@ -131,6 +134,20 @@ function RedirectLegacyCocreationAnalytics() {
 function RedirectLegacyCommunityAuction() {
   const { auctionId } = useParams();
   return <Navigate to={`/creator-auction/${auctionId}`} replace />;
+}
+
+/**
+ * Deltapreneur creator-auction route gate.
+ *
+ * When CREATOR_AUCTIONS_ENABLED is false, the Deltapreneur auction UI (listing,
+ * bidding, fees, winner payment, auction meetings) is hidden. This component
+ * softly redirects deep-links to the creator page. The underlying page, its
+ * code, and all backend endpoints remain fully intact — flipping the flag
+ * restores the original behaviour with no other change.
+ */
+function CreatorAuctionRouteGate({ children }) {
+  if (CREATOR_AUCTIONS_ENABLED) return children;
+  return <Navigate to="/creator" replace />;
 }
 
 function RedirectLegacySoftwareAuction() {
@@ -227,7 +244,11 @@ export default function App() {
 
                 <Route
                   path="/creator-auction/:auctionId"
-                  element={<CommunityAuctionPage />}
+                  element={
+                    <CreatorAuctionRouteGate>
+                      <CommunityAuctionPage />
+                    </CreatorAuctionRouteGate>
+                  }
                 />
 
                 <Route
@@ -239,7 +260,11 @@ export default function App() {
                   path="/meetings"
                   element={
                     <ProfileGuard>
-                      <MeetingsPage />
+                      {CREATOR_AUCTIONS_ENABLED ? (
+                        <MeetingsPage />
+                      ) : (
+                        <Navigate to="/creator" replace />
+                      )}
                     </ProfileGuard>
                   }
                 />
@@ -389,6 +414,16 @@ export default function App() {
                 <Route
                   path="/creator/:id"
                   element={<CommunityPage />}
+                />
+
+                {/* Deltapreneur onboarding (revenue gate / apply / invitation) */}
+                <Route
+                  path="/deltapreneurs/apply"
+                  element={<DeltapreneurApplyPage />}
+                />
+                <Route
+                  path="/creator/invite/:token"
+                  element={<InviteLandingPage />}
                 />
 
                 {/* Legacy Community / Disruptor URLs → Creator */}

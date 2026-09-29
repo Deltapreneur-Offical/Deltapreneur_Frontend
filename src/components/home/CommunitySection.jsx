@@ -104,6 +104,19 @@ export default function CommunitySection() {
     navigateToListingDetail(navigate, 'community', communityId);
   };
 
+  /**
+   * Sign Up always funnels into the /creator onboarding page — logged-out
+   * users authenticate first (login preserves the /creator return target),
+   * logged-in users land there directly.  No profile is created by either.
+   */
+  const handleSignUpClick = () => {
+    if (!user) {
+      navigate('/login', { state: { from: '/creator' } });
+      return;
+    }
+    navigate('/creator');
+  };
+
   const renderCommunityCard = (item) => (
     <HomePreviewCardShell accent="community">
       <CommunityListingCard
@@ -125,12 +138,13 @@ export default function CommunitySection() {
     : hasCompletedLinkedInSignup
       ? <DeltapreneurShowcaseHint />
       : (
-        <Link
-          to="/creator#connect-linkedin"
+        <button
+          type="button"
           className="home-section-header__signup"
+          onClick={handleSignUpClick}
         >
           {t('signUp', { defaultValue: 'Sign Up' })}
-        </Link>
+        </button>
       );
 
   if (loading) {

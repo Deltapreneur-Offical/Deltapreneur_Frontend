@@ -47,6 +47,7 @@ import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import OpenProviderManagedAcquisitionsTable from '../components/admin/OpenProviderManagedAcquisitionsTable';
 import ShowcaseAdminTab from '../components/admin/ShowcaseAdminTab';
+import DeltapreneurApplicationsAdminTab from '../components/admin/DeltapreneurApplicationsAdminTab';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import DomainTransferAdminTab from './DomainTransferAdminTab';
@@ -672,6 +673,7 @@ export default function AdminDashboardPage() {
     { id: 'homepage-features',  label: t('adminTabHomepageFeatures'),  icon: PurchaseIcon   },
     { id: 'software-auctions',  label: t('adminTabSoftwareAuctions'),  icon: AuctionIcon },
     { id: 'community-auctions', label: t('adminTabCreatorAuctions'), icon: AuctionIcon },
+    { id: 'deltapreneur-applications', label: 'Deltapreneur Applications', icon: null, Icon: UsersRound },
     { id: 'addon-orders',       label: t('adminTabAddonOrders'),       icon: PurchaseIcon     },
     { id: 'fees-charges',       label: 'Fees & Charges',                 icon: PurchaseIcon   },
     { id: 'openprovider-pricing', label: 'OpenProvider Pricing',           icon: DomainsIcon },
@@ -939,7 +941,11 @@ export default function AdminDashboardPage() {
             <ShowcaseAdminTab />
           )}
 
-          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'track-records' && tab !== 'venture-deals' && tab !== 'showcase' && tab !== 'openprovider-pricing' && tab !== 'reseller-portal' && (
+          {tab === 'deltapreneur-applications' && (
+            <DeltapreneurApplicationsAdminTab />
+          )}
+
+          {tab !== 'overview' && tab !== 'review-queue' && tab !== 'fees-charges' && tab !== 'blacklist-users' && tab !== 'track-records' && tab !== 'venture-deals' && tab !== 'showcase' && tab !== 'openprovider-pricing' && tab !== 'reseller-portal' && tab !== 'deltapreneur-applications' && (
             loading ? (
               <PageContentSkeleton variant="table" rows={7} />
             ) : tab === 'domain-enquiries' ? (

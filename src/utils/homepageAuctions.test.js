@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { CREATOR_AUCTIONS_ENABLED } from '../config/featureFlags';
 import {
   buildHomeAuctionLikeItems,
   mergeHomepageAuctions,
@@ -29,7 +30,28 @@ describe('homepageAuctions', () => {
       software: [{ id: 's1', status: 'ACTIVE', software: { name: 'Tool One', verified: true }, endTime: futureAuctionEndTime(1) }],
     });
 
-    expect(merged.map((a) => a.id)).toEqual(['s1', 'c1', 'd1']);
+    // Community (Deltapreneur) auctions are merged only when the feature flag is on.
+    const expected = CREATOR_AUCTIONS_ENABLED ? ['s1', 'c1', 'd1'] : ['s1', 'd1'];
+    expect(merged.map((a) => a.id)).toEqual(expected);
+  });
+
+  it('includes community auctions when the Deltapreneur flag is enabled', async () => {
+    vi.resetModules();
+    vi.doMock('../config/featureFlags', () => ({ CREATOR_AUCTIONS_ENABLED: true }));
+    try {
+      const { mergeHomepageAuctions: mergeWithFlagOn } = await import('./homepageAuctions');
+
+      const merged = mergeWithFlagOn({
+        domains: [{ id: 'd1', status: 'ACTIVE', verified: true, endTime: futureAuctionEndTime(3), domain: { fullDomain: 'alpha.com' } }],
+        community: [{ id: 'c1', status: 'ACTIVE', community: { name: 'Creator One' }, endTime: futureAuctionEndTime(2) }],
+        software: [{ id: 's1', status: 'ACTIVE', software: { name: 'Tool One', verified: true }, endTime: futureAuctionEndTime(1) }],
+      });
+
+      expect(merged.map((a) => a.id)).toEqual(['s1', 'c1', 'd1']);
+    } finally {
+      vi.doUnmock('../config/featureFlags');
+      vi.resetModules();
+    }
   });
 
   it('drops clock-ended auctions even when the API status is still ACTIVE', () => {

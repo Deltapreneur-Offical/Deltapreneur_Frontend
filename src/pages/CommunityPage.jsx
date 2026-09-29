@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, CircleHelp, RefreshCw } from 'lucide-react';
+import { Search, CircleHelp, RefreshCw, Plus, Minus } from 'lucide-react';
 import { communityAPI, communityAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -19,10 +19,14 @@ import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import RevenueGateModal from '../components/deltapreneur/RevenueGateModal';
+import DeltapreneurWelcomeCard from '../components/deltapreneur/DeltapreneurWelcomeCard';
 import { useScrollAppLayoutToTopWhen } from '../components/common/ScrollToTop';
+import { scheduleScrollAppLayoutToTop } from '../utils/preserveAppLayoutScroll';
 import { useTranslation } from 'react-i18next';
 import {
   evaluateCreatorProfileCompletion,
+  evaluateSimplifiedProfileCompletion,
   getLinkedInProfileUrl,
   hasLinkedInAccount,
   isCreatorProfileComplete,
@@ -49,6 +53,7 @@ import { readApiError } from '../utils/apiError';
 import { CURRENCY_LABELS } from '../constants/currencies';
 import { convertPrice as convertInrToCurrency } from '../utils/currencyDisplay';
 import AppOverlay from '../components/common/AppOverlay';
+import { CREATOR_AUCTIONS_ENABLED, SIMPLIFIED_CREATOR_PROFILE } from '../config/featureFlags';
 
 
 const ROLES = [
@@ -181,6 +186,9 @@ export default function CommunityPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const pendingDeleteProfileIdRef = useRef('');
   const [showSyncPhotoModal, setShowSyncPhotoModal] = useState(false);
+  const [showRevenueGate, setShowRevenueGate] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const justConnectedLinkedInRef = useRef(false);
   const [syncPhotoLoading, setSyncPhotoLoading] = useState(false);
   const [syncPhotoSuccess, setSyncPhotoSuccess] = useState('');
 
@@ -394,6 +402,8 @@ export default function CommunityPage() {
     }
 
     if (status === 'success' && profileId) {
+      // First save after this connect completes onboarding → triggers welcome.
+      justConnectedLinkedInRef.current = true;
       setLinkedInLoading(true);
       setLinkedInError('');
       communityAPI.getOne(profileId)
@@ -483,24 +493,20 @@ export default function CommunityPage() {
     };
   }, [detailProfile?.id, authLoading, user]);
 
-  const handleConnectLinkedIn = async () => {
+  const handleConnectLinkedIn = () => {
     if (!user) {
-      navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
+      // /creator is a protected route, so this is a safety net — but keep a
+      // correct return target just in case.
+      navigate('/login', { state: { from: '/creator' } });
       return;
     }
     setLinkedInError('');
     setLinkedInSuccess('');
     clearLinkedInOAuthSession();
-    setLinkedInRedirecting(true);
-    try {
-      const { data } = await communityAPI.linkedInAuthUrl();
-      const url = readLinkedInAuthRedirectUrl(data);
-      if (!url) throw new Error('Invalid auth URL');
-      window.location.assign(url);
-    } catch {
-      setLinkedInRedirecting(false);
-      setLinkedInError('Could not get LinkedIn auth URL. Please try again.');
-    }
+    // Annual-revenue decision comes FIRST (spec: the modal appears only here,
+    // never during normal Google/LinkedIn login).  The modal itself starts the
+    // LinkedIn OAuth for >= 40L, or sends below-40L users to the apply page.
+    setShowRevenueGate(true);
   };
 
   const handleSyncPhotoConfirm = async () => {
@@ -522,6 +528,10 @@ export default function CommunityPage() {
 
   const handleProfileSaved = (saved) => {
     setMyProfile(saved);
+    // Celebrate only when this save completes the post-LinkedIn-connect flow
+    // (flag set by the OAuth callback handler, consumed exactly once).
+    const celebrate = justConnectedLinkedInRef.current;
+    justConnectedLinkedInRef.current = false;
     setShowForm(false);
     setLinkedInSuccess('');
     setProfiles(prev => {
@@ -529,6 +539,11 @@ export default function CommunityPage() {
       if (idx >= 0) { const next = [...prev]; next[idx] = saved; return next; }
       return [saved, ...prev];
     });
+    if (celebrate) {
+      setShowWelcome(true);
+      // The inline form is replaced by the list — jump to the welcome card.
+      scheduleScrollAppLayoutToTop();
+    }
   };
 
   const handleAuctionCreated = (auction) => {
@@ -623,7 +638,8 @@ export default function CommunityPage() {
   return (
     <AppLayout>
         <div>
-        {hasOwnedCreatorProfile ? (
+        {/* Simplified mode: no completion-percentage banner (old logic preserved for legacy mode). */}
+        {hasOwnedCreatorProfile && !SIMPLIFIED_CREATOR_PROFILE ? (
         <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl text-indigo-900 text-sm font-medium mb-6 leading-relaxed flex items-start gap-3 shadow-sm">
           <span className="text-lg leading-none select-none" aria-hidden>✨</span>
           <div className="flex-1">
@@ -650,21 +666,42 @@ export default function CommunityPage() {
             <LinkedInIcon size={16} /> {linkedInSuccess}
           </div>
         )}
+        {showWelcome && !showForm ? (
+          <DeltapreneurWelcomeCard
+            name={effectiveMyProfile?.name}
+            onDismiss={() => setShowWelcome(false)}
+          />
+        ) : null}
         {showForm && hasOwnedCreatorProfile ? (
           <>
             <ListingBackLink
               label={t('listingBackToCreators')}
               onClick={() => { setShowForm(false); setLinkedInSuccess(''); }}
             />
-            <CommunityProfileForm
-              initial={effectiveMyProfile}
-              onSaved={handleProfileSaved}
-              onCancel={() => { setShowForm(false); setLinkedInSuccess(''); }}
-              onDelete={() => {
-                pendingDeleteProfileIdRef.current = readCreatorProfileId(effectiveMyProfile);
-                setShowDeleteConfirm(true);
-              }}
-            />
+            {/* Simplified mode renders the LinkedIn-style form; legacy mode keeps the
+                original role-based dynamic form. Both share the same save API and
+                the same profile record — nothing is duplicated or lost. */}
+            {SIMPLIFIED_CREATOR_PROFILE ? (
+              <CommunityProfileFormSimplified
+                initial={effectiveMyProfile}
+                onSaved={handleProfileSaved}
+                onCancel={() => { setShowForm(false); setLinkedInSuccess(''); }}
+                onDelete={() => {
+                  pendingDeleteProfileIdRef.current = readCreatorProfileId(effectiveMyProfile);
+                  setShowDeleteConfirm(true);
+                }}
+              />
+            ) : (
+              <CommunityProfileForm
+                initial={effectiveMyProfile}
+                onSaved={handleProfileSaved}
+                onCancel={() => { setShowForm(false); setLinkedInSuccess(''); }}
+                onDelete={() => {
+                  pendingDeleteProfileIdRef.current = readCreatorProfileId(effectiveMyProfile);
+                  setShowDeleteConfirm(true);
+                }}
+              />
+            )}
           </>
         ) : (
           <>
@@ -680,8 +717,9 @@ export default function CommunityPage() {
             <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3 mb-6">
                 {hasOwnedCreatorProfile ? (
                   <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3">
-                    {/* Auction status / button */}
-                    {auctionBadge ? (
+                    {/* Auction status / button — hidden while CREATOR_AUCTIONS_ENABLED is false.
+                        All auction code remains intact; flip the flag to restore. */}
+                    {CREATOR_AUCTIONS_ENABLED && auctionBadge ? (
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${auctionBadge.color === 'green' ? 'bg-green-50 text-green-700 border-green-300' :
                             auctionBadge.color === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-300' :
@@ -699,7 +737,7 @@ export default function CommunityPage() {
                           View Auction →
                         </button>
                       </div>
-                    ) : (
+                    ) : CREATOR_AUCTIONS_ENABLED ? (
                       <button
                         type="button"
                         className="btn-glow btn-glow-sm !px-3 !py-2 max-w-full"
@@ -720,7 +758,7 @@ export default function CommunityPage() {
                         <span className="sm:hidden">🔨 Auction Profile</span>
                         <span className="hidden sm:inline">🔨 Put Profile to Auction</span>
                       </button>
-                    )}
+                    ) : null}
                     <button type="button" className="btn-glow btn-glow-sm !px-3 !py-2" onClick={() => navigate('/profile/analytics')}>
                       📈 Analytics
                     </button>
@@ -782,7 +820,8 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            {hasOwnedCreatorProfile && myProfileCompletion && !myProfileCompletion.isComplete ? (
+            {/* Simplified mode: no "Complete your profile" banner (old logic preserved for legacy mode). */}
+            {hasOwnedCreatorProfile && myProfileCompletion && !myProfileCompletion.isComplete && !SIMPLIFIED_CREATOR_PROFILE ? (
               <div className="mb-6 w-full min-w-0 max-w-full overflow-visible">
                 <CreatorProfileCompletionBanner
                   profile={effectiveMyProfile}
@@ -853,6 +892,11 @@ export default function CommunityPage() {
         loading={deleteLoading}
         onConfirm={handleDeleteProfile}
         onCancel={() => !deleteLoading && setShowDeleteConfirm(false)}
+      />
+
+      <RevenueGateModal
+        open={showRevenueGate}
+        onClose={() => setShowRevenueGate(false)}
       />
 
       {showAuctionModal && hasOwnedCreatorProfile && (
@@ -1123,6 +1167,469 @@ function CreateAuctionModal({ communityId, profileName, profileExpectedRate, onC
 }
 
 
+
+// ─── Simplified Community Profile Form (SIMPLIFIED_CREATOR_PROFILE) ─────────
+
+/**
+ * Build the PATCH payload for the simplified profile form.
+ *
+ * Only the simplified fields are ever sent. Legacy hidden fields (about, role,
+ * skills, location, whyImHere, expectedRate, education, …) are intentionally
+ * omitted so the backend's exclude_unset patch semantics leave their stored
+ * values untouched. LinkedIn URL is only sent when non-empty so a missing
+ * manual fallback can never wipe an auto-fetched value.
+ */
+export function buildSimplifiedProfilePayload(form, { linkedInImported, forceClearFields = [] } = {}) {
+  const trimmed = (value) => (typeof value === 'string' ? value.trim() : '');
+
+  const payload = {
+    companyName: trimmed(form.companyName),
+  };
+
+  const optionalFields = [
+    'headline',
+    'industry',
+    'companyWebsite',
+    'portfolioWebsiteLink',
+    'pitchDeckLink',
+    'youtubeVideoLink',
+    'githubProfile',
+    'socialMediaProfile',
+    'introductionVideoLink',
+  ];
+  const forceClear = forceClearFields instanceof Set ? forceClearFields : new Set(forceClearFields);
+  for (const field of optionalFields) {
+    const value = trimmed(form[field]);
+    if (value) {
+      payload[field] = value;
+    } else if (forceClear.has(field)) {
+      // Removed featured link: send an explicit empty value so the backend
+      // clears ONLY this column (Pydantic blank_to_none -> NULL). Other links
+      // and all hidden profile data remain untouched.
+      payload[field] = '';
+    }
+  }
+
+  const linkedInUrl = trimmed(form.linkedInProfileUrl);
+  if (linkedInUrl && (!linkedInImported || linkedInUrl)) {
+    payload.linkedInProfileUrl = linkedInUrl;
+  }
+
+  return payload;
+}
+
+/** Featured Link types — each maps to an EXISTING Community DB column (no migration). */
+const SIMPLIFIED_FEATURED_LINK_TYPES = [
+  { type: 'Portfolio', field: 'portfolioWebsiteLink', placeholder: 'https://yourportfolio.com' },
+  { type: 'Pitch Deck', field: 'pitchDeckLink', placeholder: 'https://drive.google.com/file/d/...' },
+  { type: 'YouTube', field: 'youtubeVideoLink', placeholder: 'https://youtube.com/watch?v=...' },
+  { type: 'GitHub', field: 'githubProfile', placeholder: 'https://github.com/your-username' },
+  { type: 'Social Media', field: 'socialMediaProfile', placeholder: 'https://twitter.com/your-username' },
+  { type: 'Demo / Video', field: 'introductionVideoLink', placeholder: 'https://loom.com/share/...' },
+];
+const SIMPLIFIED_LINK_FIELD_BY_TYPE = Object.fromEntries(
+  SIMPLIFIED_FEATURED_LINK_TYPES.map((entry) => [entry.type, entry.field]),
+);
+const SIMPLIFIED_LINK_TYPE_BY_FIELD = Object.fromEntries(
+  SIMPLIFIED_FEATURED_LINK_TYPES.map((entry) => [entry.field, entry.type]),
+);
+const SIMPLIFIED_LINK_PLACEHOLDER_BY_FIELD = Object.fromEntries(
+  SIMPLIFIED_FEATURED_LINK_TYPES.map((entry) => [entry.field, entry.placeholder]),
+);
+
+/** Row model for the Featured Links UI — derived purely from the flat form state. */
+export function formToFeaturedLinkRows(form) {
+  return SIMPLIFIED_FEATURED_LINK_TYPES
+    .map(({ field }) => ({
+      key: field,
+      field,
+      type: SIMPLIFIED_LINK_TYPE_BY_FIELD[field],
+      url: (form[field] || '').trim(),
+    }))
+    .filter((row) => row.url);
+}
+
+/** Write rows back into the flat form state (only the mapped fields change). */
+export function featuredLinkRowsToForm(rows, prevForm) {
+  const next = { ...prevForm };
+  for (const { field } of SIMPLIFIED_FEATURED_LINK_TYPES) {
+    next[field] = '';
+  }
+  for (const row of rows) {
+    const field = SIMPLIFIED_LINK_FIELD_BY_TYPE[row.type];
+    if (field) next[field] = row.url;
+  }
+  return next;
+}
+
+function CommunityProfileFormSimplified({
+  initial,
+  onSaved,
+  onCancel,
+  onDelete,
+}) {
+  const { t } = useTranslation();
+
+  const buildSimplifiedForm = (profile) => ({
+    companyName: profile?.companyName || profile?.company_name || '',
+    industry: profile?.industry || '',
+    headline: profile?.headline || '',
+    companyWebsite: profile?.companyWebsite || profile?.company_website || '',
+    linkedInProfileUrl: getLinkedInProfileUrl(profile),
+    portfolioWebsiteLink: profile?.portfolioWebsiteLink || profile?.portfolio_website_link || '',
+    pitchDeckLink: profile?.pitchDeckLink || profile?.pitch_deck_link || '',
+    youtubeVideoLink: profile?.youtubeVideoLink || profile?.youtube_video_link || '',
+    githubProfile: profile?.githubProfile || profile?.github_profile || '',
+    socialMediaProfile: profile?.socialMediaProfile || profile?.social_media_profile || '',
+    introductionVideoLink: profile?.introductionVideoLink || profile?.introduction_video_link || '',
+  });
+
+  const [form, setForm] = useState(() => buildSimplifiedForm(initial));
+  // Featured Links are edited as rows and reconciled into the flat form fields
+  // at save time. Only fields the user EXPLICITLY removed (or retyped away
+  // from) are force-cleared on save — a stale/empty profile load can never
+  // wipe stored links, and other hidden data is never sent at all.
+  const [featuredLinkRows, setFeaturedLinkRows] = useState(() => formToFeaturedLinkRows(buildSimplifiedForm(initial)));
+  const [clearedLinkFields, setClearedLinkFields] = useState(() => new Set());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    setForm(buildSimplifiedForm(initial));
+    setFeaturedLinkRows(formToFeaturedLinkRows(buildSimplifiedForm(initial)));
+  }, [initial?.id, initial?.name, initial?.imageUrl, initial?.linkedInProfileUrl]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddFeaturedLink = () => {
+    const usedTypes = new Set(featuredLinkRows.map((row) => row.type));
+    const freeType = SIMPLIFIED_FEATURED_LINK_TYPES.find(({ type }) => !usedTypes.has(type));
+    if (!freeType) return; // all six link types already used
+    setFeaturedLinkRows((prev) => [
+      ...prev,
+      { key: `${freeType.field}-${Date.now()}`, type: freeType.type, url: '' },
+    ]);
+  };
+
+  const handleFeaturedLinkTypeChange = (index, type) => {
+    setFeaturedLinkRows((prev) => prev.map((row, i) => {
+      if (i !== index) return row;
+      const oldField = SIMPLIFIED_LINK_FIELD_BY_TYPE[row.type];
+      const newField = SIMPLIFIED_LINK_FIELD_BY_TYPE[type];
+      if (oldField && oldField !== newField) {
+        // The old column loses its row — remember it for explicit clearing.
+        setClearedLinkFields((prevCleared) => new Set(prevCleared).add(oldField));
+      }
+      if (newField) {
+        // Re-using a previously removed type cancels its pending clear.
+        setClearedLinkFields((prevCleared) => {
+          if (!prevCleared.has(newField)) return prevCleared;
+          const next = new Set(prevCleared);
+          next.delete(newField);
+          return next;
+        });
+      }
+      return { ...row, type };
+    }));
+  };
+
+  const handleFeaturedLinkUrlChange = (index, url) => {
+    setFeaturedLinkRows((prev) => prev.map((row, i) => (
+      i === index ? { ...row, url } : row
+    )));
+  };
+
+  const handleRemoveFeaturedLink = (index) => {
+    setFeaturedLinkRows((prev) => {
+      const row = prev[index];
+      const field = row ? SIMPLIFIED_LINK_FIELD_BY_TYPE[row.type] : null;
+      if (field) {
+        setClearedLinkFields((prevCleared) => new Set(prevCleared).add(field));
+      }
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!initial?.id) {
+      setError('Profile ID missing — please refresh.');
+      return;
+    }
+    if (!form.companyName.trim()) {
+      setError('Company Name is required.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // Reconcile the Featured Links rows into the flat fields. Only explicitly
+      // cleared fields (removed rows / retyped types) are sent as empty values;
+      // every other link and all hidden legacy data stay untouched in the DB.
+      const savedForm = featuredLinkRowsToForm(featuredLinkRows, form);
+      const savedRows = formToFeaturedLinkRows(savedForm);
+      const fieldsWithRows = new Set(savedRows.map((row) => SIMPLIFIED_LINK_FIELD_BY_TYPE[row.type]));
+      const forceClearFields = [...clearedLinkFields].filter((field) => !fieldsWithRows.has(field));
+
+      const linkedInImported = hasLinkedInAccount(initial);
+      const payload = buildSimplifiedProfilePayload(savedForm, {
+        linkedInImported,
+        forceClearFields,
+      });
+      const { data } = await communityAPI.update(initial.id, payload);
+      onSaved(data?.data ?? data);
+      setClearedLinkFields(new Set());
+    } catch (err) {
+      setError(readApiError(err, 'Failed to save. Please try again.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const linkedInUrl = getLinkedInProfileUrl(form);
+  const linkedInImported = hasLinkedInAccount(initial);
+  const linkedInUrlMissing = linkedInImported && !linkedInUrl;
+
+  const inputClassName = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all';
+  const requiredMark = <span className="text-red-500">*</span>;
+
+  return (
+    <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
+      {initial?.name && (
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-[10px] mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex items-start gap-3.5 min-w-0 flex-1">
+              {initial.imageUrl
+                ? <img src={initial.imageUrl} alt={initial.name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                : <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-xl font-semibold text-indigo-600 flex-shrink-0">{initial.name[0]?.toUpperCase()}</div>
+              }
+              <div className="min-w-0">
+                <div className="font-semibold text-gray-900">{initial.name}</div>
+                {linkedInUrl ? (
+                  <a
+                    href={linkedInUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-[#0077b5] no-underline hover:text-[#005885] mt-1 break-all"
+                  >
+                    <LinkedInIcon size={13} />
+                    <span className="truncate max-w-[280px] sm:max-w-[360px]">{linkedInUrl}</span>
+                    <span aria-hidden>↗</span>
+                  </a>
+                ) : linkedInImported ? (
+                  <p className="text-xs text-amber-800 m-0 mt-1 leading-relaxed">
+                    {t(
+                      'communityPageLinkedInUrlMissingHelp',
+                      "We couldn't fetch your profile link automatically. Paste your public LinkedIn URL in the field below and save.",
+                    )}
+                  </p>
+                ) : null}
+                <p className="text-xs text-blue-600 mt-1.5 m-0">
+                  ✓ {linkedInUrl
+                    ? (initial.imageUrl
+                      ? 'Name, photo, and LinkedIn URL imported from LinkedIn'
+                      : 'Name and LinkedIn URL imported from LinkedIn')
+                    : (initial.imageUrl
+                      ? 'Name and photo imported from LinkedIn'
+                      : 'Name imported from LinkedIn')}
+                </p>
+              </div>
+            </div>
+            {onDelete && (
+              <button
+                type="button"
+                className="shrink-0 self-start px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-colors"
+                onClick={onDelete}
+              >
+                Delete profile
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      <h3 className="font-display text-2xl text-gray-900 font-semibold">{t('completeCreatorProfile')}</h3>
+      <p className="text-gray-500 text-sm mt-1">Help others understand what you bring to the table.</p>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
+
+        {/* Profile Photo — LinkedIn auto-fetch (display only; header Sync button manages it) */}
+        <div className="flex items-center gap-3">
+          {initial?.imageUrl
+            ? <img src={initial.imageUrl} alt="Profile" className="w-14 h-14 rounded-full object-cover border border-gray-200" />
+            : <div className="w-14 h-14 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-xl font-semibold text-indigo-600">
+                {initial?.name?.[0]?.toUpperCase() || '?'}
+              </div>
+          }
+          <div className="text-sm">
+            <div className="font-medium text-gray-700">Profile Photo</div>
+            <div className="text-xs text-gray-400">Imported from LinkedIn — use “Sync Profile Photo” above to refresh.</div>
+          </div>
+        </div>
+
+        {/* Full Name — LinkedIn auto-fetch, read-only (matches existing backend behavior) */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Full Name {requiredMark}</label>
+          <input
+            value={initial?.name || ''}
+            readOnly
+            placeholder="Connect with LinkedIn to import your name"
+            className={`${inputClassName} bg-gray-50 text-gray-500 cursor-not-allowed`}
+          />
+        </div>
+
+        {/* Company / Industry */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Company Name {requiredMark}</label>
+            <input
+              name="companyName"
+              value={form.companyName}
+              onChange={handleChange}
+              placeholder="e.g. Acme Ventures Pvt Ltd, or Independent"
+              required
+              className={inputClassName}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Industry</label>
+            <select name="industry" value={form.industry} onChange={handleChange} className={`${inputClassName} cursor-pointer`}>
+              <option value="">Select industry (optional)</option>
+              {COMMUNITY_INDUSTRIES.map((i) => <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* LinkedIn Profile URL — auto-fetch with manual fallback */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">
+            LinkedIn Profile URL {requiredMark}
+            {linkedInImported && (
+              <span className="text-gray-400 font-normal text-xs ml-1">
+                {linkedInUrlMissing ? '(paste your profile link)' : '(imported from LinkedIn — you can edit)'}
+              </span>
+            )}
+          </label>
+          <input
+            name="linkedInProfileUrl"
+            type="url"
+            required
+            value={form.linkedInProfileUrl}
+            onChange={handleChange}
+            placeholder={t('communityPageLinkedInUrlPlaceholder', 'https://www.linkedin.com/in/your-name')}
+            className={linkedInUrlMissing
+              ? 'px-3 py-2 border border-amber-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all'
+              : inputClassName}
+          />
+          {linkedInUrlMissing ? (
+            <p className="text-xs text-slate-500 m-0">
+              {t(
+                'communityPageLinkedInUrlManualHint',
+                'Paste the link from your browser when you open your LinkedIn profile (must include linkedin.com/in/…).',
+              )}
+            </p>
+          ) : null}
+        </div>
+
+        {/* Professional Headline */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Professional Headline</label>
+          <input
+            name="headline"
+            value={form.headline}
+            onChange={handleChange}
+            placeholder="e.g. Full-stack developer building AI tools"
+            className={inputClassName}
+          />
+        </div>
+
+        {/* Website */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Website</label>
+          <input
+            name="companyWebsite"
+            type="url"
+            value={form.companyWebsite}
+            onChange={handleChange}
+            placeholder="https://company.com"
+            className={inputClassName}
+          />
+        </div>
+
+        {/* Featured Links — dynamic rows mapped to existing columns, no migration.
+            Shows only saved links plus one row per + click; − clears exactly that
+            field on save (other links and hidden data untouched). */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-gray-700">Featured Links</div>
+              <div className="text-xs text-gray-400">Optional — add your Pitch Deck, Portfolio, Product Demo, YouTube, GitHub, and more.</div>
+            </div>
+            {featuredLinkRows.length < SIMPLIFIED_FEATURED_LINK_TYPES.length && (
+              <button
+                type="button"
+                onClick={handleAddFeaturedLink}
+                disabled={featuredLinkRows.some((row) => !row.url)}
+                title={featuredLinkRows.some((row) => !row.url) ? 'Fill the empty link row first' : 'Add a featured link'}
+                className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 hover:border-indigo-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Plus size={15} strokeWidth={2.5} aria-hidden />
+                Add Featured Link
+              </button>
+            )}
+          </div>
+
+          {featuredLinkRows.length === 0 && (
+            <p className="text-xs text-gray-400 m-0">No featured links yet — click “Add Featured Link” to add one.</p>
+          )}
+
+          {featuredLinkRows.map((row, index) => (
+            <div key={row.key} className="grid grid-cols-1 sm:grid-cols-[10.5rem_minmax(0,1fr)_2.25rem] gap-2 sm:gap-3 items-start">
+              <select
+                value={row.type}
+                onChange={(e) => handleFeaturedLinkTypeChange(index, e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all"
+              >
+                {SIMPLIFIED_FEATURED_LINK_TYPES.map(({ type }) => (
+                  <option key={type} value={type} disabled={featuredLinkRows.some((r) => r.key !== row.key && r.type === type)}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="url"
+                value={row.url}
+                onChange={(e) => handleFeaturedLinkUrlChange(index, e.target.value)}
+                placeholder={SIMPLIFIED_LINK_PLACEHOLDER_BY_FIELD[SIMPLIFIED_LINK_FIELD_BY_TYPE[row.type]] || 'https://…'}
+                className={inputClassName}
+              />
+              <button
+                type="button"
+                onClick={() => handleRemoveFeaturedLink(index)}
+                aria-label={`Remove ${row.type} link`}
+                title={`Remove ${row.type} link`}
+                className="inline-flex h-[38px] w-9 items-center justify-center rounded-[8px] border border-gray-200 bg-white text-gray-400 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+              >
+                <Minus size={15} strokeWidth={2.5} aria-hidden />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {error && <div className="text-sm text-red-500">{error}</div>}
+        <div className="flex gap-3">
+          <button type="submit" className="btn-glow" disabled={loading}>
+            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Save Profile →'}
+          </button>
+          <button type="button" className="btn-glow" onClick={onCancel}>Cancel</button>
+        </div>
+      </form>
+    </div>
+  );
+}
 
 // ─── Community Profile Form ───────────────────────────────────────────────────
 function CommunityProfileForm({

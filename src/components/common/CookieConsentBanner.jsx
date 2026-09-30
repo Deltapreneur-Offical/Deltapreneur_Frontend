@@ -17,11 +17,11 @@ export default function CookieConsentBanner() {
     <>
       {bannerVisible && (
         <div
-          className="fixed inset-x-0 bottom-0 z-[10000] p-3 sm:p-4"
+          className="cookie-consent-banner fixed inset-x-0 bottom-0 z-[10000] p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:p-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))]"
           role="region"
           aria-label={t('cookieConsentBannerLabel')}
         >
-          <div className="mx-auto flex max-w-5xl flex-row items-center justify-between gap-4 rounded-[24px] border border-slate-850 bg-slate-900 p-4 shadow-[0_10px_35px_rgba(0,0,0,0.3)] sm:gap-6 sm:p-5">
+          <div className="mx-auto flex max-h-[calc(100dvh-1rem)] w-full max-w-5xl flex-col gap-3 overflow-y-auto rounded-2xl border border-slate-850 bg-slate-900 p-3.5 shadow-[0_10px_35px_rgba(0,0,0,0.3)] sm:gap-4 sm:rounded-[24px] sm:p-5 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
             <div className="flex min-w-0 flex-1 items-start gap-3">
               <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-indigo-400 sm:flex">
                 <Cookie className="h-5 w-5" aria-hidden />
@@ -30,7 +30,7 @@ export default function CookieConsentBanner() {
                 <p className="text-sm font-bold text-white sm:text-base">
                   {t('cookieConsentBannerTitle')}
                 </p>
-                <p className="hidden mt-1 text-xs leading-relaxed text-slate-300 sm:block sm:text-sm">
+                <p className="mt-1 text-xs leading-relaxed text-slate-300 [overflow-wrap:anywhere] sm:text-sm">
                   {t('cookieConsentBannerBody')}{' '}
                   <Link
                     to="/privacy-policy#cookies"
@@ -39,45 +39,34 @@ export default function CookieConsentBanner() {
                     {t('Privacy Policy')}
                   </Link>
                 </p>
-                <p className="block mt-0.5 text-[10px] leading-relaxed text-slate-400 sm:hidden">
-                  We use cookies to enhance your experience. Manage your preferences anytime.
-                </p>
               </div>
             </div>
 
-            {/* Desktop Buttons */}
-            <div className="hidden shrink-0 flex-row gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
+            {/*
+              Buttons: phones stack (Accept full width, Reject/Manage side by side),
+              tablets show one equal-width row, desktop keeps them on the right.
+            */}
+            <div className="grid w-full shrink-0 grid-cols-2 gap-2 sm:grid-cols-3 lg:flex lg:w-auto lg:flex-row lg:justify-end">
+              <button
+                type="button"
+                onClick={acceptAll}
+                className="col-span-2 order-first min-h-[44px] rounded-lg bg-indigo-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 sm:order-last sm:col-span-1 sm:px-4 lg:min-h-0 lg:whitespace-nowrap"
+              >
+                {t('cookieConsentAcceptAll')}
+              </button>
               <button
                 type="button"
                 onClick={rejectNonEssential}
-                className="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-100"
+                className="min-h-[44px] rounded-lg bg-white px-3 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-100 sm:order-first sm:px-4 lg:min-h-0 lg:whitespace-nowrap"
               >
                 {t('cookieConsentReject')}
               </button>
               <button
                 type="button"
                 onClick={openPreferences}
-                className="rounded-lg border border-slate-800 bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-700"
+                className="min-h-[44px] rounded-lg border border-slate-800 bg-slate-800 px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-700 sm:px-4 lg:min-h-0 lg:whitespace-nowrap"
               >
                 {t('cookieConsentManage')}
-              </button>
-              <button
-                type="button"
-                onClick={acceptAll}
-                className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-              >
-                {t('cookieConsentAcceptAll')}
-              </button>
-            </div>
-
-            {/* Mobile OK Button */}
-            <div className="flex shrink-0 sm:hidden">
-              <button
-                type="button"
-                onClick={acceptAll}
-                className="rounded-full border border-slate-700 bg-slate-800 px-7 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700"
-              >
-                OK
               </button>
             </div>
           </div>

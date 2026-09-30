@@ -1540,13 +1540,36 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
-    flex: 0 1 auto !important;
+    flex: 0 0 100% !important;
     align-self: start !important;
     margin: 0 !important;
     padding: 0 !important;
     padding-bottom: 0 !important;
     aspect-ratio: auto !important;
     box-sizing: border-box !important;
+  }
+
+  /*
+   * Loading placeholders used to sit in a shrinking flex row (4 skinny cards).
+   * Keep them the same size as loaded mobile auction cards: one full-width stack.
+   */
+  body.home-page-body .home-auctions-section .home-preview-row:has(.home-preview-card-skeleton) {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    align-items: start !important;
+    gap: 0.5rem !important;
+    overflow: visible !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-preview-row__item:has(.home-preview-card-skeleton) {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  body.home-page-body .home-auctions-section .home-preview-row__item:has(.home-preview-card-skeleton):nth-child(n + 3) {
+    display: none !important;
   }
 
   body.home-page-body .home-auctions-section .home-preview-row__card:has(.home-auction-preview-card--homepage-content),

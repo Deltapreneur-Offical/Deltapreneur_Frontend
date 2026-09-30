@@ -44,6 +44,7 @@ const FEATURED_LINK_ITEMS = [
   { key: 'socialMediaProfile', label: 'Social', icon: Globe, tone: 'bg-sky-50 border-sky-200 text-sky-600 hover:bg-sky-100' },
   { key: 'introductionVideoLink', label: 'Demo / Video', icon: PlayCircle, tone: 'bg-amber-50 border-amber-200 text-amber-600 hover:bg-amber-100' },
 ];
+const PRIMARY_FEATURED_LINK_KEYS = new Set(['pitchDeckLink', 'portfolioWebsiteLink', 'youtubeVideoLink']);
 
 function formatLabel(value) {
   if (!value || typeof value !== 'string') return '';
@@ -482,14 +483,8 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
              ) : null}
           </div>
 
-          {/* Featured Links — original saved data, shown for every profile
-              regardless of role-based field visibility. Rendered only when at
-              least one link exists (InfoCards above already cover none-case). */}
-          {FEATURED_LINK_ITEMS.some(({ key }) => {
-            const value = community?.[key] ?? community?.[key.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)];
-            return typeof value === 'string' && value.trim();
-          }) ? (
-            <div className="mt-5 rounded-[1.25rem] border border-slate-150 p-6 shadow-[0_1px_4px_rgba(15,23,42,0.02)] bg-white">
+          {/* Featured Links: primary slots always render; optional links render when saved. */}
+          <div className="mt-5 rounded-[1.25rem] border border-slate-150 p-6 shadow-[0_1px_4px_rgba(15,23,42,0.02)] bg-white">
               <div className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-500 mb-3.5">
                 Featured Links
               </div>
@@ -497,13 +492,29 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
                 {FEATURED_LINK_ITEMS.map(({ key, label, icon: Icon, tone }) => {
                   const raw = community?.[key] ?? community?.[key.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)] ?? '';
                   const url = typeof raw === 'string' ? raw.trim() : '';
-                  if (!url) return null;
+                  const isPrimary = PRIMARY_FEATURED_LINK_KEYS.has(key);
+                  if (!url && !isPrimary) return null;
+                  if (!url) {
+                    return (
+                      <span
+                        key={key}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs font-semibold text-slate-400 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                      >
+                        <Icon size={13} strokeWidth={2.25} aria-hidden />
+                        {label}
+                        <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-slate-300">
+                          Not provided
+                        </span>
+                      </span>
+                    );
+                  }
                   return (
                     <a
                       key={key}
                       href={url}
                       target="_blank"
                       rel="noreferrer"
+                      title={url}
                       className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-colors ${tone}`}
                     >
                       <Icon size={13} strokeWidth={2.25} aria-hidden />
@@ -512,8 +523,7 @@ export default function CreatorPreviewModal({ profile, auction, open, onClose, o
                   );
                 })}
               </div>
-            </div>
-          ) : null}
+          </div>
 
 {isFieldVisible('skills') && skills.length > 0 && (
              <div className="mt-5 rounded-[1.25rem] border border-slate-150 p-6 shadow-[0_1px_4px_rgba(15,23,42,0.02)] bg-white">

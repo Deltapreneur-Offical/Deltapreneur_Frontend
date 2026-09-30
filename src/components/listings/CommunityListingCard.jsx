@@ -73,46 +73,54 @@ const CONCEPT5_FEATURED_LINK_META = {
   socialMediaProfile: { label: 'Social', Icon: AtSign, tone: 'sky' },
   introductionVideoLink: { label: 'Demo / Video', Icon: PlayCircle, tone: 'amber' },
 };
-const CONCEPT5_FEATURED_LINK_FIELDS = Object.keys(CONCEPT5_FEATURED_LINK_META);
+const CONCEPT5_PRIMARY_FEATURED_LINK_FIELDS = ['pitchDeckLink', 'portfolioWebsiteLink', 'youtubeVideoLink'];
+const CONCEPT5_OPTIONAL_FEATURED_LINK_FIELDS = Object.keys(CONCEPT5_FEATURED_LINK_META).filter(
+  (field) => !CONCEPT5_PRIMARY_FEATURED_LINK_FIELDS.includes(field),
+);
 
 /**
  * Featured Links section — always rendered so every Concept 5 card keeps the
- * same structure. Tiles show directly (matching the reference design); when
- * there are no links a clean empty state keeps the layout stable. Full data
- * and clickable links also live on the preview page opened via the card.
+ * same structure. Primary tiles route to the profile preview, where complete
+ * data and clickable links live.
  */
-function Concept5FeaturedLinks({ profile }) {
-  const links = CONCEPT5_FEATURED_LINK_FIELDS
+function Concept5FeaturedLinks({ profile, onView }) {
+  const optionalLinks = CONCEPT5_OPTIONAL_FEATURED_LINK_FIELDS
     .map((field) => {
       const raw = profile?.[field] ?? profile?.[field.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)] ?? '';
       const url = typeof raw === 'string' ? raw.trim() : '';
       return url ? { field, url, ...CONCEPT5_FEATURED_LINK_META[field] } : null;
     })
     .filter(Boolean);
+  const links = [
+    ...CONCEPT5_PRIMARY_FEATURED_LINK_FIELDS.map((field) => ({
+      field,
+      ...CONCEPT5_FEATURED_LINK_META[field],
+    })),
+    ...optionalLinks,
+  ];
 
   return (
     <div className="concept5-card__links-section">
       <div className="concept5-card__links-title">Featured Links</div>
-      {links.length > 0 ? (
-        <div className="concept5-card__links-grid">
-          {links.map(({ field, url, label, Icon, tone }) => (
-            <a
-              key={field}
-              href={url}
-              target="_blank"
-              rel="noreferrer"
-              title={url}
-              className={`concept5-card__link concept5-card__link--${tone}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Icon size={22} strokeWidth={2} aria-hidden />
-              <span>{label}</span>
-            </a>
-          ))}
-        </div>
-      ) : (
-        <div className="concept5-card__links-empty">No featured links added.</div>
-      )}
+      <div className="concept5-card__links-grid">
+        {links.map(({ field, label, Icon, tone }) => (
+          <button
+            key={field}
+            type="button"
+            title={`Preview ${label}`}
+            aria-label={`Preview ${label}`}
+            className={`concept5-card__link concept5-card__link--${tone}`}
+            disabled={!onView}
+            onClick={(e) => {
+              e.stopPropagation();
+              onView?.();
+            }}
+          >
+            <Icon size={22} strokeWidth={2} aria-hidden />
+            <span>{label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -502,7 +510,7 @@ export default function CommunityListingCard({
 
       {/* 9. Featured Links — fixed container; empty state keeps the design stable */}
       <div className="concept5-card__body">
-        <Concept5FeaturedLinks profile={profile} />
+        <Concept5FeaturedLinks profile={profile} onView={onView} />
 
         {/* Legacy sections preserved and hidden (restorable via CSS) — they keep
             the view/like handlers mounted exactly as before. */}

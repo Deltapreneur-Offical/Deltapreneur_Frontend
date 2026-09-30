@@ -45,21 +45,59 @@ const TAB_ICONS = {
   creator: DeltapreneursIcon,
 };
 
+/** Curved handle that blends into the bar with concave side slopes. */
+function HandleShape() {
+  const outline = [
+    'M 0 32',
+    'L 38 32',
+    'A 14 14 0 0 1 52 18',
+    'A 14 14 0 0 1 66 4',
+    'H 94',
+    'A 14 14 0 0 1 108 18',
+    'A 14 14 0 0 1 122 32',
+    'L 160 32',
+  ].join(' ');
+  return (
+    <svg
+      className="mobile-bottom-nav__shape"
+      viewBox="0 0 160 32"
+      preserveAspectRatio="xMidYMax meet"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d={`${outline} Z`} fill="currentColor" />
+      <path d={outline} fill="none" stroke="rgba(15, 23, 42, 0.08)" strokeWidth="1.25" />
+    </svg>
+  );
+}
+
 export default function MobileBottomNav() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const wrapperRef = useRef(null);
+  const navRef = useRef(null);
 
   const routeHidden = isBottomNavHiddenRoute(pathname);
   const overlayOpen = useBlockingOverlayOpen();
-  // Two independent mechanisms: scrolling never touches manualHidden and vice versa.
   const [manualHidden, setManualHidden] = useState(false);
-  const autoHidden = useAutoHideOnScroll({ enabled: !routeHidden && !overlayOpen });
+  const { scrolling: autoHidden, reveal } = useAutoHideOnScroll({
+    enabled: !routeHidden && !overlayOpen,
+  });
 
   const rendered = !routeHidden && !overlayOpen;
   const hidden = manualHidden || autoHidden;
 
-  // Reserve layout space (content padding, WhatsApp lift) only while the bar exists on this route.
+  const hideLabel = t('mobileBottomNavHide', { defaultValue: 'Hide navigation' });
+  const showLabel = t('mobileBottomNavShow', { defaultValue: 'Show navigation' });
+
+  const onToggle = () => {
+    if (hidden) {
+      setManualHidden(false);
+      reveal();
+      return;
+    }
+    setManualHidden(true);
+  };
+
   useEffect(() => {
     if (routeHidden) return undefined;
     document.body.classList.add(BODY_CLASS);
@@ -67,8 +105,9 @@ export default function MobileBottomNav() {
   }, [routeHidden]);
 
   // Make hidden tabs unfocusable immediately (pointer-events alone does not stop keyboard focus).
+  // Inert is on the nav only — the handle must stay focusable while the bar is tucked away.
   useLayoutEffect(() => {
-    const el = wrapperRef.current;
+    const el = navRef.current;
     if (!el) return;
     if (hidden) {
       el.setAttribute('inert', '');
@@ -80,61 +119,53 @@ export default function MobileBottomNav() {
   if (!rendered) return null;
 
   return (
-    <>
-      <div
-        ref={wrapperRef}
-        className="mobile-bottom-nav"
-        data-hidden={hidden ? 'true' : 'false'}
-        aria-hidden={hidden ? 'true' : undefined}
-      >
+    <div
+      className="mobile-bottom-nav"
+      data-hidden={hidden ? 'true' : 'false'}
+    >
+      <div className="mobile-bottom-nav__handle">
+        <HandleShape />
         <button
           type="button"
-          className="mobile-bottom-nav__toggle mobile-bottom-nav__toggle--hide"
-          onClick={() => setManualHidden(true)}
-          aria-label={t('mobileBottomNavHide', { defaultValue: 'Hide navigation bar' })}
+          className="mobile-bottom-nav__toggle"
+          onClick={onToggle}
+          aria-label={hidden ? showLabel : hideLabel}
           aria-controls={NAV_ID}
           aria-expanded={!hidden}
-          tabIndex={hidden ? -1 : 0}
         >
-          <ChevronDown aria-hidden="true" strokeWidth={2.4} />
+          {hidden ? (
+            <ChevronUp aria-hidden="true" strokeWidth={2.4} />
+          ) : (
+            <ChevronDown aria-hidden="true" strokeWidth={2.4} />
+          )}
         </button>
-        <nav
-          id={NAV_ID}
-          className="mobile-bottom-nav__bar"
-          aria-label={t('mobileBottomNavLabel', { defaultValue: 'Primary navigation' })}
-        >
-          {BOTTOM_NAV_TABS.map((tab) => {
-            const Icon = TAB_ICONS[tab.id];
-            const active = isBottomNavTabActive(tab, pathname);
-            return (
-              <Link
-                key={tab.id}
-                to={tab.paths[0]}
-                className={`mobile-bottom-nav__item${active ? ' is-active' : ''}`}
-                aria-current={active ? 'page' : undefined}
-                tabIndex={hidden ? -1 : undefined}
-              >
-                <Icon className="mobile-bottom-nav__icon" aria-hidden="true" strokeWidth={1.9} />
-                <span className="mobile-bottom-nav__label">
-                  {t(tab.labelKey, { defaultValue: tab.label })}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
       </div>
-      {manualHidden && (
-        <button
-          type="button"
-          className="mobile-bottom-nav__toggle mobile-bottom-nav__toggle--show"
-          onClick={() => setManualHidden(false)}
-          aria-label={t('mobileBottomNavShow', { defaultValue: 'Show navigation bar' })}
-          aria-controls={NAV_ID}
-          aria-expanded="false"
-        >
-          <ChevronUp aria-hidden="true" strokeWidth={2.4} />
-        </button>
-      )}
-    </>
+      <nav
+        ref={navRef}
+        id={NAV_ID}
+        className="mobile-bottom-nav__bar"
+        aria-label={t('mobileBottomNavLabel', { defaultValue: 'Primary navigation' })}
+        aria-hidden={hidden ? 'true' : undefined}
+      >
+        {BOTTOM_NAV_TABS.map((tab) => {
+          const Icon = TAB_ICONS[tab.id];
+          const active = isBottomNavTabActive(tab, pathname);
+          return (
+            <Link
+              key={tab.id}
+              to={tab.paths[0]}
+              className={`mobile-bottom-nav__item${active ? ' is-active' : ''}`}
+              aria-current={active ? 'page' : undefined}
+              tabIndex={hidden ? -1 : undefined}
+            >
+              <Icon className="mobile-bottom-nav__icon" aria-hidden="true" strokeWidth={1.9} />
+              <span className="mobile-bottom-nav__label">
+                {t(tab.labelKey, { defaultValue: tab.label })}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
   );
 }

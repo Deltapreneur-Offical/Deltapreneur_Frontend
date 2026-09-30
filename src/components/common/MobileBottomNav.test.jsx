@@ -20,6 +20,10 @@ function getWrapper(container) {
   return container.querySelector('.mobile-bottom-nav');
 }
 
+function getNav(container) {
+  return container.querySelector('.mobile-bottom-nav__bar');
+}
+
 /** Dispatch a vertical scroll on an element (scroll events do not bubble). */
 function scrollElement(el, top) {
   el.scrollTop = top;
@@ -135,13 +139,15 @@ describe('MobileBottomNav', () => {
     it('hides on scroll, is inert immediately, and returns after 300ms idle', () => {
       const { container } = renderAt('/domains');
       const wrapper = getWrapper(container);
+      const nav = getNav(container);
       expect(wrapper.getAttribute('data-hidden')).toBe('false');
-      expect(wrapper.hasAttribute('inert')).toBe(false);
+      expect(nav.hasAttribute('inert')).toBe(false);
 
       scrollElement(document.documentElement, 40);
       expect(wrapper.getAttribute('data-hidden')).toBe('true');
-      expect(wrapper.hasAttribute('inert')).toBe(true);
-      container.querySelectorAll('a').forEach((a) => expect(a.getAttribute('tabindex')).toBe('-1'));
+      expect(nav.hasAttribute('inert')).toBe(true);
+      nav.querySelectorAll('a').forEach((a) => expect(a.getAttribute('tabindex')).toBe('-1'));
+      expect(screen.getByRole('button', { name: 'Show navigation' })).toBeTruthy();
 
       act(() => {
         vi.advanceTimersByTime(299);
@@ -152,7 +158,17 @@ describe('MobileBottomNav', () => {
         vi.advanceTimersByTime(2);
       });
       expect(wrapper.getAttribute('data-hidden')).toBe('false');
-      expect(wrapper.hasAttribute('inert')).toBe(false);
+      expect(nav.hasAttribute('inert')).toBe(false);
+      expect(screen.getByRole('button', { name: 'Hide navigation' })).toBeTruthy();
+    });
+
+    it('keeps the curved handle visible while the bar is auto-hidden', () => {
+      const { container } = renderAt('/domains');
+      scrollElement(document.documentElement, 40);
+      expect(getWrapper(container).getAttribute('data-hidden')).toBe('true');
+      expect(container.querySelector('.mobile-bottom-nav__handle')).not.toBeNull();
+      expect(container.querySelector('.mobile-bottom-nav__shape')).not.toBeNull();
+      expect(screen.getByRole('button', { name: 'Show navigation' })).toBeTruthy();
     });
 
     it('keeps hidden while scrolling continues (idle timer restarts)', () => {
@@ -210,42 +226,42 @@ describe('MobileBottomNav', () => {
     it('hides with the down chevron, and scrolling/idle never reopens it', () => {
       const { container } = renderAt('/auctions');
       const wrapper = getWrapper(container);
-      expect(screen.queryByRole('button', { name: 'Show navigation bar' })).toBeNull();
+      const nav = getNav(container);
+      expect(screen.queryByRole('button', { name: 'Show navigation' })).toBeNull();
 
-      fireEvent.click(screen.getByRole('button', { name: 'Hide navigation bar' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Hide navigation' }));
       expect(wrapper.getAttribute('data-hidden')).toBe('true');
-      expect(wrapper.hasAttribute('inert')).toBe(true);
-      expect(screen.getByRole('button', { name: 'Show navigation bar' })).toBeTruthy();
+      expect(nav.hasAttribute('inert')).toBe(true);
+      expect(screen.getByRole('button', { name: 'Show navigation' })).toBeTruthy();
 
       scrollElement(document.documentElement, 30);
       act(() => {
         vi.advanceTimersByTime(1000);
       });
       expect(wrapper.getAttribute('data-hidden')).toBe('true');
-      expect(screen.getByRole('button', { name: 'Show navigation bar' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Show navigation' })).toBeTruthy();
     });
 
-    it('reopens only through the up chevron', () => {
+    it('reopens only through the up chevron on the handle', () => {
       const { container } = renderAt('/auctions');
       const wrapper = getWrapper(container);
-      fireEvent.click(screen.getByRole('button', { name: 'Hide navigation bar' }));
-      fireEvent.click(screen.getByRole('button', { name: 'Show navigation bar' }));
+      const nav = getNav(container);
+      fireEvent.click(screen.getByRole('button', { name: 'Hide navigation' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Show navigation' }));
       expect(wrapper.getAttribute('data-hidden')).toBe('false');
-      expect(wrapper.hasAttribute('inert')).toBe(false);
-      expect(screen.queryByRole('button', { name: 'Show navigation bar' })).toBeNull();
+      expect(nav.hasAttribute('inert')).toBe(false);
+      expect(screen.queryByRole('button', { name: 'Show navigation' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Hide navigation' })).toBeTruthy();
     });
 
-    it('stays hidden after reopen if the user is still scrolling (independent states)', () => {
+    it('reopens immediately from the handle even during scrolling', () => {
       const { container } = renderAt('/auctions');
       const wrapper = getWrapper(container);
-      fireEvent.click(screen.getByRole('button', { name: 'Hide navigation bar' }));
-      scrollElement(document.documentElement, 25);
-      fireEvent.click(screen.getByRole('button', { name: 'Show navigation bar' }));
-      expect(wrapper.getAttribute('data-hidden')).toBe('true'); // auto-hidden while scrolling
-      act(() => {
-        vi.advanceTimersByTime(301);
-      });
+      scrollElement(document.documentElement, 40);
+      expect(wrapper.getAttribute('data-hidden')).toBe('true');
+      fireEvent.click(screen.getByRole('button', { name: 'Show navigation' }));
       expect(wrapper.getAttribute('data-hidden')).toBe('false');
+      expect(getNav(container).hasAttribute('inert')).toBe(false);
     });
   });
 
@@ -254,20 +270,21 @@ describe('MobileBottomNav', () => {
       vi.useRealTimers();
     });
 
-    it('removes the bar and chevrons while app-overlay-open is set', async () => {
+    it('removes the bar and handle while app-overlay-open is set', async () => {
       const { container } = renderAt('/domains');
-      fireEvent.click(screen.getByRole('button', { name: 'Hide navigation bar' }));
-      expect(screen.getByRole('button', { name: 'Show navigation bar' })).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: 'Hide navigation' }));
+      expect(screen.getByRole('button', { name: 'Show navigation' })).toBeTruthy();
 
       document.body.classList.add('app-overlay-open');
       await waitFor(() => expect(getWrapper(container)).toBeNull());
-      expect(screen.queryByRole('button', { name: 'Show navigation bar' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Show navigation' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Hide navigation' })).toBeNull();
 
       document.body.classList.remove('app-overlay-open');
       await waitFor(() => expect(getWrapper(container)).not.toBeNull());
       // manual hide survives the overlay
       expect(getWrapper(container).getAttribute('data-hidden')).toBe('true');
-      expect(screen.getByRole('button', { name: 'Show navigation bar' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Show navigation' })).toBeTruthy();
     });
 
     it('hides while the mobile menu (home-menu-open) is open', async () => {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const SCROLL_IDLE_MS = 300;
 
@@ -10,12 +10,35 @@ export const SCROLL_IDLE_MS = 300;
  * logged-in app scrolls inside its own container. State only changes on the
  * start/stop transitions, never per scroll event. Horizontal-only scrolling
  * (card strips) is ignored.
+ *
+ * `reveal()` forces a show immediately (used by the handle) and suppresses
+ * auto-hide until scrolling goes idle, so a tap during scroll does not flicker.
  */
 export default function useAutoHideOnScroll({ enabled = true, idleMs = SCROLL_IDLE_MS } = {}) {
   const [scrolling, setScrolling] = useState(false);
   const scrollingRef = useRef(false);
+  const suppressRef = useRef(false);
   const timerRef = useRef(null);
   const lastTopRef = useRef(new WeakMap());
+
+  const armIdle = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      suppressRef.current = false;
+      scrollingRef.current = false;
+      setScrolling(false);
+    }, idleMs);
+  }, [idleMs]);
+
+  const reveal = useCallback(() => {
+    suppressRef.current = true;
+    if (scrollingRef.current) {
+      scrollingRef.current = false;
+      setScrolling(false);
+    }
+    armIdle();
+  }, [armIdle]);
 
   useEffect(() => {
     if (!enabled || typeof document === 'undefined') {
@@ -43,16 +66,16 @@ export default function useAutoHideOnScroll({ enabled = true, idleMs = SCROLL_ID
       // Horizontal-only scroll: vertical offset unchanged since last event.
       if (previous !== undefined && previous === top) return;
 
+      if (suppressRef.current) {
+        armIdle();
+        return;
+      }
+
       if (!scrollingRef.current) {
         scrollingRef.current = true;
         setScrolling(true);
       }
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
-        timerRef.current = null;
-        scrollingRef.current = false;
-        setScrolling(false);
-      }, idleMs);
+      armIdle();
     };
 
     document.addEventListener('scroll', onScroll, { capture: true, passive: true });
@@ -63,9 +86,10 @@ export default function useAutoHideOnScroll({ enabled = true, idleMs = SCROLL_ID
         timerRef.current = null;
       }
       scrollingRef.current = false;
+      suppressRef.current = false;
       setScrolling(false);
     };
-  }, [enabled, idleMs]);
+  }, [enabled, idleMs, armIdle]);
 
-  return scrolling;
+  return { scrolling, reveal };
 }

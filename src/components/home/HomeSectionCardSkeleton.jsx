@@ -1,7 +1,7 @@
 import HomePreviewCardSkeleton from './HomePreviewCardSkeleton';
 import HomeSectionHeader from './HomeSectionHeader';
 import HomeCardsNavRow from './HomeCardsNavRow';
-import HomePreviewRow, { HomePreviewRowItem } from './HomePreviewRow';
+import { HomePreviewRowItem } from './HomePreviewRow';
 
 const SKELETON_COUNT = 4;
 
@@ -45,17 +45,13 @@ export default function HomeSectionCardSkeleton({
 
   return (
     <section className={sectionClassName}>
-      <div className="w-full">
+      <div className="w-full min-w-0">
         {!hideHeader && title ? (
           <HomeSectionHeader title={title} to={to} accent={accent} showViewAll={Boolean(to)} />
         ) : null}
-        {animated ? (
-          <HomeCardsNavRow accent={accent || 'domain'} ariaLabel={title}>
-            {cards}
-          </HomeCardsNavRow>
-        ) : (
-          <HomePreviewRow>{cards}</HomePreviewRow>
-        )}
+        <HomeCardsNavRow accent={accent || 'domain'} ariaLabel={title}>
+          {cards}
+        </HomeCardsNavRow>
       </div>
     </section>
   );

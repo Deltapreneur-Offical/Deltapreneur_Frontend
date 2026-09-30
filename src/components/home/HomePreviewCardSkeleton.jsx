@@ -47,20 +47,20 @@ function AuctionPreviewSkeleton({ animated = true }) {
       <div className="domain-listing-card__body home-auction-preview-card__body flex flex-col flex-1 gap-1.5 p-3">
         <div className="home-auction-preview-card__content flex flex-col flex-1 gap-1.5">
           <div className="home-auction-preview-card__homepage-topline">
-            <Bone animated={animated} className="h-5 w-[5.5rem] rounded-full" />
+            <Bone animated={animated} className="h-5 w-[42%] max-w-[7rem] rounded-full" />
             <Bone animated={animated} className="h-8 w-8 flex-shrink-0 rounded-full" />
           </div>
-          <Bone animated={animated} className="h-3 w-[7.5rem] rounded-md" />
+          <Bone animated={animated} className="h-3 w-[38%] max-w-[8rem] rounded-md" />
           <Bone animated={animated} className="h-5 w-[92%] rounded-md" />
           <Bone animated={animated} className="h-5 w-[58%] rounded-md" />
           <div className="home-auction-preview-card__current-bid">
-            <Bone animated={animated} className="mb-1 h-2.5 w-16 rounded-md" />
-            <Bone animated={animated} className="h-5 w-24 rounded-md" />
+            <Bone animated={animated} className="mb-1 h-2.5 w-[28%] max-w-[5rem] rounded-md" />
+            <Bone animated={animated} className="h-5 w-[46%] max-w-[8rem] rounded-md" />
           </div>
           <div className="home-auction-preview-card__metrics-row flex items-center justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <Bone animated={animated} className="mb-1 h-2.5 w-[4.75rem] rounded-md" />
-              <Bone animated={animated} className="h-4 w-28 rounded-md" />
+              <Bone animated={animated} className="mb-1 h-2.5 w-[40%] max-w-[5.5rem] rounded-md" />
+              <Bone animated={animated} className="h-4 w-[70%] max-w-[9rem] rounded-md" />
             </div>
             <Bone animated={animated} className="h-8 w-8 flex-shrink-0 rounded-full" />
           </div>

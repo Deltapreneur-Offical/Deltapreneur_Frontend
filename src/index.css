@@ -14727,3 +14727,214 @@ body.app-layout-body .fa-map-link:hover {
   }
 }
 
+
+
+/* ==========================================================================
+   Mobile bottom nav (below 1024px). Fully removable: delete this block.
+   ========================================================================== */
+.mobile-bottom-nav,
+.mobile-bottom-nav__toggle--show {
+  display: none;
+}
+
+@media (max-width: 1023.98px) {
+  body.has-mobile-bottom-nav {
+    --mbn-height: 4rem;
+    --mbn-safe: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Window-scrolled pages only; the logged-in shell (h-dvh) pads its inner scroller instead. */
+  body.has-mobile-bottom-nav:not(:has(.app-layout-scroll-body)) {
+    padding-bottom: calc(var(--mbn-height) + var(--mbn-safe));
+  }
+
+  /* Logged-in shell scrolls inside its own container. */
+  body.has-mobile-bottom-nav .app-layout-scroll-body {
+    padding-bottom: calc(var(--mbn-height) + var(--mbn-safe));
+  }
+
+  /* Keep WhatsApp clear of the bar (constant, so it never jumps while scrolling). */
+  body.has-mobile-bottom-nav .whatsapp-floating-btn {
+    bottom: calc(var(--mbn-height) + var(--mbn-safe) + 0.75rem);
+  }
+
+  .mobile-bottom-nav {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1100;
+    transform: translateY(0);
+    visibility: visible;
+    transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
+    will-change: transform;
+  }
+
+  .mobile-bottom-nav[data-hidden='true'] {
+    transform: translateY(calc(100% + 1rem));
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 350ms;
+  }
+
+  .mobile-bottom-nav__bar {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    height: calc(var(--mbn-height, 4rem) + env(safe-area-inset-bottom, 0px));
+    padding: 0.25rem 0.25rem env(safe-area-inset-bottom, 0px);
+    background: #ffffff;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.1);
+  }
+
+  .mobile-bottom-nav__item {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    color: #334155;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.2s ease;
+  }
+
+  .mobile-bottom-nav__item.is-active {
+    color: #f26522;
+  }
+
+  .mobile-bottom-nav__item:focus-visible,
+  .mobile-bottom-nav__toggle:focus-visible {
+    outline: 2px solid #f26522;
+    outline-offset: -2px;
+    border-radius: 12px;
+  }
+
+  .mobile-bottom-nav__icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .mobile-bottom-nav__label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .mobile-bottom-nav__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-bottom-nav__toggle svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Down chevron: 44px hit area centred on the bar's top edge, glyph sits on a small tab. */
+  .mobile-bottom-nav__toggle--hide {
+    position: absolute;
+    left: 50%;
+    top: -22px;
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+
+  .mobile-bottom-nav__toggle--hide::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 2rem;
+    height: 1.25rem;
+    transform: translate(-50%, -75%);
+    z-index: -1;
+    background: #ffffff;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -4px 10px rgba(15, 23, 42, 0.08);
+  }
+
+  /* Up chevron: shown only after a manual hide, always at the bottom centre. */
+  .mobile-bottom-nav__toggle--show {
+    position: fixed;
+    left: 50%;
+    bottom: env(safe-area-inset-bottom, 0px);
+    transform: translateX(-50%);
+    z-index: 1100;
+    color: #334155;
+    animation: mobile-bottom-nav-toggle-in 350ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .mobile-bottom-nav__toggle--show::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 2.25rem;
+    height: 1.5rem;
+    transform: translateX(-50%);
+    z-index: -1;
+    background: #ffffff;
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.14);
+  }
+}
+
+@keyframes mobile-bottom-nav-toggle-in {
+  from {
+    opacity: 0;
+    margin-bottom: -1rem;
+  }
+  to {
+    opacity: 1;
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 1023.98px) {
+  .mobile-bottom-nav__toggle--show {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-bottom-nav,
+  .mobile-bottom-nav__toggle--show {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-bottom-nav,
+  .mobile-bottom-nav[data-hidden='true'] {
+    transition: none;
+  }
+
+  .mobile-bottom-nav__item {
+    transition: none;
+  }
+
+  .mobile-bottom-nav__toggle--show {
+    animation: none;
+  }
+}

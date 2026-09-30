@@ -13,6 +13,7 @@ import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
 import { AdminGuard, AdminOrAuctionModeratorGuard, CoBrotherGuard, VirtualAssistantGuard, VirtualAssistantApplicantGuard, VaApplicationGuard } from './components/auth/ProtectedRoute';
 
 import WhatsAppFloatingButton from './components/common/WhatsAppFloatingButton';
+import MobileBottomNav from './components/common/MobileBottomNav';
 import Home from './pages/Home';
 import { CocreationLegacyRedirect } from './utils/cocreationRouteRedirect';
 import { CREATOR_AUCTIONS_ENABLED } from './config/featureFlags';
@@ -191,6 +192,7 @@ export default function App() {
           <RoutePreloader />
           <CookieConsentBanner />
           <WhatsAppFloatingButton />
+          <MobileBottomNav />
           <AppErrorBoundary>
             <LanguageAwareRoutes>
               <Routes>

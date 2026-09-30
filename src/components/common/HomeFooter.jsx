@@ -207,7 +207,7 @@ export default function HomeFooter() {
 
   const footerBody = (
 
-    <div className="relative w-full pb-6 pt-10 sm:pb-8 sm:pt-12 md:pt-14">
+    <div className="home-footer-body relative w-full pb-6 pt-10 sm:pb-8 sm:pt-12 md:pt-14">
 
       <div className="home-footer-grid grid w-full grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 md:grid-cols-4 md:gap-10 md:gap-y-10">
 
@@ -280,10 +280,10 @@ export default function HomeFooter() {
 
 
 
-        <div className="home-footer-nav-col md:col-span-1">
+        <div className="home-footer-nav-col home-footer-legal-col md:col-span-1">
           <h3 className={headingClass}>{t('legal')}</h3>
 
-          <nav className="flex flex-col">
+          <nav className="home-footer-legal-nav flex flex-col">
 
             <ScrollLink to="/privacy-policy" className={linkClass}>
 

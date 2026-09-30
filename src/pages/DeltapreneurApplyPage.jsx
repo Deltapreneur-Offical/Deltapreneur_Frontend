@@ -221,7 +221,7 @@ export default function DeltapreneurApplyPage() {
           <button
             type="submit"
             disabled={busy}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-orange-500 to-orange-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition-all hover:shadow-orange-500/35 focus:outline-none focus:ring-4 focus:ring-orange-500/25 disabled:opacity-60 sm:w-auto sm:px-12"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-green-300 to-green-400 py-3.5 text-sm font-semibold text-green-950 shadow-lg shadow-green-300/35 transition-all hover:from-green-400 hover:to-green-500 hover:shadow-green-400/40 focus:outline-none focus:ring-4 focus:ring-green-300/35 disabled:opacity-60 sm:w-auto sm:px-12"
           >
             {busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : null}
             {busy ? 'Submitting…' : 'Submit Application'}

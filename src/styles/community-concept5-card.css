@@ -300,15 +300,23 @@
   justify-content: center;
   gap: 0.3rem;
   padding: 0.7rem 0.4rem;
+  border: 0;
   border-radius: 0.7rem;
+  font-family: inherit;
   font-size: 0.85rem;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
   transition: filter 0.15s ease;
 }
 
 .concept5-card__link:hover {
   filter: brightness(0.95);
+}
+
+.concept5-card__link:disabled {
+  cursor: default;
+  opacity: 0.65;
 }
 
 .concept5-card__link--blue { background: #eaf2ff; color: #1d64d8; }

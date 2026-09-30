@@ -45,28 +45,22 @@ const TAB_ICONS = {
   creator: DeltapreneursIcon,
 };
 
-/** Curved handle that blends into the bar with concave side slopes. */
+/**
+ * One smooth hill that meets the bar with a horizontal tangent
+ * (raised-cosine bump — matches the proposed handle, not a cloud).
+ */
 function HandleShape() {
-  const outline = [
-    'M 0 32',
-    'L 38 32',
-    'A 14 14 0 0 1 52 18',
-    'A 14 14 0 0 1 66 4',
-    'H 94',
-    'A 14 14 0 0 1 108 18',
-    'A 14 14 0 0 1 122 32',
-    'L 160 32',
-  ].join(' ');
+  const curve = 'M 0 26 C 48 26, 62 3, 110 3 C 158 3, 172 26, 220 26';
   return (
     <svg
       className="mobile-bottom-nav__shape"
-      viewBox="0 0 160 32"
+      viewBox="0 0 220 28"
       preserveAspectRatio="xMidYMax meet"
       aria-hidden="true"
       focusable="false"
     >
-      <path d={`${outline} Z`} fill="currentColor" />
-      <path d={outline} fill="none" stroke="rgba(15, 23, 42, 0.08)" strokeWidth="1.25" />
+      <path d={`${curve} L 220 28 L 0 28 Z`} fill="currentColor" />
+      <path d={curve} fill="none" stroke="rgba(15, 23, 42, 0.08)" strokeWidth="1" />
     </svg>
   );
 }

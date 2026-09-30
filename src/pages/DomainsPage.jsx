@@ -169,7 +169,7 @@ export default function DomainsPage() {
   const [detailTarget, setDetailTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'premium' | 'standard' | 'mine'
-  const [splitMobilePanel, setSplitMobilePanel] = useState('venture'); // 'venture' | 'coventure' — mobile split-panel selector
+  const [splitMobilePanel, setSplitMobilePanel] = useState('domains'); // 'domains' | 'delta' — mobile/tablet split-panel selector
   const [showcaseDomains, setShowcaseDomains] = useState([]);
   const [showcaseEnabled, setShowcaseEnabled] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -929,6 +929,14 @@ export default function DomainsPage() {
                     z-index: 2;
                     pointer-events: none;
                   }
+                  .domains-sync-layout__mobile-panel {
+                    display: flex;
+                    min-width: 0;
+                  }
+                  .domains-sync-layout__mobile-panel > .domains-sync-layout__column {
+                    flex: 1 1 auto;
+                    width: 100%;
+                  }
                   .domains-sync-layout__column--delta {
                     background: #FFF8EC !important;
                     background-color: #FFF8EC !important;
@@ -1374,6 +1382,47 @@ export default function DomainsPage() {
                   }
                 `}</style>
 
+                <div className="ventures-split__mobile-tabs domains-sync-layout__mobile-tabs" role="tablist" aria-label="Domain listing sections">
+                  <button
+                    role="tab"
+                    aria-selected={splitMobilePanel === 'domains'}
+                    aria-controls="domains-sync-panel-standard"
+                    id="domains-sync-tab-standard"
+                    className={`ventures-split__mobile-tab ventures-split__mobile-tab--coventure${
+                      splitMobilePanel === 'domains' ? ' ventures-split__mobile-tab--active' : ''
+                    }`}
+                    onClick={() => setSplitMobilePanel('domains')}
+                  >
+                    <Globe size={14} strokeWidth={2} aria-hidden />
+                    Domains
+                    <span className="ventures-split__mobile-tab-count">{marketplaceFilter.totalCount}</span>
+                  </button>
+                  <button
+                    role="tab"
+                    aria-selected={splitMobilePanel === 'delta'}
+                    aria-controls="domains-sync-panel-delta"
+                    id="domains-sync-tab-delta"
+                    className={`ventures-split__mobile-tab ventures-split__mobile-tab--venture${
+                      splitMobilePanel === 'delta' ? ' ventures-split__mobile-tab--active' : ''
+                    }`}
+                    onClick={() => setSplitMobilePanel('delta')}
+                  >
+                    <Gavel size={14} strokeWidth={2} aria-hidden />
+                    Delta Domains
+                    <span className="ventures-split__mobile-tab-count">{showcaseFilter.filtered.length}</span>
+                  </button>
+                </div>
+
+                <div className="ventures-split__mobile-viewport domains-sync-layout__mobile-viewport">
+                  <div className={`ventures-split__mobile-track domains-sync-layout__mobile-track${
+                    splitMobilePanel === 'domains' ? ' ventures-split__mobile-track--coventure' : ''
+                  }`}>
+                <div
+                  className="ventures-split__mobile-panel domains-sync-layout__mobile-panel"
+                  id="domains-sync-panel-delta"
+                  role="tabpanel"
+                  aria-labelledby="domains-sync-tab-delta"
+                >
                 <div className="domains-sync-layout__column domains-sync-layout__column--delta">
                   <header className="domains-sync-layout__header">
                     <div className="domains-sync-layout__header-main">
@@ -1402,7 +1451,14 @@ export default function DomainsPage() {
                     pageSize={20}
                   />
                 </div>
+                </div>
 
+                <div
+                  className="ventures-split__mobile-panel domains-sync-layout__mobile-panel"
+                  id="domains-sync-panel-standard"
+                  role="tabpanel"
+                  aria-labelledby="domains-sync-tab-standard"
+                >
                 <div className="domains-sync-layout__column domains-sync-layout__column--standard">
                   <header className="domains-sync-layout__header">
                     <div className="domains-sync-layout__header-main">
@@ -1448,6 +1504,9 @@ export default function DomainsPage() {
                     totalCount={marketplaceFilter.totalCount}
                     pageSize={20}
                   />
+                </div>
+                </div>
+                  </div>
                 </div>
               </div>
             ) : (

@@ -2704,6 +2704,16 @@ body.home-page-body .brand-search-play-icon {
  * Mobile (max-width:767px) is untouched.
  */
 @media (min-width: 768px) {
+  body.home-page-body .home-marketplace-domains-section .home-section-header__title::before {
+    background: #0798d1 !important;
+  }
+
+  body.home-page-body .home-marketplace-domains-section .home-section-header__view-all,
+  body.home-page-body .home-marketplace-domains-section .home-section-header__view-all:hover,
+  body.home-page-body .home-marketplace-domains-section .home-section-header__view-all:focus-visible {
+    color: #0087c1 !important;
+  }
+
   body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card.venture-listing-card--homepage-content,
   body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card.venture-listing-card--homepage-content:hover,
   body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card.venture-listing-card--homepage-content:focus-visible,

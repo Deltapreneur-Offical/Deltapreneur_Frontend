@@ -14825,6 +14825,20 @@ body.app-layout-body .fa-map-link:hover {
     flex-shrink: 0;
   }
 
+  /* PNG marks from the dashboard sidebar: charcoal idle, orange active. */
+  .mobile-bottom-nav__icon--img {
+    display: block;
+    object-fit: contain;
+    object-position: center;
+    filter: brightness(0) saturate(100%);
+    opacity: 0.72;
+  }
+
+  .mobile-bottom-nav__item.is-active .mobile-bottom-nav__icon--img {
+    opacity: 1;
+    filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1750%) hue-rotate(351deg) brightness(1.02);
+  }
+
   .mobile-bottom-nav__label {
     max-width: 100%;
     overflow: visible;

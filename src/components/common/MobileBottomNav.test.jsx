@@ -109,6 +109,12 @@ describe('MobileBottomNav', () => {
       'Technologies',
       'Deltapreneurs',
     ]);
+    const imgSrcs = links.map((a) => a.querySelector('img')?.getAttribute('src') || '');
+    expect(imgSrcs[0]).toMatch(/CoBranding/);
+    expect(links[1].querySelector('svg')).not.toBeNull();
+    expect(links[2].querySelector('svg')).not.toBeNull();
+    expect(imgSrcs[3]).toMatch(/CoCreation/);
+    expect(imgSrcs[4]).toMatch(/Deltapreneurs_icon/);
   });
 
   it('marks the active tab (including nested routes) with aria-current', () => {

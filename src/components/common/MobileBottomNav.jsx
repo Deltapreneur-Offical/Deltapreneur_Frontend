@@ -1,9 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Atom, ChevronDown, ChevronUp, Gavel, Globe, Rocket } from 'lucide-react';
+import { ChevronDown, ChevronUp, Gavel, Handshake } from 'lucide-react';
 import useAutoHideOnScroll from '../../hooks/useAutoHideOnScroll';
 import useBlockingOverlayOpen from '../../hooks/useBlockingOverlayOpen';
+import DomainsIcon from '../../assets/CoBranding.png';
+import TechnologyIcon from '../../assets/CoCreation.png';
+import CreatorIcon from '../../assets/Deltapreneurs_icon.png';
 import {
   BOTTOM_NAV_TABS,
   isBottomNavHiddenRoute,
@@ -13,36 +16,13 @@ import {
 const BODY_CLASS = 'has-mobile-bottom-nav';
 const NAV_ID = 'mobile-bottom-nav';
 
-/** 3x3 dot grid with a small diagonal mark (matches the Deltapreneurs reference icon). */
-function DeltapreneursIcon({ className }) {
-  const dots = [
-    [5, 5], [12, 5], [19, 5],
-    [5, 12], [12, 12], [19, 12],
-    [5, 19], [12, 19],
-  ];
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      stroke="currentColor"
-      aria-hidden="true"
-      focusable="false"
-    >
-      {dots.map(([cx, cy]) => (
-        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.7" stroke="none" />
-      ))}
-      <path d="M16.5 20.5 L21 16" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-    </svg>
-  );
-}
-
+/** Same icons as the dashboard sidebar for these five destinations. */
 const TAB_ICONS = {
-  domains: Globe,
-  ventures: Rocket,
-  auctions: Gavel,
-  technology: Atom,
-  creator: DeltapreneursIcon,
+  domains: { type: 'image', src: DomainsIcon },
+  ventures: { type: 'lucide', Icon: Handshake },
+  auctions: { type: 'lucide', Icon: Gavel },
+  technology: { type: 'image', src: TechnologyIcon },
+  creator: { type: 'image', src: CreatorIcon },
 };
 
 /**
@@ -141,7 +121,7 @@ export default function MobileBottomNav() {
         aria-hidden={hidden ? 'true' : undefined}
       >
         {BOTTOM_NAV_TABS.map((tab) => {
-          const Icon = TAB_ICONS[tab.id];
+          const icon = TAB_ICONS[tab.id];
           const active = isBottomNavTabActive(tab, pathname);
           return (
             <Link
@@ -151,7 +131,17 @@ export default function MobileBottomNav() {
               aria-current={active ? 'page' : undefined}
               tabIndex={hidden ? -1 : undefined}
             >
-              <Icon className="mobile-bottom-nav__icon" aria-hidden="true" strokeWidth={1.9} />
+              {icon.type === 'image' ? (
+                <img
+                  src={icon.src}
+                  alt=""
+                  className="mobile-bottom-nav__icon mobile-bottom-nav__icon--img"
+                  draggable={false}
+                  aria-hidden="true"
+                />
+              ) : (
+                <icon.Icon className="mobile-bottom-nav__icon" aria-hidden="true" strokeWidth={1.9} />
+              )}
               <span className="mobile-bottom-nav__label">
                 {t(tab.labelKey, { defaultValue: tab.label })}
               </span>

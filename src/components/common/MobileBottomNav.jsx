@@ -60,7 +60,6 @@ function HandleShape() {
       focusable="false"
     >
       <path d={`${curve} L 220 28 L 0 28 Z`} fill="currentColor" />
-      <path d={curve} fill="none" stroke="rgba(15, 23, 42, 0.08)" strokeWidth="1" />
     </svg>
   );
 }

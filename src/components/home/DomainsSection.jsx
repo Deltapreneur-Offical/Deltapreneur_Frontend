@@ -60,7 +60,7 @@ export default function DomainsSection() {
     return (
       <HomeSectionCardSkeleton
         title={t('homeDomainRegister', { defaultValue: 'Delta Domains' })}
-        to="/domains"
+        to="/domains?tab=delta"
         accent="domain"
         count={DOMAINS_HOME_VISIBLE}
       />
@@ -72,7 +72,7 @@ export default function DomainsSection() {
       <div className="w-full min-w-0">
         <HomeSectionHeader
           title={t('homeDomainRegister', { defaultValue: 'Delta Domains' })}
-          to="/domains"
+          to="/domains?tab=delta"
           accent="domain"
           showViewAll={previewDomains.length > 0}
         />

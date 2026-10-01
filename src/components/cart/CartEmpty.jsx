@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import domainsIcon from '../../assets/CoBranding.png';
-import technologyIcon from '../../assets/CoCreation.png';
+import technologyIcon from '../../assets/OS-icon.svg';
 
 const LINKS = [
   { to: '/domains', labelKey: 'domains', label: 'Domains', iconSrc: domainsIcon, descKey: 'cartEmptyDomainsDesc', desc: 'Premium & pre-owned names' },

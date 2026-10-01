@@ -5,7 +5,7 @@ import { ArrowLeft, Boxes, IndianRupee, ShoppingCart, CreditCard, Clock3 } from 
 import { technologyAPI, softwareAuctionAPI } from '../api/services';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
-import TechnologyIcon from '../assets/CoCreation.png';
+import TechnologyIcon from '../assets/OS-icon.svg';
 import { formatAuctionDate } from '../utils/auctionDate';
 import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
 import VerificationStatusBadge from '../components/listings/VerificationStatusBadge';

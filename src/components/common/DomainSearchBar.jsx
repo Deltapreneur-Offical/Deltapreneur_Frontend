@@ -45,7 +45,7 @@ import {
 const PREMIUM_LOADING_MESSAGES = 3;
 const SEARCH_MODE_IDS = ['new', 'ai', 'premium', 'auction'];
 const SEARCH_MODE_CONFIG = {
-  ai: { label: 'Delta Brand Names', labelKey: 'searchTabAi', placeholderKey: 'searchPlaceholderAi' },
+  ai: { label: 'Delta Ai Names', labelKey: 'searchTabAi', placeholderKey: 'searchPlaceholderAi' },
   new: { label: 'Domain Names', labelKey: 'searchTabNew', placeholderKey: 'searchPlaceholderNew' },
   premium: { label: 'Delta Domains', labelKey: 'searchTabPremium', placeholderKey: 'searchPlaceholderPremium' },
   auction: { label: 'Domain Auctions', labelKey: 'searchTabAuction', placeholderKey: 'searchPlaceholderAuction' },

@@ -942,8 +942,8 @@ body.home-page-body .home-price-rupee-symbol {
 
 /* Homepage tablet + desktop (≥768px): two equal Venture columns (no overlap). */
 @media (min-width: 768px) {
-  body.home-page-body .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
-  body.home-page-body .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .home-preview-row__item:has(.venture-listing-card--homepage-content),
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .home-auto-scroll-row__item:has(.venture-listing-card--homepage-content) {
     width: calc((100% - var(--home-venture-gap)) / 2) !important;
     max-width: calc((100% - var(--home-venture-gap)) / 2) !important;
     flex: 0 0 calc((100% - var(--home-venture-gap)) / 2) !important;

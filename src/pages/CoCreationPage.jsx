@@ -38,6 +38,8 @@ import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils
 import { useScrollAppLayoutToTopWhen } from '../components/common/ScrollToTop';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
+import HomePreviewCardShell from '../components/home/HomePreviewCardShell';
+import useCatalogHomeCards from '../hooks/useCatalogHomeCards';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import ListingOwnerActionPair, {
   OWNER_ACTION_BTN_AUCTION,
@@ -67,6 +69,7 @@ import AppOverlay from '../components/common/AppOverlay';
 
 
 export default function CoCreationPage() {
+  const homeCards = useCatalogHomeCards();
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { currency, getSymbol, formatPrice, supportedCurrencies, ratesMeta } = useCurrency();
@@ -403,8 +406,19 @@ export default function CoCreationPage() {
               </div>
             ) : (
               <>
-                <div className="listing-card-glow-grid technology-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className={`listing-card-glow-grid technology-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4${homeCards ? ' home-cards-nav-wrap home-cards-nav-wrap--technology' : ''}`}>
                   {paginated.map(s => (
+                    homeCards ? (
+                      <HomePreviewCardShell key={s.id} accent="technology">
+                        <TechnologyListingCard
+                          item={s}
+                          browseMode
+                          likeState={getLike(s.id)}
+                          onLike={() => toggleLike(s.id)}
+                          onView={() => openDetailIfAllowed(s)}
+                        />
+                      </HomePreviewCardShell>
+                    ) : (
                     <ListingCardShell key={s.id}>
                       <TechnologyListingCard
                         item={s}
@@ -425,6 +439,7 @@ export default function CoCreationPage() {
                         auctionStatus={auctionStatuses[s.id]}
                       />
                     </ListingCardShell>
+                    )
                   ))}
                 </div>
 
@@ -482,9 +497,9 @@ export default function CoCreationPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6${homeCards ? ' home-cards-nav-wrap home-cards-nav-wrap--technology home-deltaos-services home-deltaos-services--ref' : ''}`}>
                 {filteredTechServices.map((service) => (
-                  <TechnologyServiceCard key={service.id || service.slug} service={service} homeLayout />
+                  <TechnologyServiceCard key={service.id || service.slug} service={service} homeLayout compact={homeCards} />
                 ))}
               </div>
             </div>

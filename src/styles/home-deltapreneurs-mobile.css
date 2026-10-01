@@ -8,37 +8,37 @@
  * hide the glyph everywhere by default so mobile keeps its existing CSS arrow.
  * The desktop/tablet block below re-enables it with the exact Venture values.
  */
-body.home-page-body .home-deltapreneurs-section .community-listing-card .venture-listing-card__price-arrow-glyph {
+:is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card .venture-listing-card__price-arrow-glyph {
   display: none !important;
 }
 
 @media (max-width: 767px) {
-  body.home-page-body .home-deltapreneurs-section {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section {
     --home-deltapreneurs-mobile-orange: #ea580c;
     padding-top: 0.7rem !important;
     padding-bottom: 0.85rem !important;
     background: #ffffff !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .home-section-header {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-section-header {
     margin-bottom: 0.65rem !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .home-section-header__top {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-section-header__top {
     align-items: center !important;
     min-height: 1.5rem !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .home-section-header__title {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-section-header__title {
     color: #1f2937 !important;
     font-size: 1.15rem !important;
     font-weight: 800 !important;
     line-height: 1.2 !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .home-section-header__view-all,
-  body.home-page-body .home-deltapreneurs-section .home-section-header__view-all:hover,
-  body.home-page-body .home-deltapreneurs-section .home-section-header__view-all:focus-visible {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-section-header__view-all,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-section-header__view-all:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-section-header__view-all:focus-visible {
     min-height: 0 !important;
     padding: 0 !important;
     border: 0 !important;
@@ -51,17 +51,17 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     transform: none !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .home-section-header__view-all-icon {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-section-header__view-all-icon {
     width: 0.9rem !important;
     height: 0.9rem !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .home-cards-nav-wrap--community > .home-cards-nav {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-cards-nav-wrap--community > .home-cards-nav {
     display: none !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .home-cards-nav-wrap--community .home-preview-row.home-cards-nav-row,
-  body.home-page-body .home-deltapreneurs-section .home-preview-row.home-cards-nav-row {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-cards-nav-wrap--community .home-preview-row.home-cards-nav-row,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row.home-cards-nav-row {
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
@@ -72,18 +72,18 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     scroll-snap-type: none !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .home-preview-row__item,
-  body.home-page-body .home-deltapreneurs-section .home-preview-row__item:has(.community-listing-card--homepage-content),
-  body.home-page-body .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content),
-  body.home-page-body .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content) > div,
-  body.home-page-body .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content) .listing-card-glow-shell,
-  body.home-page-body .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content) .home-preview-card-shell,
-  body.home-page-body .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content) .home-preview-card-border,
-  body.home-page-body .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content) .home-preview-card-border__inner,
-  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .home-preview-card-border__inner,
-  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content,
-  body.home-page-body .home-deltapreneurs-section .home-preview-row .community-listing-card--homepage-content,
-  body.home-page-body .home-deltapreneurs-section .home-preview-row .community-listing-card {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row__item,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row__item:has(.community-listing-card--homepage-content),
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content),
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content) > div,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content) .listing-card-glow-shell,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content) .home-preview-card-shell,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content) .home-preview-card-border,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row__card:has(.community-listing-card--homepage-content) .home-preview-card-border__inner,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .home-preview-card-border__inner,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row .community-listing-card--homepage-content,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-row .community-listing-card {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -95,10 +95,10 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* Kill saffron beam / glow wash spilling under the card */
-  body.home-page-body .home-deltapreneurs-section .home-feature-card-beam-spinner,
-  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .home-feature-card-beam-spinner,
-  body.home-page-body .home-deltapreneurs-section .home-preview-card-border:hover .home-feature-card-beam-spinner,
-  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .home-feature-card-beam-spinner {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-feature-card-beam-spinner,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .home-feature-card-beam-spinner,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border:hover .home-feature-card-beam-spinner,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .home-feature-card-beam-spinner {
     content: none !important;
     display: none !important;
     opacity: 0 !important;
@@ -108,10 +108,10 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     background: none !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .listing-card-glow-shell::before,
-  body.home-page-body .home-deltapreneurs-section .listing-card-glow-shell:hover::before,
-  body.home-page-body .home-deltapreneurs-section .home-feature-card-shell::before,
-  body.home-page-body .home-deltapreneurs-section .home-feature-card-shell:hover::before {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .listing-card-glow-shell::before,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .listing-card-glow-shell:hover::before,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-feature-card-shell::before,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-feature-card-shell:hover::before {
     content: none !important;
     display: none !important;
     opacity: 0 !important;
@@ -119,12 +119,12 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     filter: none !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content::after,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content:hover::after,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover::after,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover:hover::after,
-  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card.card-glow-hover::after,
-  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card.card-glow-hover:hover::after {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content::after,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content:hover::after,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover::after,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover:hover::after,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card.card-glow-hover::after,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card.card-glow-hover:hover::after {
     content: none !important;
     display: none !important;
     opacity: 0 !important;
@@ -132,13 +132,13 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* Neutral shell border - kill champagne/orange from themes + preview-cards hover */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:has(.community-listing-card--homepage-content),
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:has(.community-listing-card--homepage-content):hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:has(.community-listing-card--homepage-content):focus-within,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:focus-within {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:has(.community-listing-card--homepage-content),
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:has(.community-listing-card--homepage-content):hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:has(.community-listing-card--homepage-content):focus-within,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:focus-within {
     --home-card-border: var(--home-deltapreneurs-mobile-orange) !important;
     --home-card-border-hover: var(--home-deltapreneurs-mobile-orange) !important;
     --home-card-shadow: rgba(15, 23, 42, 0.06) !important;
@@ -155,12 +155,12 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     transform: none !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .home-preview-card-border__inner {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .home-preview-card-border__inner {
     border-radius: calc(0.95rem - 1px) !important;
     overflow: hidden !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content {
     display: flex !important;
     flex-direction: column !important;
     border: 0 !important;
@@ -172,13 +172,13 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     transform: none !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content:hover,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content:focus-visible,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover:hover,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover:focus-visible,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover:hover:not(.creator-profile-card):not(.virtual-assistant-listing-card),
-  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card.card-glow-hover:hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card),
-  body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card) {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content:focus-visible,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover:focus-visible,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover:hover:not(.creator-profile-card):not(.virtual-assistant-listing-card),
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card.card-glow-hover:hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card),
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card.card-glow-hover:not(.venture-listing-card):not(.technology-listing-card):not(.virtual-assistant-listing-card) {
     transform: none !important;
     box-shadow: none !important;
     border: 0 !important;
@@ -192,7 +192,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
    * Parent spacing: pad the header + body wrappers (not per-child margins).
    * More top / less bottom keeps outer card height stable while content sits lower.
    */
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__header {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__header {
     position: relative !important;
     display: flex !important;
     flex-direction: row !important;
@@ -205,7 +205,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     box-sizing: border-box !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover {
     position: static !important;
     flex: 0 0 auto !important;
     width: auto !important;
@@ -215,7 +215,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     background: transparent !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover-inner {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover-inner {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -224,11 +224,11 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     padding: 0 !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover .creator-profile-card__avatar-container {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover .creator-profile-card__avatar-container {
     margin: 0 !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover .creator-profile-card__avatar {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover .creator-profile-card__avatar {
     width: 2.75rem !important;
     height: 2.75rem !important;
     border: 2px solid var(--home-deltapreneurs-mobile-orange) !important;
@@ -237,21 +237,21 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     background: #f5e6d3 !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover .creator-profile-card__avatar--fallback {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover .creator-profile-card__avatar--fallback {
     color: var(--home-deltapreneurs-mobile-orange) !important;
     font-size: 1.05rem !important;
     font-weight: 800 !important;
     background: #f5e6d3 !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover-inner {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__cover-inner {
     overflow: visible !important;
   }
 
   /* Share sits as header sibling (not inside cover) so it is never clipped */
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-container,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__share-container--homepage {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-container,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__share-container--homepage {
     position: absolute !important;
     top: 1.3rem !important;
     right: 0.85rem !important;
@@ -271,10 +271,10 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     pointer-events: auto !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-btn,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-btn:hover,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-btn:focus-visible,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-btn:active {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-btn,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-btn:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-btn:focus-visible,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-btn:active {
     width: 2rem !important;
     min-width: 2rem !important;
     max-width: 2rem !important;
@@ -295,7 +295,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     transform: none !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-btn svg {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__share-btn svg {
     width: 0.9rem !important;
     height: 0.9rem !important;
     opacity: 1 !important;
@@ -303,7 +303,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     stroke: currentColor !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__title-block {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__title-block {
     display: flex !important;
     flex: 1 1 auto !important;
     flex-direction: column !important;
@@ -316,16 +316,16 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     text-align: left !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__name-row {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__name-row {
     display: flex !important;
     justify-content: flex-start !important;
     width: 100% !important;
     max-width: 100% !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__name,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content:hover .va-listing-card__name,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__name .cb-overflow-marquee__item {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__name,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content:hover .va-listing-card__name,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__name .cb-overflow-marquee__item {
     width: 100% !important;
     max-width: 100% !important;
     color: #5c3d2e !important;
@@ -335,8 +335,8 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     text-align: left !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .creator-profile-card__badge,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content:hover .creator-profile-card__badge {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .creator-profile-card__badge,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content:hover .creator-profile-card__badge {
     display: inline-flex !important;
     align-items: center !important;
     max-width: 100% !important;
@@ -356,7 +356,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     text-overflow: ellipsis !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__body {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__body {
     display: flex !important;
     flex-direction: column !important;
     flex: 0 0 auto !important;
@@ -370,7 +370,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* Experience / Industry / Work Type */
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 0 !important;
@@ -383,8 +383,8 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     box-sizing: border-box !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-col,
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-col--center {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-col,
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-col--center {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -396,15 +396,15 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     text-align: center !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-col:last-child {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-col:last-child {
     border-right: 0 !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-icon {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-icon {
     display: none !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-label {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-label {
     order: -1 !important;
     color: #8a8178 !important;
     font-size: 0.46rem !important;
@@ -414,7 +414,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     text-transform: uppercase !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-value {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .community-listing-card__stats-grid .stat-value {
     max-width: 100% !important;
     color: #5c3d2e !important;
     font-size: 0.68rem !important;
@@ -429,7 +429,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
    * Compensation grey panel only - kill nested white/orange price pill from
    * .home-preview-card-border .domain-listing-card__price-box (+ saffron hover).
    */
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-block {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-block {
     position: relative !important;
     display: flex !important;
     flex-direction: column !important;
@@ -447,7 +447,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     box-sizing: border-box !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-block > .va-listing-card__compensation-label {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-block > .va-listing-card__compensation-label {
     position: static !important;
     display: block !important;
     margin: 0 !important;
@@ -460,13 +460,13 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     text-transform: uppercase !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content .va-listing-card__compensation,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content .domain-listing-card__price-box,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content .domain-listing-card__price-box.va-listing-card__compensation,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .community-listing-card--homepage-content .domain-listing-card__price-box,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:focus-within .community-listing-card--homepage-content .domain-listing-card__price-box,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content:hover .va-listing-card__compensation,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover:hover .va-listing-card__compensation {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content .va-listing-card__compensation,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content .domain-listing-card__price-box,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content .domain-listing-card__price-box.va-listing-card__compensation,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .community-listing-card--homepage-content .domain-listing-card__price-box,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:focus-within .community-listing-card--homepage-content .domain-listing-card__price-box,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content:hover .va-listing-card__compensation,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content.card-glow-hover:hover .va-listing-card__compensation {
     position: static !important;
     display: flex !important;
     flex-direction: row !important;
@@ -496,7 +496,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     box-sizing: border-box !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-text {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-text {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: wrap !important;
@@ -511,8 +511,8 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     box-shadow: none !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-value,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-period {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-value,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-period {
     font-size: 0.95rem !important;
     font-weight: 800 !important;
     line-height: 1.2 !important;
@@ -521,25 +521,25 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     box-shadow: none !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-value {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-value {
     color: var(--home-deltapreneurs-mobile-orange) !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-period {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-period {
     color: #5c3d2e !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-period {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-period {
     font-size: 0.78rem !important;
     font-weight: 700 !important;
     margin-left: 0.1rem !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-block .domain-listing-card__price-cta,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta:hover,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta:active {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation-block .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta:active {
     position: absolute !important;
     top: 50% !important;
     right: 0.55rem !important;
@@ -566,13 +566,13 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     overflow: hidden !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .price-section-v-icon,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta-icon {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .price-section-v-icon,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta-icon {
     display: none !important;
     opacity: 0 !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta::before {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .va-listing-card__compensation .domain-listing-card__price-cta::before {
     content: '\2192' !important;
     display: block !important;
     color: #ffffff !important;
@@ -585,9 +585,9 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
    * Kill empty gap: shared .listing-card-stats-footer { margin-top: auto }
    * + stretched body flex was pushing the people/like row to the card bottom.
    */
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .listing-card-stats-footer,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__stats,
-  html body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .listing-card-stats-footer.domain-listing-card__stats {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .listing-card-stats-footer,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .domain-listing-card__stats,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .listing-card-stats-footer.domain-listing-card__stats {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -599,7 +599,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     padding-bottom: 0.15rem !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .listing-card-stats-footer__group--split {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .listing-card-stats-footer__group--split {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto !important;
     width: 100% !important;
@@ -607,11 +607,11 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     align-items: center !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .listing-card-stats-footer__views {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .listing-card-stats-footer__views {
     justify-self: start !important;
   }
 
-  body.home-page-body .home-deltapreneurs-section .community-listing-card--homepage-content .listing-like-btn {
+  :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .community-listing-card--homepage-content .listing-like-btn {
     justify-self: end !important;
     margin-left: auto !important;
   }
@@ -623,11 +623,11 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
  */
 @media (min-width: 768px) {
   /* 1. Outer shell container on desktop/tablet homepage - PERMANENTLY WHITE IN NORMAL & HOVER STATES */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:focus-within,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:focus-within,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover {
     border: 1px solid #F6C98F !important;
     border-color: #F6C98F !important;
     border-radius: 1.5rem !important;
@@ -639,8 +639,8 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     box-shadow: 0 8px 24px rgba(246, 201, 143, 0.10) !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover {
     border-color: #F59E0B !important;
     background: #ffffff !important;
     background-color: #ffffff !important;
@@ -649,8 +649,8 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* 2. Inner border wrapper & card inner container - PERMANENTLY WHITE */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .home-preview-card-border__inner,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .home-preview-card-border__inner {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .home-preview-card-border__inner,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .home-preview-card-border__inner {
     border-radius: calc(1.5rem - 1px) !important;
     overflow: hidden !important;
     background: #ffffff !important;
@@ -659,14 +659,14 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* 3. Inner card container (all elements) - PERMANENTLY WHITE IN NORMAL & HOVER STATES */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content:hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card:hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card:hover {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card--homepage-content:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card:hover {
     border: none !important;
     border-width: 0 !important;
     border-color: transparent !important;
@@ -681,16 +681,16 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* 4. Kill all internal glow ::after and ::before overlays so NO saffron/orange overlay exists */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card::after,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card::before,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card::after,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card::before,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card::after,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card::before,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .community-listing-card::after,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .community-listing-card::before,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card::after,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card::before {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card::after,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card::before,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card::after,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card::before,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card::after,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .creator-profile-card::before,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .community-listing-card::after,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .community-listing-card::before,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card::after,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card::before {
     content: none !important;
     display: none !important;
     opacity: 0 !important;
@@ -698,13 +698,13 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* 5. Header, cover, upper half, and lower card body stay permanently WHITE in normal & hover states */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__header,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__cover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__body,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .va-listing-card__header,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .va-listing-card__cover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__body,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .domain-listing-card__body {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__header,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__cover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__body,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .va-listing-card__header,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .va-listing-card__cover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__body,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .domain-listing-card__body {
     border: none !important;
     box-shadow: none !important;
     background: #ffffff !important;
@@ -713,27 +713,27 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* 6. LOWER COMPENSATION SECTION: grey container in normal & hover */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__compensation-block,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .va-listing-card__compensation-block,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .va-listing-card__compensation-block {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__compensation-block,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .va-listing-card__compensation-block,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .va-listing-card__compensation-block {
     margin-top: 0 !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__compensation-block > .va-listing-card__compensation-label,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .va-listing-card__compensation-block > .va-listing-card__compensation-label,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .va-listing-card__compensation-block > .va-listing-card__compensation-label {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__compensation-block > .va-listing-card__compensation-label,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .va-listing-card__compensation-block > .va-listing-card__compensation-label,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .va-listing-card__compensation-block > .va-listing-card__compensation-label {
     transform: translateY(-0.16rem) !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__compensation,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-box,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .va-listing-card__compensation,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__price-box,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:focus-within .domain-listing-card__price-box,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .va-listing-card__compensation,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-box,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__compensation:hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-box:hover {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__compensation,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-box,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .va-listing-card__compensation,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__price-box,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:focus-within .domain-listing-card__price-box,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .va-listing-card__compensation,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-box,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__compensation:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-box:hover {
     position: relative !important;
     display: flex !important;
     align-items: center !important;
@@ -756,17 +756,17 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     outline: none !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__compensation::before,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-box::before {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .va-listing-card__compensation::before,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-box::before {
     display: none !important;
     content: none !important;
   }
 
   /* 7. Hide the image arrow; use a centered white text arrow in the square CTA */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .price-section-v-icon,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta-icon,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .price-section-v-icon,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__price-cta-icon {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .price-section-v-icon,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta-icon,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .price-section-v-icon,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__price-cta-icon {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
@@ -779,11 +779,11 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     mask: none !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta::before,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__price-cta::before,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-cta::before,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:hover::before,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:focus-visible::before {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta::before,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__price-cta::before,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-cta::before,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:hover::before,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:focus-visible::before {
     content: none !important;
     display: none !important;
     visibility: hidden !important;
@@ -794,12 +794,12 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* 8. BLACK ARROW BUTTON: ALWAYS VISIBLE BY DEFAULT IN NORMAL & HOVER STATES, ROUNDED-SQUARE, MOVED SLIGHTLY LEFT */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__price-cta,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-cta,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:focus-visible,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:active {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:focus-visible,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:active {
     position: absolute !important;
     top: 50% !important;
     right: 0.4rem !important;
@@ -832,9 +832,9 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* Button hover - dark navy hover (no position jump, no transform, stays static & visible) */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:focus-visible,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:active {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:focus-visible,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:active {
     background: #f97316 !important;
     background-color: #f97316 !important;
     color: #ffffff !important;
@@ -842,12 +842,12 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* 9. WHITE RIGHT-ARROW INSIDE BUTTON - ALWAYS VISIBLE BY DEFAULT IN NORMAL & HOVER STATES */
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta::after,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__price-cta::after,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:hover::after,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:focus-visible::after,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:active::after,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-cta::after {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta::after,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover .domain-listing-card__price-cta::after,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:hover::after,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:focus-visible::after,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .domain-listing-card__price-cta:active::after,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-cta::after {
     content: '\2192' !important;
     display: flex !important;
     visibility: visible !important;
@@ -877,12 +877,12 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
    * computed values as .home-ventures-section: 2rem square, 9px radius,
    * #1f2937 at rest, #ff553b on hover, 17px white stroke arrow).
    */
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:focus-visible,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:active {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card:hover .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:focus-visible,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:active {
     position: absolute !important;
     top: calc(50% - 1rem) !important;
     right: 0.62rem !important;
@@ -913,10 +913,10 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     cursor: pointer !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:focus-visible,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:active,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:focus-visible,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:active,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta {
     background: #ff553b !important;
     background-color: #ff553b !important;
     box-shadow: none !important;
@@ -926,9 +926,9 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* Same button, same glyph treatment as the Venture homepage arrow. */
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta .venture-listing-card__price-arrow-glyph,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover .venture-listing-card__price-arrow-glyph,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:focus-visible .venture-listing-card__price-arrow-glyph {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta .venture-listing-card__price-arrow-glyph,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover .venture-listing-card__price-arrow-glyph,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:focus-visible .venture-listing-card__price-arrow-glyph {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -939,7 +939,7 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     transform: none !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta .venture-listing-card__price-arrow-glyph svg {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta .venture-listing-card__price-arrow-glyph svg {
     display: block !important;
     width: 17px !important;
     height: 17px !important;
@@ -950,12 +950,12 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
   }
 
   /* No CSS-drawn arrow on the reused button — the SVG glyph is the only arrow. */
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::before,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::before,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover::before,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::after,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::after,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover::after {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::before,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::before,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover::before,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::after,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta::after,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta:hover::after {
     content: none !important;
     display: none !important;
     visibility: hidden !important;
@@ -970,20 +970,20 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
    * Beats the shared high-specificity homepage hover rule that tints generic
    * community cards saffron and the shared price CTA hover transform.
    */
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:focus-within,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:focus-within,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community {
     background: #ffffff !important;
     background-color: #ffffff !important;
     background-image: none !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content.card-glow-hover:hover,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content.card-glow-hover:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content {
     background: #ffffff !important;
     background-color: #ffffff !important;
     background-image: none !important;
@@ -991,10 +991,10 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     transform: none !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content::before,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content::after,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content::before,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content::after {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content::before,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content::after,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content::before,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content::after {
     content: none !important;
     display: none !important;
     opacity: 0 !important;
@@ -1002,27 +1002,27 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     background-image: none !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__body,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__body,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__body,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__body,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .creator-profile-card__stats-grid,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .creator-profile-card__stats-grid,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .listing-card-stats-footer,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .listing-card-stats-footer {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__body,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__body,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__body,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__body,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .creator-profile-card__stats-grid,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .creator-profile-card__stats-grid,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .listing-card-stats-footer,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .listing-card-stats-footer {
     background: #ffffff !important;
     background-color: #ffffff !important;
     background-image: none !important;
     box-shadow: none !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .va-listing-card__compensation,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-box,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .va-listing-card__compensation,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-box,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .va-listing-card__compensation,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__price-box,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-box {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .va-listing-card__compensation,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-box,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .va-listing-card__compensation,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-box,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .va-listing-card__compensation,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__price-box,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-box {
     height: 2.55rem !important;
     min-height: 2.55rem !important;
     max-height: 2.55rem !important;
@@ -1037,12 +1037,12 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     box-shadow: none !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__price-cta,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:hover,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:active {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:active {
     position: absolute !important;
     top: 50% !important;
     right: 0.4rem !important;
@@ -1066,12 +1066,12 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     box-shadow: none !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__price-cta,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:hover,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:active {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__price-cta,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta:active {
     background: #f97316 !important;
     background-color: #f97316 !important;
     background-image: none !important;
@@ -1079,18 +1079,18 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     transform: translateY(-50%) !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta-icon,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .price-section-v-icon {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta-icon,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .price-section-v-icon {
     content: none !important;
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta::before,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta::before,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__price-cta::before,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta::before {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta::before,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta::before,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__price-cta::before,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-shell:hover .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta::before {
     content: none !important;
     display: none !important;
     visibility: hidden !important;
@@ -1100,9 +1100,9 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
     mask: none !important;
   }
 
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta::after,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta::after,
-  html body.home-page-body #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__price-cta::after {
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta::after,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community:hover .community-listing-card.community-listing-card--homepage-content .domain-listing-card__price-cta::after,
+  html :is(body.home-page-body, body.catalog-home-cards) #root .home-deltapreneurs-section.home-deltapreneurs-section .home-preview-card-border.home-preview-card-border--community .community-listing-card.community-listing-card--homepage-content:hover .domain-listing-card__price-cta::after {
     content: '\2192' !important;
     display: flex !important;
     visibility: visible !important;
@@ -1127,12 +1127,12 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
 
 /* Homepage desktop only: same 2px lift as Delta Registration cards. */
 @media (min-width: 1024px) {
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community {
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
   }
 
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover,
-  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:focus-within {
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:hover,
+  html :is(body.home-page-body, body.catalog-home-cards) .home-deltapreneurs-section .home-preview-card-border--community:focus-within {
     transform: translateY(-2px) !important;
   }
 }

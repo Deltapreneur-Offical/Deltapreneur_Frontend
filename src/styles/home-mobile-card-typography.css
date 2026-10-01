@@ -1,31 +1,31 @@
 @media (max-width: 767px) {
-  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .registry-standard-badge,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .registry-premium-badge {
+  :is(body.home-page-body, body.catalog-home-cards) .home-marketplace-domains-section .domain-search-card--listing .registry-standard-badge,
+  :is(body.home-page-body, body.catalog-home-cards) .home-domains-section:not(.home-marketplace-domains-section) .registry-premium-badge {
     font-weight: 500 !important;
   }
 
-  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name,
-  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name > span,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3 > span {
+  :is(body.home-page-body, body.catalog-home-cards) .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name,
+  :is(body.home-page-body, body.catalog-home-cards) .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__name > span,
+  :is(body.home-page-body, body.catalog-home-cards) .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3,
+  :is(body.home-page-body, body.catalog-home-cards) .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) h3 > span {
     font-weight: 500 !important;
   }
 
-  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing > .pr-9 > p:not(.domain-search-card__name):not(.domain-search-card__price),
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .pr-9 > p:not(.domain-card-price-line) {
+  :is(body.home-page-body, body.catalog-home-cards) .home-marketplace-domains-section .domain-search-card--listing > .pr-9 > p:not(.domain-search-card__name):not(.domain-search-card__price),
+  :is(body.home-page-body, body.catalog-home-cards) .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) > .pr-9 > p:not(.domain-card-price-line) {
     font-weight: 450 !important;
   }
 
-  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__price::before,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-line::before {
+  :is(body.home-page-body, body.catalog-home-cards) .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__price::before,
+  :is(body.home-page-body, body.catalog-home-cards) .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-line::before {
     font-weight: 450 !important;
   }
 
-  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__price,
-  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__price-value,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-line,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-value,
-  body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-value .home-price-rupee-symbol {
+  :is(body.home-page-body, body.catalog-home-cards) .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__price,
+  :is(body.home-page-body, body.catalog-home-cards) .home-marketplace-domains-section .domain-search-card--listing .domain-search-card__price-value,
+  :is(body.home-page-body, body.catalog-home-cards) .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-line,
+  :is(body.home-page-body, body.catalog-home-cards) .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-value,
+  :is(body.home-page-body, body.catalog-home-cards) .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge) .domain-card-price-value .home-price-rupee-symbol {
     font-weight: 550 !important;
   }
 

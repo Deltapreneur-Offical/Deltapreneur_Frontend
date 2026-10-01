@@ -1,5 +1,5 @@
 /* Homepage Operator reference layout only. */
-body.home-page-body .home-operators-reference-section {
+:is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section {
   /* Blend with Home page canvas (#f8fafc) ? no separate white section box */
   background: #f8fafc !important;
   padding-top: 1.15rem !important;
@@ -9,12 +9,12 @@ body.home-page-body .home-operators-reference-section {
 }
 
 @media (min-width: 768px) {
-  body.home-page-body .home-operators-reference-section {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section {
     padding-bottom: 1.5rem !important;
   }
 }
 
-body.home-page-body .home-operators-reference-section > div,
+:is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section > div,
 body.home-page-body .home-operators-reference-shell,
 body.home-page-body .home-operators-reference-rail,
 body.home-page-body .home-operators-reference-nav,
@@ -24,27 +24,27 @@ body.home-page-body .home-operators-reference-row .home-preview-row__card {
   background: transparent !important;
 }
 
-body.home-page-body .home-operators-reference-section .home-section-header {
+:is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header {
   margin-bottom: 1.25rem;
 }
 
 /* Mobile only ? desktop keeps Domains-style underline under the heading */
 @media (max-width: 1023px) {
-  body.home-page-body .home-operators-reference-section .home-section-header__top {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__top {
     border-bottom: none !important;
   }
 }
 
 @media (min-width: 1024px) {
-  body.home-page-body .home-operators-reference-section .home-section-header__top,
-  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__top {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__top,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header--assistance .home-section-header__top {
     align-items: center !important;
     padding-bottom: 0.28rem !important;
     border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
   }
 
   /* Match Domains vertical bar thickness; keep DeltaOp blue */
-  body.home-page-body .home-operators-reference-section .home-section-header__title {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__title {
     position: relative !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -52,7 +52,7 @@ body.home-page-body .home-operators-reference-section .home-section-header {
     padding-left: 0 !important;
   }
 
-  body.home-page-body .home-operators-reference-section .home-section-header__title::before {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__title::before {
     position: static !important;
     top: auto !important;
     left: auto !important;
@@ -67,7 +67,7 @@ body.home-page-body .home-operators-reference-section .home-section-header {
 }
 
 /* Blue accent bar left of "DeltaOp (Operators)" ? matches reference heading. */
-body.home-page-body .home-operators-reference-section .home-section-header__title {
+:is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__title {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -75,7 +75,7 @@ body.home-page-body .home-operators-reference-section .home-section-header__titl
   color: #0f172a;
 }
 
-body.home-page-body .home-operators-reference-section .home-section-header__title::before {
+:is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__title::before {
   content: '';
   position: absolute;
   left: 0;
@@ -92,8 +92,8 @@ body.home-page-body .home-operators-reference-section .home-section-header__titl
  * Mobile (max-width: 767px) keeps the existing orange text link below.
  */
 @media (min-width: 768px) {
-  body.home-page-body .home-operators-reference-section .home-section-header__view-all,
-  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__view-all,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all {
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
@@ -106,12 +106,12 @@ body.home-page-body .home-operators-reference-section .home-section-header__titl
     transform: none !important;
   }
 
-  body.home-page-body .home-operators-reference-section .home-section-header__view-all:hover,
-  body.home-page-body .home-operators-reference-section .home-section-header__view-all:focus-visible,
-  body.home-page-body .home-operators-reference-section .home-section-header__view-all:active,
-  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:hover,
-  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:focus-visible,
-  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:active {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__view-all:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__view-all:focus-visible,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__view-all:active,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:focus-visible,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:active {
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
@@ -224,23 +224,23 @@ body.home-page-body .home-operators-reference-row .home-preview-card-border:not(
   transform: none !important;
 }
 @media (min-width: 768px) {
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance {
     transition: box-shadow 150ms ease !important;
   }
 
   /* Match Home Auctions: NO lift — the card only blinks its shadow/border. */
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:hover,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:focus-within {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:focus-within {
     border-color: #c8dce8 !important;
     background: #ffffff !important;
     box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
     transform: none !important;
   }
 
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card:hover,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card:focus-visible,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card:active {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card:focus-visible,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card:active {
     transform: none !important;
   }
 }
@@ -583,10 +583,10 @@ body.home-page-body .home-operators-reference-row .home-preview-card-border--ass
 }
 
 @media (min-width: 768px) {
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active {
     background: #111827 !important;
     background-image: none !important;
     color: #ffffff !important;
@@ -596,14 +596,14 @@ body.home-page-body .home-operators-reference-row .home-preview-card-border--ass
 }
 
 @media (min-width: 768px) {
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-shell:hover .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-shell:focus-within .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:hover .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:focus-within .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card:hover .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card:focus-visible .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-shell:hover .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-shell:focus-within .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:hover .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:focus-within .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card:hover .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card:focus-visible .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible {
     background: #ff553b !important;
     background-image: none !important;
     color: #ffffff !important;
@@ -871,7 +871,7 @@ body.home-page-body .home-operators-reference-info__cta {
 
 @media (max-width: 1180px) and (min-width: 768px) {
   /* Tablet / iPad: keep side-by-side, never collapse the promo into a thin strip. */
-  body.home-page-body .home-operators-reference-section {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section {
     overflow-x: clip;
   }
 
@@ -937,27 +937,27 @@ body.home-page-body .home-operators-reference-info__cta {
 
 @media (max-width: 767px) {
   /* Phone-only DeltaOp list layout. Desktop/tablet rules above are unchanged. */
-  body.home-page-body .home-operators-reference-section {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section {
     padding-top: 0.85rem !important;
     padding-bottom: 1rem !important;
     overflow-x: clip;
   }
 
-  body.home-page-body .home-operators-reference-section .home-section-header {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header {
     margin-bottom: 0.85rem;
   }
 
-  body.home-page-body .home-operators-reference-section .home-section-header__title::before {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__title::before {
     width: 0.2rem;
     height: 1.05em;
     border-radius: 0.12rem;
     background: #f2532a;
   }
 
-  body.home-page-body .home-operators-reference-section .home-section-header__view-all,
-  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all,
-  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:hover,
-  body.home-page-body .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:focus-visible {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header__view-all,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-section-header--assistance .home-section-header__view-all:focus-visible {
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
@@ -1563,11 +1563,11 @@ body.home-page-body .home-operators-reference-info__cta {
  * Phone + tablet keep the unicode ? treatment above.
  */
 @media (min-width: 1024px) {
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -1593,14 +1593,14 @@ body.home-page-body .home-operators-reference-info__cta {
     transform: none !important;
   }
 
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-shell:hover .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-shell:focus-within .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:hover .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:focus-within .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card:hover .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card:focus-visible .va-listing-card__compensation .domain-listing-card__price-cta,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-shell:hover .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-shell:focus-within .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:hover .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance:focus-within .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card:hover .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card:focus-visible .va-listing-card__compensation .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible {
     background-color: #ff553b !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.45' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'%3E%3C/line%3E%3Cpolyline points='12 5 19 12 12 19'%3E%3C/polyline%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
@@ -1609,8 +1609,8 @@ body.home-page-body .home-operators-reference-info__cta {
     color: transparent !important;
   }
 
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after,
-  body.home-page-body .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after {
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after,
+  :is(body.home-page-body, body.catalog-home-cards) .home-operators-reference-section .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after {
     content: none !important;
     display: none !important;
     width: 0 !important;

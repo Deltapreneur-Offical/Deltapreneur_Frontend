@@ -14,6 +14,9 @@ import { useLikes } from '../hooks/useLikes';
 import { COMMUNITY_INDUSTRIES } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import CommunityListingCard from '../components/listings/CommunityListingCard';
+import HomePreviewCardShell from '../components/home/HomePreviewCardShell';
+import useCatalogHomeCards from '../hooks/useCatalogHomeCards';
+import '../styles/home-deltapreneurs-mobile.css';
 import CreatorPreviewModal from '../components/auctions/CreatorPreviewModal';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
@@ -162,6 +165,7 @@ function wasLinkedInOAuthHandled(key) {
 }
 
 export default function CommunityPage() {
+  const homeCards = useCatalogHomeCards();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -861,20 +865,39 @@ export default function CommunityPage() {
                 ) : null}
               </div>
             ) : profilesForDisplay.length > 0 ? (
-              <div className="community-page-listing-grid listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
+              <div className={`community-page-listing-grid listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5${homeCards ? ' home-deltapreneurs-section' : ''}`}>
                 {profilesForDisplay.map((p, idx) => (
-                  <ListingCardShell key={p.id ? String(p.id) : `creator-${idx}`} className="community-listing-card-shell">
-                    <CommunityListingCard
-                      profile={p}
-                      isMe={isListingOwner(p, user, 'community')}
-                      likeState={getLike(p.id)}
-                      onLike={() => toggleLike(p.id)}
-                      followState={getFollow(p.id)}
-                      onFollow={() => toggleFollow(p.id)}
-                      onView={() => openDetailIfAllowed(p)}
-                      onEdit={() => { setMyProfile(p); setShowForm(true); }}
-                    />
-                  </ListingCardShell>
+                  homeCards ? (
+                    <HomePreviewCardShell key={p.id ? String(p.id) : `creator-${idx}`} accent="community">
+                      <CommunityListingCard
+                        profile={p}
+                        isMe={isListingOwner(p, user, 'community')}
+                        likeState={getLike(p.id)}
+                        onLike={() => toggleLike(p.id)}
+                        followState={getFollow(p.id)}
+                        onFollow={() => toggleFollow(p.id)}
+                        onView={() => openDetailIfAllowed(p)}
+                        onEdit={() => { setMyProfile(p); setShowForm(true); }}
+                        priceLabelOutside
+                        homepageContent
+                        homepageArrow
+                        hideStatsFooter
+                      />
+                    </HomePreviewCardShell>
+                  ) : (
+                    <ListingCardShell key={p.id ? String(p.id) : `creator-${idx}`} className="community-listing-card-shell">
+                      <CommunityListingCard
+                        profile={p}
+                        isMe={isListingOwner(p, user, 'community')}
+                        likeState={getLike(p.id)}
+                        onLike={() => toggleLike(p.id)}
+                        followState={getFollow(p.id)}
+                        onFollow={() => toggleFollow(p.id)}
+                        onView={() => openDetailIfAllowed(p)}
+                        onEdit={() => { setMyProfile(p); setShowForm(true); }}
+                      />
+                    </ListingCardShell>
+                  )
                 ))}
               </div>
             ) : null}

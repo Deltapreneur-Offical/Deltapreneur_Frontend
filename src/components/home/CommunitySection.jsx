@@ -174,14 +174,6 @@ export default function CommunitySection() {
           </HomeCardsNavRow>
         ) : (
           <div className="home-community-empty" role="status">
-            <div className="home-community-empty__visual" aria-hidden="true">
-              <img
-                src={DeltapreneurPerson}
-                alt=""
-                className="home-community-empty__art"
-                draggable={false}
-              />
-            </div>
             <div className="home-community-empty__copy">
               <p className="home-community-empty__title">{t('noDisruptors')}</p>
               <p className="home-community-empty__text">
@@ -194,6 +186,14 @@ export default function CommunitySection() {
                 <span>{t('applyToJoinCohort', { defaultValue: 'Apply to Join Cohort' })}</span>
                 <ArrowRight size={16} strokeWidth={2.5} aria-hidden="true" />
               </Link>
+            </div>
+            <div className="home-community-empty__visual" aria-hidden="true">
+              <img
+                src={DeltapreneurPerson}
+                alt=""
+                className="home-community-empty__art"
+                draggable={false}
+              />
             </div>
           </div>
         )}

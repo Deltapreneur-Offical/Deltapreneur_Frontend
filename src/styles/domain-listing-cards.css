@@ -2229,6 +2229,32 @@
   max-width: 100%;
 }
 
+.add-to-cart-wrap {
+  box-sizing: border-box;
+}
+
+.add-to-cart-wrap--with-remove {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.add-to-cart-wrap--with-remove > button:first-of-type {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: 100% !important;
+}
+
+.add-to-cart-wrap--with-remove > button:last-of-type {
+  flex: 0 0 1.875rem !important;
+  width: 1.875rem !important;
+  min-width: 1.875rem !important;
+  max-width: 1.875rem !important;
+  height: 1.875rem !important;
+  padding: 0 !important;
+}
+
 .domains-page-wrap {
   container-type: inline-size;
   container-name: domains-page;

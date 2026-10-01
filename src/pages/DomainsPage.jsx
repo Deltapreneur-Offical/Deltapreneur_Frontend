@@ -36,6 +36,7 @@ import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
 import { useFilterSort } from '../hooks/useFilterSort';
 import FilterBar from '../components/common/FilterBar';
+import ListingMoreOptions from '../components/common/ListingMoreOptions';
 import Pagination from '../components/common/Pagination';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -77,6 +78,14 @@ const STATUS_COLORS = {
 };
 
 const DOMAIN_DETAIL_BODY_CLASS = 'domains-detail-modal-open';
+
+function domainsTabFromSearch(search) {
+  const key = String(new URLSearchParams(search).get('tab') || '').toLowerCase();
+  if (key === 'premium' || key === 'delta') return 'premium';
+  if (key === 'standard' || key === 'domain' || key === 'domains') return 'standard';
+  if (key === 'mine') return 'mine';
+  return 'all';
+}
 
 const formatInr = (value) =>
   new Intl.NumberFormat('en-IN', {
@@ -175,8 +184,10 @@ export default function DomainsPage() {
   const [successDomain, setSuccessDomain] = useState(null);
   const [detailTarget, setDetailTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'premium' | 'standard' | 'mine'
-  const [splitMobilePanel, setSplitMobilePanel] = useState('domains'); // 'domains' | 'delta' — mobile/tablet split-panel selector
+  const [activeTab, setActiveTab] = useState(() => domainsTabFromSearch(location.search)); // 'all' | 'premium' | 'standard' | 'mine'
+  const [splitMobilePanel, setSplitMobilePanel] = useState(() =>
+    domainsTabFromSearch(location.search) === 'premium' ? 'delta' : 'domains',
+  ); // 'domains' | 'delta' — mobile/tablet split-panel selector
   const [showcaseDomains, setShowcaseDomains] = useState([]);
   const [showcaseEnabled, setShowcaseEnabled] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -380,6 +391,15 @@ export default function DomainsPage() {
     }
   }, [location.state, navigate, user]);
 
+  useEffect(() => {
+    if (location.state?.openListDomainForm) return;
+    if (!new URLSearchParams(location.search).has('tab')) return;
+    const nextTab = domainsTabFromSearch(location.search);
+    setActiveTab(nextTab);
+    if (nextTab === 'premium') setSplitMobilePanel('delta');
+    if (nextTab === 'standard') setSplitMobilePanel('domains');
+  }, [location.search, location.state]);
+
   const { closeListingDetail, openDetailIfAllowed } = useOpenListingDetailFromUrl({
     items: domainRows,
     loading,
@@ -581,8 +601,7 @@ export default function DomainsPage() {
               }
 
               /* FilterBar: white card with subtle shadow */
-              .domains-page-wrap .filter-bar,
-              .domains-page-wrap > div:has(.filter-bar) {
+              .domains-page-wrap .filter-bar {
                 background: #ffffff;
                 border: 1px solid rgba(0,0,0,0.05);
                 border-radius: 0.875rem;
@@ -749,24 +768,24 @@ export default function DomainsPage() {
               <ListingBackLink className="!mb-0 shrink-0" />
             </div>
 
-            <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end md:w-auto md:gap-3 mt-3">
+            <div className="listing-header-actions" role="group" aria-label={t('domains')}>
                 <Link
-                  className="btn-glow btn-glow-sm !px-3 !py-2 flex w-full min-w-0 items-center justify-center gap-1.5 text-center text-xs leading-tight sm:w-auto sm:flex-none md:text-sm"
+                  className="listing-header-actions__btn"
                   to="/settings/payouts"
                 >
-                  <CreditCard className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
-                  <span className="truncate">
+                  <CreditCard aria-hidden="true" />
+                  <span>
                     <span className="sm:hidden">Payouts</span>
                     <span className="hidden sm:inline">Payout Settings</span>
                   </span>
                 </Link>
                 <button
                   type="button"
-                  className="btn-glow btn-glow-sm !px-3 !py-2 relative flex w-full min-w-0 items-center justify-center gap-1.5 text-center text-xs leading-tight sm:w-auto sm:flex-none md:text-sm"
+                  className="listing-header-actions__btn"
                   onClick={() => navigate('/domains/dashboard')}
                 >
-                  <LayoutDashboard className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
-                  <span className="truncate">{t('dashboard')}</span>
+                  <LayoutDashboard aria-hidden="true" />
+                  <span>{t('dashboard')}</span>
                   {pendingVerificationCount > 0 ? (
                     <span className="absolute -right-1 -top-1 flex h-2.5 w-2.5 items-center justify-center">
                       <PendingVerificationDot className="h-2.5 w-2.5" />
@@ -775,7 +794,7 @@ export default function DomainsPage() {
                 </button>
                 <button
                   type="button"
-                  className="btn-glow btn-glow-sm !px-3 !py-2 flex w-full min-w-0 items-center justify-center gap-1.5 text-center text-xs leading-tight sm:w-auto sm:flex-none md:text-sm"
+                  className="listing-header-actions__btn"
                   onClick={() => {
                     if (!user) {
                       navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
@@ -784,12 +803,13 @@ export default function DomainsPage() {
                     setShowForm(true); setEditTarget(null);
                   }}
                 >
-                  <Plus className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
-                  <span className="truncate">{t('listDomain')}</span>
+                  <Plus aria-hidden="true" />
+                  <span>{t('listDomain')}</span>
                 </button>
             </div>
             </div>{/* domains-header-area */}
 
+            <ListingMoreOptions filterCount={activeFilterCount}>
             <div className="mb-6 inline-flex flex-wrap items-center gap-1 rounded-full border border-gray-200 bg-gray-50 p-1">
               <button
                 type="button"
@@ -820,6 +840,20 @@ export default function DomainsPage() {
                 {t('myListings')}
               </button>
             </div>
+
+            <FilterBar
+              search={search} onSearch={handleSearch}
+              category={category} onCategory={handleCategory}
+              categoryOptions={DOMAIN_PRICING_OPTIONS}
+              minPrice={minPrice} onMinPrice={handleMinPrice}
+              maxPrice={maxPrice} onMaxPrice={handleMaxPrice}
+              sortBy={sortBy} onSort={handleSort}
+              onClear={clearAll} activeFilterCount={activeFilterCount}
+              placeholder={t('domainsPageSearchPlaceholder')}
+              priceSymbol={getSymbol(currency)}
+              theme="light"
+            />
+            </ListingMoreOptions>
 
             {activeTab === 'mine' && pendingVerificationCount > 0 ? (
               <DomainVerificationPendingBanner
@@ -853,20 +887,6 @@ export default function DomainsPage() {
               .premium-results-stagger > *:nth-child(3) .domain-search-card { animation-delay: 190ms; }
               .premium-results-stagger > *:nth-child(n+4) .domain-search-card { animation-delay: 230ms; }
             `}</style>
-
-            {/* Unified content area — tab-driven: All | Premium | Standard | My Listings */}
-            <FilterBar
-              search={search} onSearch={handleSearch}
-              category={category} onCategory={handleCategory}
-              categoryOptions={DOMAIN_PRICING_OPTIONS}
-              minPrice={minPrice} onMinPrice={handleMinPrice}
-              maxPrice={maxPrice} onMaxPrice={handleMaxPrice}
-              sortBy={sortBy} onSort={handleSort}
-              onClear={clearAll} activeFilterCount={activeFilterCount}
-              placeholder={t('domainsPageSearchPlaceholder')}
-              priceSymbol={getSymbol(currency)}
-              theme="light"
-            />
 
             {activeTab === 'premium' ? (
               showcaseEnabled && showcaseDomains.length > 0 ? (

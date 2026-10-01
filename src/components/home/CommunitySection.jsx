@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, UserPlus } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import DeltapreneurPerson from '../../assets/Deltapreneur_person.png';
 import { communityAPI } from '../../api/services';
 import { fetchHomepageSectionPreview } from '../../utils/homepagePreview';
 import { navigateToListingDetail } from '../../utils/listingNavigation';
@@ -173,20 +174,27 @@ export default function CommunitySection() {
           </HomeCardsNavRow>
         ) : (
           <div className="home-community-empty" role="status">
-            <div className="home-community-empty__icon" aria-hidden="true">
-              <UserPlus size={22} strokeWidth={2.25} />
+            <div className="home-community-empty__visual" aria-hidden="true">
+              <img
+                src={DeltapreneurPerson}
+                alt=""
+                className="home-community-empty__art"
+                draggable={false}
+              />
             </div>
-            <p className="home-community-empty__title">{t('noDisruptors')}</p>
-            <p className="home-community-empty__text">
-              {t('deltapreneursEmptyHint', {
-                defaultValue:
-                  'Be the pioneer founder in this cohort. Register your profile to access pre-seed equity deals and operator privileges.',
-              })}
-            </p>
-            <Link to="/creator#connect-linkedin" className="home-community-empty__cta">
-              <span>{t('applyToJoinCohort', { defaultValue: 'Apply to Join Cohort' })}</span>
-              <ArrowRight size={16} strokeWidth={2.5} aria-hidden="true" />
-            </Link>
+            <div className="home-community-empty__copy">
+              <p className="home-community-empty__title">{t('noDisruptors')}</p>
+              <p className="home-community-empty__text">
+                {t('deltapreneursEmptyHint', {
+                  defaultValue:
+                    'Be the pioneer founder in this cohort. Register your profile to access pre-seed equity deals and operator privileges.',
+                })}
+              </p>
+              <Link to="/creator#connect-linkedin" className="home-community-empty__cta">
+                <span>{t('applyToJoinCohort', { defaultValue: 'Apply to Join Cohort' })}</span>
+                <ArrowRight size={16} strokeWidth={2.5} aria-hidden="true" />
+              </Link>
+            </div>
           </div>
         )}
       </div>

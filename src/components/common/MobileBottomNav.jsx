@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp, Gavel, Handshake } from 'lucide-react';
 import useAutoHideOnScroll from '../../hooks/useAutoHideOnScroll';
 import useBlockingOverlayOpen from '../../hooks/useBlockingOverlayOpen';
 import DomainsIcon from '../../assets/CoBranding.png';
-import TechnologyIcon from '../../assets/CoCreation.png';
+import TechnologyIcon from '../../assets/OS-icon.svg';
 import CreatorIcon from '../../assets/Deltapreneurs_icon.png';
 import {
   BOTTOM_NAV_TABS,

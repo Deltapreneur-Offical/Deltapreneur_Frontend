@@ -9,7 +9,7 @@ import {
 import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
 import DomainsIcon from '../assets/CoBranding.png';
-import TechnologyIcon from '../assets/CoCreation.png';
+import TechnologyIcon from '../assets/OS-icon.svg';
 import CreatorIcon from '../assets/Deltapreneurs_icon.png';
 import cobrotherViewMark from '../assets/Cobrother_Profile.png';
 import { formatCountdown, parseAuctionDate, resolveAuctionEndTime } from '../utils/auctionDate';
@@ -26,6 +26,7 @@ import ListingBackLink from '../components/common/ListingBackLink';
 import HomePreviewCardShell from '../components/home/HomePreviewCardShell';
 import HomeAuctionPreviewCard from '../components/auctions/HomeAuctionPreviewCard';
 import useCatalogHomeCards from '../hooks/useCatalogHomeCards';
+import ListingMoreOptions from '../components/common/ListingMoreOptions';
 import '../styles/home-auctions-reference.css';
 import '../styles/auctions-page.css';
 import '../styles/auctions-page-cards.css';
@@ -554,6 +555,12 @@ export default function AuctionsPage() {
   const totalLive       = domainAuctions.length + communityAuctions.length + softwareAuctions.length;
   const totalShown      = shownDomains.length + shownCommunity.length + shownSoftware.length;
   const hasActiveFilters = section !== 'all' || filter !== 'all' || sortBy !== 'default' || searchQuery.trim().length > 0;
+  const auctionFilterCount = [
+    section !== 'all',
+    view === 'browse' && filter !== 'all',
+    sortBy !== 'default',
+    searchQuery.trim().length > 0,
+  ].filter(Boolean).length;
 
   const categoryOptions = useMemo(() => {
     const source = view === 'yours' ? myListed : view === 'bids' ? myBids : null;
@@ -657,85 +664,87 @@ export default function AuctionsPage() {
             <ListingBackLink to="/" className="!mb-0 ml-auto shrink-0" />
           </div>
 
-          <div className="auctions-page-view-tabs" role="tablist" aria-label="Auction views">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === 'browse'}
-              className={`auctions-page-view-tab ${view === 'browse' ? 'is-active' : ''}`}
-              onClick={() => setView('browse')}
-            >
-              Browse
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === 'yours'}
-              className={`auctions-page-view-tab ${view === 'yours' ? 'is-active' : ''}`}
-              onClick={() => setView('yours')}
-            >
-              Your Auctions
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === 'bids'}
-              className={`auctions-page-view-tab ${view === 'bids' ? 'is-active' : ''}`}
-              onClick={() => setView('bids')}
-            >
-              Your Bids
-            </button>
-          </div>
-
-          <div className="auctions-page-toolbar-divider" aria-hidden />
-
-          <div className="auctions-page-controls flex w-full min-w-0 max-w-full flex-col items-stretch gap-2 overflow-visible sm:flex-row sm:flex-wrap sm:items-center md:gap-2.5">
-            <div className="auctions-page-search relative w-full min-w-0 max-w-full sm:min-w-[180px] sm:flex-1">
-              <Search className="auctions-page-search-icon w-4 h-4" strokeWidth={2} aria-hidden />
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search auctions"
-                className="auctions-page-search-input box-border w-full max-w-full"
-                aria-label="Search auctions"
-              />
-            </div>
-
-            <AuctionFilterSelect
-              label="Category"
-              value={section}
-              onChange={handleCategoryChange}
-              options={categoryOptions}
-            />
-
-            {view === 'browse' && (
-              <AuctionFilterSelect
-                label="Status"
-                value={filter}
-                onChange={setFilter}
-                options={statusOptions}
-              />
-            )}
-
-            <AuctionFilterSelect
-              label="Sort by"
-              value={sortBy}
-              onChange={setSortBy}
-              options={sortOptions}
-            />
-
-            {hasActiveFilters && (
+          <ListingMoreOptions filterCount={auctionFilterCount}>
+            <div className="auctions-page-view-tabs" role="tablist" aria-label="Auction views">
               <button
                 type="button"
-                className="auctions-page-clear-filters w-full justify-center sm:w-auto"
-                onClick={clearAllFilters}
+                role="tab"
+                aria-selected={view === 'browse'}
+                className={`auctions-page-view-tab ${view === 'browse' ? 'is-active' : ''}`}
+                onClick={() => setView('browse')}
               >
-                <X size={14} strokeWidth={2.25} aria-hidden />
-                Clear filters
+                Browse
               </button>
-            )}
-          </div>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={view === 'yours'}
+                className={`auctions-page-view-tab ${view === 'yours' ? 'is-active' : ''}`}
+                onClick={() => setView('yours')}
+              >
+                Your Auctions
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={view === 'bids'}
+                className={`auctions-page-view-tab ${view === 'bids' ? 'is-active' : ''}`}
+                onClick={() => setView('bids')}
+              >
+                Your Bids
+              </button>
+            </div>
+
+            <div className="auctions-page-toolbar-divider" aria-hidden />
+
+            <div className="auctions-page-controls flex w-full min-w-0 max-w-full flex-col items-stretch gap-2 overflow-visible sm:flex-row sm:flex-wrap sm:items-center md:gap-2.5">
+              <div className="auctions-page-search relative w-full min-w-0 max-w-full sm:min-w-[180px] sm:flex-1">
+                <Search className="auctions-page-search-icon w-4 h-4" strokeWidth={2} aria-hidden />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search auctions"
+                  className="auctions-page-search-input box-border w-full max-w-full"
+                  aria-label="Search auctions"
+                />
+              </div>
+
+              <AuctionFilterSelect
+                label="Category"
+                value={section}
+                onChange={handleCategoryChange}
+                options={categoryOptions}
+              />
+
+              {view === 'browse' && (
+                <AuctionFilterSelect
+                  label="Status"
+                  value={filter}
+                  onChange={setFilter}
+                  options={statusOptions}
+                />
+              )}
+
+              <AuctionFilterSelect
+                label="Sort by"
+                value={sortBy}
+                onChange={setSortBy}
+                options={sortOptions}
+              />
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  className="auctions-page-clear-filters w-full justify-center sm:w-auto"
+                  onClick={clearAllFilters}
+                >
+                  <X size={14} strokeWidth={2.25} aria-hidden />
+                  Clear filters
+                </button>
+              )}
+            </div>
+          </ListingMoreOptions>
         </div>
 
         {view !== 'browse' ? (

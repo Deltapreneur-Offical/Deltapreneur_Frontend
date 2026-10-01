@@ -39,7 +39,7 @@ import useCurrency from '../context/CurrencyContext';
 import { formatInr } from '../utils/money';
 import VentureIcon from '../assets/Coventure_logo.png';
 import DomainsIcon from '../assets/CoBranding.png';
-import TechnologyIcon from '../assets/CoCreation.png';
+import TechnologyIcon from '../assets/OS-icon.svg';
 import AuctionIcon from '../assets/Auction.png';
 import PurchaseIcon from '../assets/purchase.png';
 import RequestIcon from '../assets/Request.png';

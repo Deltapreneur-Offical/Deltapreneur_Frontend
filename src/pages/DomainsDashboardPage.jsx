@@ -250,7 +250,7 @@ export default function DomainsDashboardPage() {
           />
         ) : null}
 
-        <div className="flex gap-2 mb-6">
+        <div className="domains-dashboard-action-row flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm relative ${tab === 'listings' ? 'dashboard-active-control' : ''}`} onClick={() => setTab('listings')}>
             {t('domainsDashboardTabListings', { count: listings.length })}
             {pendingVerificationCount > 0 ? (

@@ -1446,29 +1446,35 @@ body.home-page-body .home-operators-reference-info__cta {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    flex: 0 0 2.4rem !important;
-    width: 2.4rem !important;
-    min-width: 2.4rem !important;
-    max-width: 2.4rem !important;
-    height: 2.4rem !important;
-    min-height: 2.4rem !important;
-    max-height: 2.4rem !important;
+    flex: 0 0 1.75rem !important;
+    width: 1.75rem !important;
+    min-width: 1.75rem !important;
+    max-width: 1.75rem !important;
+    height: 1.75rem !important;
+    min-height: 1.75rem !important;
+    max-height: 1.75rem !important;
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
     outline: 0 !important;
-    border-radius: 50% !important;
-    background: #111827 !important;
+    border-radius: 0.4rem !important;
+    background-color: #1f2937 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.45' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'%3E%3C/line%3E%3Cpolyline points='12 5 19 12 12 19'%3E%3C/polyline%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 0.85rem 0.85rem !important;
+    color: transparent !important;
     box-shadow: none !important;
     cursor: pointer !important;
     transform: none !important;
-    transition: background 0.12s ease-out !important;
+    transition: background-color 0.12s ease-out !important;
     position: relative !important;
   }
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
   body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover {
-    background: #1f2937 !important;
+    background-color: #f97316 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.45' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'%3E%3C/line%3E%3Cpolyline points='12 5 19 12 12 19'%3E%3C/polyline%3E%3C/svg%3E") !important;
   }
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta img,
@@ -1482,17 +1488,24 @@ body.home-page-body .home-operators-reference-info__cta {
 
   body.home-page-body .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after,
   body.home-page-body .home-operators-reference-row .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta::after {
-    content: '\2192' !important;
-    position: static !important;
-    display: inline-block !important;
-    color: #ffffff !important;
-    font-size: 1.1rem !important;
-    font-weight: 400 !important;
-    line-height: 1 !important;
-    text-align: center !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    transform: none !important;
+    content: none !important;
+    display: none !important;
+  }
+
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:hover,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:focus-visible,
+  body.home-page-body .home-operators-reference-section .home-operators-reference-row .virtual-assistant-listing-card .va-listing-card__compensation .domain-listing-card__price-cta:active {
+    align-self: center !important;
+    flex: 0 0 1.75rem !important;
+    width: 1.75rem !important;
+    min-width: 1.75rem !important;
+    max-width: 1.75rem !important;
+    height: 1.75rem !important;
+    min-height: 1.75rem !important;
+    max-height: 1.75rem !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 0.4rem !important;
   }
 }
 

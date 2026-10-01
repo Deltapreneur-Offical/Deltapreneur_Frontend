@@ -3863,6 +3863,34 @@ input[type="radio"] {
   margin-bottom: 1.5rem;
 }
 
+@media (max-width: 767px) {
+  .domains-dashboard-action-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.45rem;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .domains-dashboard-action-row > .btn-glow {
+    flex: 1 1 0;
+    aspect-ratio: 1;
+    min-width: 0;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    padding: 0.4rem;
+    border-radius: 50%;
+    font-size: 0.62rem;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+  }
+}
+
 .domains-row-list {
   display: flex;
   flex-direction: column;
@@ -5677,6 +5705,41 @@ input[type="radio"] {
 
 .app-sidebar--drawer .app-sidebar-header {
   justify-content: space-between;
+}
+
+@media (max-width: 767px) {
+  .app-sidebar.app-sidebar--drawer {
+    position: fixed !important;
+    top: 0;
+    right: auto;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+
+  .app-layout-workspace,
+  .app-layout-main-column,
+  .app-layout-main-column > main {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard-welcome-shell,
+  .dashboard-welcome-hero,
+  .dashboard-welcome-hero__content,
+  .dashboard-welcome-hero__badges {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard-welcome-hero__content h2,
+  .dashboard-welcome-hero__message,
+  .dashboard-welcome-shell__alert-copy p {
+    overflow-wrap: anywhere;
+  }
 }
 
 .app-sidebar-backdrop {

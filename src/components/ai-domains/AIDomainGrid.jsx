@@ -11,7 +11,7 @@ function mapAiResultToCards(item) {
   const name = item.name;
 
   const cardFor = (domain, tld, available, status, unitPrice, totalInr) => {
-    if (!domain) return;
+    if (!domain || available !== true) return;
     const isAvailable = available === true;
     cards.push({
       domain,

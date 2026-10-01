@@ -18,11 +18,12 @@ import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload, convertForeignToInr, convertPrice as convertInrToForeign } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
-import TechnologyIcon from '../assets/CoCreation.png';
+import TechnologyIcon from '../assets/OS-icon.svg';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
 import { useFilterSort } from '../hooks/useFilterSort';
 import FilterBar from '../components/common/FilterBar';
+import ListingMoreOptions from '../components/common/ListingMoreOptions';
 import ListingBackLink from '../components/common/ListingBackLink';
 import Pagination from '../components/common/Pagination';
 import SkeletonCard from '../components/common/Skeleton';
@@ -298,36 +299,53 @@ export default function CoCreationPage() {
               <ListingBackLink className="!mb-0 shrink-0" />
             </div>
 
-            <div className="flex gap-2 md:gap-3 flex-wrap mb-6">
+            <div className="listing-header-actions mb-6" role="group" aria-label={t('technology')}>
                 {user ? (
-                  <PayoutSettingsButton className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" />
+                  <PayoutSettingsButton
+                    className="listing-header-actions__btn"
+                    label={(
+                      <>
+                        <span className="sm:hidden">Payouts</span>
+                        <span className="hidden sm:inline">Payout Settings</span>
+                      </>
+                    )}
+                  />
                 ) : null}
-                <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/technology/dashboard')}>
-                  <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
+                <button type="button" className="listing-header-actions__btn" onClick={() => navigate('/technology/dashboard')}>
+                  <LayoutDashboard aria-hidden="true" /> <span>{t('dashboard')}</span>
                 </button>
-                <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => {
+                <button type="button" className="listing-header-actions__btn" onClick={() => {
                   if (!user) {
                     navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
                     return;
                   }
                   setEditTarget(null); setShowForm(true);
                 }}>
-                  <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listTechnology')}</span>
+                  <Plus aria-hidden="true" /> <span>{t('listTechnology')}</span>
                 </button>
             </div>
 
-            <div className="flex gap-2 mb-6">
-              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'dashboard-active-control' : ''}`}
-                onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allTechnology')}</button>
-              <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'dashboard-active-control' : ''}`}
-                onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
+            <ListingMoreOptions filterCount={activeFilterCount + (technologyType ? 1 : 0)}>
+            <div className="cocreation-listing-tabs" role="tablist" aria-label={t('technology')}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={filterTab === 'all'}
+                className={filterTab === 'all' ? 'is-active' : ''}
+                onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}
+              >
+                {t('allTechnology')}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={filterTab === 'mine'}
+                className={filterTab === 'mine' ? 'is-active' : ''}
+                onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}
+              >
+                {t('myListings')}
+              </button>
             </div>
-
-            {accessNotice && (
-              <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                {accessNotice}
-              </div>
-            )}
 
             <FilterBar
               search={search} onSearch={handleSearch}
@@ -342,6 +360,13 @@ export default function CoCreationPage() {
               priceSymbol={getSymbol(currency)}
               theme="light"
             />
+            </ListingMoreOptions>
+
+            {accessNotice && (
+              <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                {accessNotice}
+              </div>
+            )}
 
             {!loading && totalCount > 0 && (
               <div className="text-sm text-gray-600 mb-4">
@@ -355,8 +380,12 @@ export default function CoCreationPage() {
               </div>
             ) : paginated.length === 0 ? (
               <div className="text-center py-20">
-                <div className="flex justify-center mb-6">
-                  <img src={TechnologyIcon} alt="No software" className="w-20 h-20 object-contain opacity-30" />
+                <div className="flex justify-center mb-2">
+                  <img
+                    src={TechnologyIcon}
+                    alt="No software"
+                    className="w-20 h-20 object-contain opacity-30 brightness-0"
+                  />
                 </div>
                 <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
                   {activeFilterCount > 0 ? 'No software matches your filters' :

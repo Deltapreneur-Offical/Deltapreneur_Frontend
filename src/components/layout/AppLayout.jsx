@@ -11,7 +11,7 @@ import { virtualAssistantAPI } from '../../api/services';
 import { unwrapApiData, unwrapApiList } from '../../utils/apiResponse';
 import { useNotificationSocket } from '../../hooks/useNotificationSocket';
 import api from '../../api/axios';
-import TechnologyIcon from '../../assets/CoCreation.png';
+import TechnologyIcon from '../../assets/OS-icon.svg';
 import BrandNavLogo from '../common/BrandNavLogo';
 import DomainsIcon from '../../assets/CoBranding.png';
 import CreatorIcon from '../../assets/Deltapreneurs_icon.png';

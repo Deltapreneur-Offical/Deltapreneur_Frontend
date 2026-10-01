@@ -1,21 +1,24 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Plus } from 'lucide-react';
 import { ventureListChooseUrl } from '../../constants/ventureListingTypeContent';
 
-export default function VentureListingQuickActions({ className = '' }) {
+export default function VentureListingQuickActions() {
   const { t } = useTranslation();
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${className}`.trim()}>
-      <Link to={ventureListChooseUrl('venture')} className="btn-glow btn-glow-sm whitespace-nowrap">
-        {t('listVenture', { defaultValue: 'List Venture' })}
+    <>
+      <Link to={ventureListChooseUrl('venture')} className="listing-header-actions__btn">
+        <Plus aria-hidden="true" />
+        <span>{t('listVenture', { defaultValue: 'List Venture' })}</span>
       </Link>
       <Link
         to={ventureListChooseUrl('co-venture')}
-        className="btn-glow btn-glow-sm whitespace-nowrap"
+        className="listing-header-actions__btn"
       >
-        {t('venturesPageListCoVentureCta', { defaultValue: 'List Delta-Venture' })}
+        <Plus aria-hidden="true" />
+        <span>{t('venturesPageListCoVentureCta', { defaultValue: 'List Delta-Venture' })}</span>
       </Link>
-    </div>
+    </>
   );
 }

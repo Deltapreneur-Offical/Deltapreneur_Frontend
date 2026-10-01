@@ -76,7 +76,7 @@ export default function FeaturedDomainsSection() {
       <div className="w-full min-w-0">
         <HomeSectionHeader
           title={title}
-          to="/domains"
+          to="/domains?tab=domain"
           accent="domain"
           showViewAll={!loading && previewDomains.length > 0}
         />

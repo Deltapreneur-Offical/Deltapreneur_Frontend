@@ -113,7 +113,7 @@ describe('MobileBottomNav', () => {
     expect(imgSrcs[0]).toMatch(/CoBranding/);
     expect(links[1].querySelector('svg')).not.toBeNull();
     expect(links[2].querySelector('svg')).not.toBeNull();
-    expect(imgSrcs[3]).toMatch(/CoCreation/);
+    expect(imgSrcs[3]).toMatch(/OS-icon/);
     expect(imgSrcs[4]).toMatch(/Deltapreneurs_icon/);
   });
 

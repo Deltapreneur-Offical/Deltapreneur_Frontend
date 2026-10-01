@@ -13,6 +13,7 @@ import VentureGstinVerificationModal from '../components/venture/VentureGstinVer
 import { useLikes } from '../hooks/useLikes';
 import { useFilterSort } from '../hooks/useFilterSort';
 import FilterBar from '../components/common/FilterBar';
+import ListingMoreOptions from '../components/common/ListingMoreOptions';
 import Pagination from '../components/common/Pagination';
 import PageContentSkeleton from '../components/common/PageContentSkeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -287,32 +288,43 @@ export default function VenturesPage() {
         <ListingBackLink className="!mb-0 shrink-0" />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 shrink-0 mb-4">
+      <div className="listing-header-actions mb-4" role="group" aria-label={t('coVentures')}>
         <VentureListingQuickActions />
-        {user ? <PayoutSettingsButton className="btn-glow btn-glow-sm" /> : null}
+        {user ? (
+          <PayoutSettingsButton
+            className="listing-header-actions__btn"
+            label={(
+              <>
+                <span className="sm:hidden">Payouts</span>
+                <span className="hidden sm:inline">Payout Settings</span>
+              </>
+            )}
+          />
+        ) : null}
       </div>
 
       {user ? <PayoutProfileBanner context="venture" className="mb-4" /> : null}
 
-      <VentureSubNav
-        activeRoute="marketplace"
-        marketplaceTab={filterTab}
-        onMarketplaceTabChange={handleMarketplaceTabChange}
-      />
+      <ListingMoreOptions filterCount={activeFilterCount}>
+          <VentureSubNav
+            activeRoute="marketplace"
+            marketplaceTab={filterTab}
+            onMarketplaceTabChange={handleMarketplaceTabChange}
+          />
 
-      {/* ── Filter bar ── */}
-      <FilterBar
-        search={search} onSearch={handleSearch}
-        category={category} onCategory={handleCategory}
-        categoryOptions={VENTURE_INDUSTRY_OPTIONS}
-        minPrice={minPrice} onMinPrice={handleMinPrice}
-        maxPrice={maxPrice} onMaxPrice={handleMaxPrice}
-        sortBy={sortBy} onSort={handleSort}
-        onClear={clearAll} activeFilterCount={activeFilterCount}
-        placeholder={t('venturesPageSearchPlaceholder')}
-        priceSymbol={getSymbol(currency)}
-        theme="light"
-      />
+          <FilterBar
+            search={search} onSearch={handleSearch}
+            category={category} onCategory={handleCategory}
+            categoryOptions={VENTURE_INDUSTRY_OPTIONS}
+            minPrice={minPrice} onMinPrice={handleMinPrice}
+            maxPrice={maxPrice} onMaxPrice={handleMaxPrice}
+            sortBy={sortBy} onSort={handleSort}
+            onClear={clearAll} activeFilterCount={activeFilterCount}
+            placeholder={t('venturesPageSearchPlaceholder')}
+            priceSymbol={getSymbol(currency)}
+            theme="light"
+          />
+      </ListingMoreOptions>
 
       {/* ── Result count ── */}
       {!loading && totalCount > 0 && !showSplitColumns && (

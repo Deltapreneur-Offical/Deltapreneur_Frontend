@@ -18,6 +18,7 @@ import CreatorPreviewModal from '../components/auctions/CreatorPreviewModal';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
+import ListingMoreOptions from '../components/common/ListingMoreOptions';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import RevenueGateModal from '../components/deltapreneur/RevenueGateModal';
 import DeltapreneurWelcomeCard from '../components/deltapreneur/DeltapreneurWelcomeCard';
@@ -714,6 +715,7 @@ export default function CommunityPage() {
               <ListingBackLink className="!mb-0 shrink-0" />
             </div>
 
+            {(!hasOwnedCreatorProfile || CREATOR_AUCTIONS_ENABLED) ? (
             <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3 mb-6">
                 {hasOwnedCreatorProfile ? (
                   <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3">
@@ -759,6 +761,27 @@ export default function CommunityPage() {
                         <span className="hidden sm:inline">🔨 Put Profile to Auction</span>
                       </button>
                     ) : null}
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2" id="connect-linkedin">
+                    <button
+                      className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
+                      onClick={handleConnectLinkedIn}
+                      disabled={linkedInBusy}
+                    >
+                      {linkedInBusy
+                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
+                        : <><LinkedInIcon /> Connect with LinkedIn</>}
+                    </button>
+                    <LinkedInConnectInfoTooltip />
+                  </div>
+                )}
+            </div>
+            ) : null}
+
+            <ListingMoreOptions filterCount={searchQuery.trim() ? 1 : 0}>
+              {hasOwnedCreatorProfile ? (
+                <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3 mb-4">
                     <button type="button" className="btn-glow btn-glow-sm !px-3 !py-2" onClick={() => navigate('/profile/analytics')}>
                       📈 Analytics
                     </button>
@@ -789,36 +812,21 @@ export default function CommunityPage() {
                     >
                       Delete Profile
                     </button>
-                  </div>
-                ) : (
-                  <div className="inline-flex items-center gap-2" id="connect-linkedin">
-                    <button
-                      className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
-                      onClick={handleConnectLinkedIn}
-                      disabled={linkedInBusy}
-                    >
-                      {linkedInBusy
-                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
-                        : <><LinkedInIcon /> Connect with LinkedIn</>}
-                    </button>
-                    <LinkedInConnectInfoTooltip />
-                  </div>
-                )}
-            </div>
-
-            {/* Search Bar */}
-            <div className="mb-6">
-              <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  placeholder={t('searchCreatorsPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
-                />
+                </div>
+              ) : null}
+              <div className="mb-6">
+                <div className="relative max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    placeholder={t('searchCreatorsPlaceholder')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
+                  />
+                </div>
               </div>
-            </div>
+            </ListingMoreOptions>
 
             {/* Simplified mode: no "Complete your profile" banner (old logic preserved for legacy mode). */}
             {hasOwnedCreatorProfile && myProfileCompletion && !myProfileCompletion.isComplete && !SIMPLIFIED_CREATOR_PROFILE ? (

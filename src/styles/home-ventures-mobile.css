@@ -313,3 +313,15 @@
     transform: none !important;
   }
 }
+
+/* Homepage desktop only: same 2px lift as Delta Registration cards. */
+@media (min-width: 1024px) {
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content) {
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
+  }
+
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):hover,
+  body.home-page-body .home-ventures-section .home-preview-card-border--venture:has(.venture-listing-card--homepage-content):focus-within {
+    transform: translateY(-2px) !important;
+  }
+}

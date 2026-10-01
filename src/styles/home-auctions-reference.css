@@ -2574,3 +2574,15 @@ body.home-page-body .home-auctions-section .home-auction-preview-card__bid-summa
     padding-bottom: 1.5rem !important;
   }
 }
+
+/* Homepage desktop only: same 2px lift as Delta Registration cards. */
+@media (min-width: 1024px) {
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction {
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
+  }
+
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction:hover,
+  html body.home-page-body .home-auctions-section .home-preview-card-border--auction:focus-within {
+    transform: translateY(-2px) !important;
+  }
+}

@@ -883,3 +883,15 @@ body.home-page-body .tech-service-card:hover .tech-service-card__icon,
     text-transform: uppercase !important;
   }
 }
+
+/* Homepage desktop only: same 2px lift as Delta Registration cards. */
+@media (min-width: 1024px) {
+  body.home-page-body .home-cards-nav-wrap .home-preview-row.home-cards-nav-row .tech-service-card {
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
+  }
+
+  body.home-page-body .home-cards-nav-wrap .home-preview-row.home-cards-nav-row .tech-service-card:hover,
+  body.home-page-body .home-cards-nav-wrap .home-preview-row.home-cards-nav-row .tech-service-card:focus-visible {
+    transform: translateY(-2px) !important;
+  }
+}

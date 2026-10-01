@@ -1125,3 +1125,15 @@ body.home-page-body .home-deltapreneurs-section .community-listing-card .venture
 
 }
 
+/* Homepage desktop only: same 2px lift as Delta Registration cards. */
+@media (min-width: 1024px) {
+  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community {
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
+  }
+
+  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:hover,
+  html body.home-page-body .home-deltapreneurs-section .home-preview-card-border--community:focus-within {
+    transform: translateY(-2px) !important;
+  }
+}
+

@@ -2725,7 +2725,10 @@ body.home-page-body .brand-search-play-icon {
   body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:focus-visible .domain-search-card__name > span:first-child,
   body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:focus-visible .domain-search-card__name > span:last-child,
   body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:focus-visible .domain-search-card__name .domain-listing-card-tld,
-  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:focus-visible .domain-search-card__name .text-sky-700,
+  body.home-page-body .home-marketplace-domains-section .domain-search-card--listing:focus-visible .domain-search-card__name .text-sky-700 {
+    color: #0087c1 !important;
+  }
+
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover h3,
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover h3 > span,
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):hover h3 > span:first-child,
@@ -2734,7 +2737,7 @@ body.home-page-body .brand-search-play-icon {
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):focus-visible h3 > span,
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):focus-visible h3 > span:first-child,
   body.home-page-body .home-domains-section:not(.home-marketplace-domains-section) .domain-search-card:has(.registry-premium-badge):focus-visible h3 > span:last-child {
-    color: #0087c1 !important;
+    color: #f97316 !important;
   }
 
   body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card.venture-listing-card--homepage-content,

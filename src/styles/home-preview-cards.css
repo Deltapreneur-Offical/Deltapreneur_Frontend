@@ -2735,7 +2735,8 @@ body.home-page-body .home-community-section .home-community-empty__art {
   height: 100%;
   object-fit: cover;
   object-position: 68% 46%;
-  opacity: 1;
+  opacity: 0.58;
+  filter: saturate(0.78) brightness(0.92);
   -webkit-mask-image: linear-gradient(
     90deg,
     transparent 0%,

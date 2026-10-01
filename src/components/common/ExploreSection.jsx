@@ -46,17 +46,47 @@ function IndependentSection({ title, to, variant = 'browse', compact = false, ac
   );
 }
 
+function exploreLeadRowOrder(searchMode) {
+  if (searchMode === 'auction') {
+    return {
+      domains: 'order-2',
+      deltaDomains: 'order-3',
+      ventures: 'order-4',
+      coVentures: 'order-5',
+      auctions: 'order-1',
+    };
+  }
+
+  if (searchMode === 'premium') {
+    return {
+      domains: 'order-2',
+      deltaDomains: 'order-1',
+      ventures: 'order-3',
+      coVentures: 'order-4',
+      auctions: 'order-5',
+    };
+  }
+
+  return {
+    domains: 'order-1',
+    deltaDomains: 'order-2',
+    ventures: 'order-3',
+    coVentures: 'order-4',
+    auctions: 'order-5',
+  };
+}
+
 export default function ExploreSection({ searchMode = 'new' }) {
   const { t } = useTranslation();
-  const showDeltaDomainsFirst = searchMode === 'premium';
+  const rowOrder = exploreLeadRowOrder(searchMode);
 
   return (
     <>
       <div className="flex flex-col">
-        <div className={showDeltaDomainsFirst ? 'order-2' : 'order-1'}>
+        <div className={rowOrder.domains}>
           <FeaturedDomainsSection />
         </div>
-        <div className={showDeltaDomainsFirst ? 'order-1' : 'order-2'}>
+        <div className={rowOrder.deltaDomains}>
           <IndependentSection
             title={t('homeDomainRegister', { defaultValue: 'Delta Domains' })}
             to="/domains"
@@ -65,24 +95,30 @@ export default function ExploreSection({ searchMode = 'new' }) {
             <DomainsSection />
           </IndependentSection>
         </div>
+
+        <div className={rowOrder.ventures}>
+          <IndependentSection title={t('homeVentureRegister', { defaultValue: 'Ventures' })} to="/ventures" accent="venture">
+            <VenturesSection />
+          </IndependentSection>
+        </div>
+
+        <div className={rowOrder.coVentures}>
+          <IndependentSection
+            title={t('homeCoVenturesRegister', { defaultValue: 'Delta Ventures' })}
+            to="/ventures?mode=co-venture"
+            compact
+            accent="coventure"
+          >
+            <CoVenturesSection />
+          </IndependentSection>
+        </div>
+
+        <div className={rowOrder.auctions}>
+          <IndependentSection title={t('homeRegistryAuctions', { defaultValue: 'Auctions' })} to="/auctions" variant="auction" accent="auction">
+            <AuctionsSection />
+          </IndependentSection>
+        </div>
       </div>
-
-      <IndependentSection title={t('homeVentureRegister', { defaultValue: 'Ventures' })} to="/ventures" accent="venture">
-        <VenturesSection />
-      </IndependentSection>
-
-      <IndependentSection
-        title={t('homeCoVenturesRegister', { defaultValue: 'Delta Ventures' })}
-        to="/ventures?mode=co-venture"
-        compact
-        accent="coventure"
-      >
-        <CoVenturesSection />
-      </IndependentSection>
-
-      <IndependentSection title={t('homeRegistryAuctions', { defaultValue: 'Auctions' })} to="/auctions" variant="auction" accent="auction">
-        <AuctionsSection />
-      </IndependentSection>
 
       <IndependentSection title={t('homeTechnologyRegister', { defaultValue: 'DeltaOs (Operating System)' })} to="/technology" accent="technology">
         <TechnologySection />

@@ -282,7 +282,7 @@ export default function DomainCard({
             </div>
           )}
         </div>
-        <div className="mt-auto pt-3.5 flex flex-wrap items-center gap-2">
+        <div className="mt-auto pt-3.5 flex flex-wrap items-center gap-2 min-w-0 max-w-full overflow-hidden">
           {cartProps ? (
             <AddToCartButton
               {...cartProps}
@@ -380,7 +380,7 @@ export default function DomainCard({
           </div>
         )}
       </div>
-      <div className="mt-auto pt-3 flex flex-wrap items-center gap-2">
+      <div className="mt-auto pt-3 flex flex-wrap items-center gap-2 min-w-0 max-w-full overflow-hidden">
         {cartProps ? (
           <AddToCartButton
             {...cartProps}

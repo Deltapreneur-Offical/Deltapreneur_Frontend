@@ -529,7 +529,7 @@ export default function DomainListingCard({
         </div>
 
         {/* Bottom: pencil | Put Auction (auction label gets remaining width) */}
-        <div className="pt-3">
+        <div className="pt-3 min-w-0 max-w-full overflow-hidden">
           {isOwner ? (
             (() => {
               const hasAdminActions = canUseAdminMenu;

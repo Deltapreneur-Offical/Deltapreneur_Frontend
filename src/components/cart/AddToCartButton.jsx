@@ -214,14 +214,13 @@ export default function AddToCartButton({
 
   const buttonLabel = showGoToCart
     ? t('goToCart', { defaultValue: 'Go to Cart' })
-    : label
-      || (cornerRemove
-        ? t('remove', { defaultValue: 'Remove' })
-        : inCart && updateWhenInCart
-          ? t('updateCart', { defaultValue: 'Update Cart' })
-          : showAdded
-            ? t('inCart', { defaultValue: 'In Cart' })
-            : t('listingCardAddToCart', { defaultValue: 'Add to Cart' }));
+    : cornerRemove
+      ? t('remove', { defaultValue: 'Remove' })
+      : inCart && updateWhenInCart
+        ? t('updateCart', { defaultValue: 'Update Cart' })
+        : showAdded
+          ? t('inCart', { defaultValue: 'In Cart' })
+          : (label || t('listingCardAddToCart', { defaultValue: 'Add to Cart' }));
 
   const conflictModal = (
     <PremiumCartConflictModal
@@ -328,7 +327,9 @@ export default function AddToCartButton({
   return (
     <>
       <div
-        className={`inline-flex items-stretch gap-1.5 ${isFullWidth ? 'w-full' : ''} ${wrapperClassName}`.trim()}
+        className={`add-to-cart-wrap inline-flex items-stretch gap-1.5 min-w-0 max-w-full ${
+          isFullWidth || showSideRemove ? 'w-full' : 'w-fit'
+        } ${showSideRemove ? 'add-to-cart-wrap--with-remove' : ''} ${wrapperClassName}`.trim()}
       >
         <button
           ref={btnRef}
@@ -338,6 +339,7 @@ export default function AddToCartButton({
           className={`inline-flex flex-1 min-w-0 items-center justify-center rounded-lg border font-medium transition-all duration-200
             ${primaryToneClasses}
             ${sizeClasses} ${className}
+            ${showSideRemove ? '!flex-1 !min-w-0 !w-auto !max-w-full' : ''}
             disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {loading ? (

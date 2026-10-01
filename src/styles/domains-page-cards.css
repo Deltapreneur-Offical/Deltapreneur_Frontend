@@ -1,0 +1,48 @@
+/*
+ * Domains page only (body.domains-page-cards).
+ * Homepage domain cards do not have this class.
+ */
+html body.domains-page-cards .home-domains-section,
+html body.domains-page-cards .home-marketplace-domains-section {
+  background: transparent !important;
+  background-image: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 767px) {
+  html body.domains-page-cards .home-domains-section .home-preview-row .home-preview-row__item,
+  html body.domains-page-cards .home-marketplace-domains-section .home-preview-row .home-preview-row__item {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+
+  html body.domains-page-cards .domains-page-wrap .listing-card-glow-grid,
+  html body.domains-page-cards .domains-sync-layout__cell {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html body.domains-page-cards .home-marketplace-domains-section .domain-search-card--listing,
+  html body.domains-page-cards .home-domains-section .domain-search-card,
+  html body.domains-page-cards .home-domains-section .domain-search-card:has(.registry-premium-badge) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  html body.domains-page-cards .domains-sync-layout__cell--delta .domains-sync-layout__item,
+  html body.domains-page-cards .domains-sync-layout__cell--delta .domains-sync-layout__item > *,
+  html body.domains-page-cards .domains-sync-layout__column--delta .listing-card-glow-shell,
+  html body.domains-page-cards .domains-sync-layout__column--delta .listing-card-glow-shell > *,
+  html body.domains-page-cards .domains-sync-layout__column--delta .domain-search-card,
+  html body.domains-page-cards .domains-sync-layout__column--delta .domain-search-card:has(.registry-premium-badge) {
+    width: min(100%, var(--domains-sync-card-size, 16.75rem)) !important;
+    max-width: var(--domains-sync-card-size, 16.75rem) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;
+  }
+}

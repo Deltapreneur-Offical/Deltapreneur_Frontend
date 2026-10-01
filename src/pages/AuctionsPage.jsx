@@ -23,7 +23,12 @@ import CreatorPreviewModal from '../components/auctions/CreatorPreviewModal';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import ListingBackLink from '../components/common/ListingBackLink';
+import HomePreviewCardShell from '../components/home/HomePreviewCardShell';
+import HomeAuctionPreviewCard from '../components/auctions/HomeAuctionPreviewCard';
+import useCatalogHomeCards from '../hooks/useCatalogHomeCards';
+import '../styles/home-auctions-reference.css';
 import '../styles/auctions-page.css';
+import '../styles/auctions-page-cards.css';
 import { CREATOR_AUCTIONS_ENABLED } from '../config/featureFlags';
 
 const VIEW_IDS = new Set(['browse', 'yours', 'bids']);
@@ -378,6 +383,16 @@ const matchesAuctionSearch = (auction, query) => {
 };
 
 export default function AuctionsPage() {
+  const homeCards = useCatalogHomeCards();
+  useEffect(() => {
+    document.body.classList.add('auctions-page-cards', 'catalog-home-cards');
+    return () => {
+      document.body.classList.remove('auctions-page-cards');
+      if (!window.matchMedia('(min-width: 768px)').matches) {
+        document.body.classList.remove('catalog-home-cards');
+      }
+    };
+  }, [homeCards]);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -815,13 +830,15 @@ export default function AuctionsPage() {
                     {shownDomains.length} live
                   </span>
                 </div>
-                <div className="cb-mobile-card-grid grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="cb-mobile-card-grid home-auctions-section grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                   {shownDomains.map(auction => (
-                    <DomainAuctionCard
-                      key={auction.id}
-                      auction={auction}
-                      onClick={() => navigate(`/auction/${auction.id}`)}
-                    />
+                    <HomePreviewCardShell key={auction.id} accent="auction">
+                      <HomeAuctionPreviewCard
+                        auction={{ ...auction, category: auction.category || 'domain' }}
+                        onView={() => navigate(`/auction/${auction.id}`)}
+                        homepageAuctionContentOnly
+                      />
+                    </HomePreviewCardShell>
                   ))}
                 </div>
               </div>
@@ -839,13 +856,15 @@ export default function AuctionsPage() {
                     {shownSoftware.length} live
                   </span>
                 </div>
-                <div className="cb-mobile-card-grid grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="cb-mobile-card-grid home-auctions-section grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                   {shownSoftware.map(auction => (
-                    <SoftwareAuctionCard
-                      key={auction.id}
-                      auction={auction}
-                      onClick={() => navigate(`/technology/auction/${auction.id}`)}
-                    />
+                    <HomePreviewCardShell key={auction.id} accent="auction">
+                      <HomeAuctionPreviewCard
+                        auction={{ ...auction, category: 'technology' }}
+                        onView={() => navigate(`/technology/auction/${auction.id}`)}
+                        homepageAuctionContentOnly
+                      />
+                    </HomePreviewCardShell>
                   ))}
                 </div>
               </div>
@@ -863,13 +882,15 @@ export default function AuctionsPage() {
                     {shownCommunity.length} live
                   </span>
                 </div>
-                <div className="cb-mobile-card-grid grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="cb-mobile-card-grid home-auctions-section grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                   {shownCommunity.map(auction => (
-                    <CommunityAuctionCard
-                      key={auction.id}
-                      auction={auction}
-                      onClick={() => setPreviewAuction(auction)}
-                    />
+                    <HomePreviewCardShell key={auction.id} accent="auction">
+                      <HomeAuctionPreviewCard
+                        auction={{ ...auction, category: 'community' }}
+                        onView={() => setPreviewAuction(auction)}
+                        homepageAuctionContentOnly
+                      />
+                    </HomePreviewCardShell>
                   ))}
                 </div>
               </div>

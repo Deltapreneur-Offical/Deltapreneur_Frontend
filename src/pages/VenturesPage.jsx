@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import VentureListingCard from '../components/listings/VentureListingCard';
-import ListingCardShell from '../components/listings/ListingCardShell';
+import HomePreviewCardShell from '../components/home/HomePreviewCardShell';
+import useCatalogHomeCards from '../hooks/useCatalogHomeCards';
 import { useTranslation } from 'react-i18next';
 import { coVentureAPI, ventureAPI, ventureDealAPI, venturePitchAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -30,8 +31,16 @@ import PayoutSettingsButton from '../components/payout/PayoutSettingsButton';
 import PayoutProfileBanner from '../components/payout/PayoutProfileBanner';
 import ListingBackLink from '../components/common/ListingBackLink';
 import VenturesSplitColumns from '../components/venture/VenturesSplitColumns';
+import '../styles/home-ventures-mobile.css';
+import '../styles/home-coventures-mobile.css';
+import '../styles/ventures-page-cards.css';
 
 export default function VenturesPage() {
+  useCatalogHomeCards({ always: true });
+  useEffect(() => {
+    document.body.classList.add('ventures-page-cards');
+    return () => document.body.classList.remove('ventures-page-cards');
+  }, []);
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency, getSymbol } = useCurrency();
@@ -141,25 +150,33 @@ export default function VenturesPage() {
           : 'venture-listing-grid--page'
         }`}
     >
-      {ventures.map((v) => (
-        <ListingCardShell key={v.id}>
-          <VentureListingCard
-            venture={v}
-            isOwner={isListingOwner(v, user, 'venture')}
-            hasApplied={appliedVentureIds.has(v.id)}
-            hasActiveDeal={ventureDealByVentureId.has(v.id)}
-            showVerifyButton={false}
-            compact={compact}
-            likeState={getLike(v.id)}
-            onLike={() => toggleLike(v.id)}
-            onView={() => navigate(`/ventures/${v.id}`)}
-            onApply={() => handleBuyerAction(v)}
-            onVerify={() => setVerifyTarget(v)}
-            onEdit={() => navigate(`/ventures/${v.id}/edit`)}
-            onDelete={() => setDeleteTarget(v.id)}
-          />
-        </ListingCardShell>
-      ))}
+      {ventures.map((v) => {
+        const delta = isCoVentureListing(v);
+        return (
+          <div key={v.id} className={delta ? 'home-coventures-section' : 'home-ventures-section'}>
+            <HomePreviewCardShell accent={delta ? 'coventure' : 'venture'}>
+              <VentureListingCard
+                venture={v}
+                isOwner={isListingOwner(v, user, 'venture')}
+                hasApplied={appliedVentureIds.has(v.id)}
+                hasActiveDeal={ventureDealByVentureId.has(v.id)}
+                showVerifyButton={false}
+                browseMode
+                compact
+                homepageVentureContentOnly={!delta}
+                homepageDeltaVentureContentOnly={delta}
+                likeState={getLike(v.id)}
+                onLike={() => toggleLike(v.id)}
+                onView={() => navigate(`/ventures/${v.id}`)}
+                onApply={() => handleBuyerAction(v)}
+                onVerify={() => setVerifyTarget(v)}
+                onEdit={() => navigate(`/ventures/${v.id}/edit`)}
+                onDelete={() => setDeleteTarget(v.id)}
+              />
+            </HomePreviewCardShell>
+          </div>
+        );
+      })}
     </div>
   );
 

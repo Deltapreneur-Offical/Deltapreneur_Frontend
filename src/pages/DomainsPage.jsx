@@ -7,7 +7,9 @@ import { CreditCard, LayoutDashboard, Plus, Gavel, ChevronDown, Eye, Globe } fro
 import { EditIcon } from '../components/common/EditActionLabel';
 import ListingBackLink from '../components/common/ListingBackLink';
 import '../styles/domain-listing-cards.css';
+import '../styles/domains-page-cards.css';
 import '../styles/ventures-split-columns.css';
+import useCatalogHomeCards from '../hooks/useCatalogHomeCards';
 import DomainListingCard from '../components/listings/DomainListingCard';
 import ListingOwnerActionPair, {
   OWNER_ACTION_BTN_AUCTION,
@@ -151,6 +153,11 @@ function buildDomainFormState(domain, navCurrency, ratesMeta) {
 }
 
 export default function DomainsPage() {
+  useCatalogHomeCards({ always: true });
+  useEffect(() => {
+    document.body.classList.add('domains-page-cards');
+    return () => document.body.classList.remove('domains-page-cards');
+  }, []);
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { currency, getSymbol } = useCurrency();
@@ -879,7 +886,7 @@ export default function DomainsPage() {
                         : 'No Delta Domains are currently showcased.'}
                     </div>
                   ) : (
-                    <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 home-domains-section">
                       {showcaseFilter.paginated.map((d) => (
                           <ListingCardShell key={d.showcaseId} className="domain-showcase-card-shell">
                           <ShowcaseDomainCard item={d} stackPremiumBadge shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
@@ -1380,6 +1387,29 @@ export default function DomainsPage() {
                       grid-template-columns: minmax(0, 16rem);
                     }
                   }
+                  @media (min-width: 768px) {
+                    body.catalog-home-cards .domains-sync-layout__item,
+                    body.catalog-home-cards .domains-sync-layout__item > *,
+                    body.catalog-home-cards .domains-sync-layout .listing-card-glow-shell,
+                    body.catalog-home-cards .domains-sync-layout .listing-card-glow-shell > *,
+                    body.catalog-home-cards .domains-sync-layout .domain-search-card {
+                      height: auto !important;
+                      min-height: 0 !important;
+                      max-height: none !important;
+                      flex: 0 1 auto !important;
+                    }
+                    body.catalog-home-cards .domains-sync-layout .domain-search-card {
+                      padding: 1.25rem !important;
+                      overflow: visible !important;
+                    }
+                    body.catalog-home-cards .domains-sync-layout__column--delta,
+                    body.catalog-home-cards .domains-sync-layout__column--standard {
+                      background: transparent !important;
+                    }
+                    body.catalog-home-cards .domains-sync-layout__column::before {
+                      display: none !important;
+                    }
+                  }
                 `}</style>
 
                 <div className="ventures-split__mobile-tabs domains-sync-layout__mobile-tabs" role="tablist" aria-label="Domain listing sections">
@@ -1423,7 +1453,7 @@ export default function DomainsPage() {
                   role="tabpanel"
                   aria-labelledby="domains-sync-tab-delta"
                 >
-                <div className="domains-sync-layout__column domains-sync-layout__column--delta">
+                <div className="domains-sync-layout__column domains-sync-layout__column--delta home-domains-section">
                   <header className="domains-sync-layout__header">
                     <div className="domains-sync-layout__header-main">
                       <span className="domains-sync-layout__icon domains-sync-layout__icon--left" aria-hidden><Gavel size={20} strokeWidth={2} /></span>
@@ -1459,7 +1489,7 @@ export default function DomainsPage() {
                   role="tabpanel"
                   aria-labelledby="domains-sync-tab-standard"
                 >
-                <div className="domains-sync-layout__column domains-sync-layout__column--standard">
+                <div className="domains-sync-layout__column domains-sync-layout__column--standard home-marketplace-domains-section">
                   <header className="domains-sync-layout__header">
                     <div className="domains-sync-layout__header-main">
                       <span className="domains-sync-layout__icon domains-sync-layout__icon--right" aria-hidden><Gavel size={20} strokeWidth={2} /></span>
@@ -1531,7 +1561,7 @@ export default function DomainsPage() {
                     {showcaseFilter.filtered.length} Delta Domain{showcaseFilter.filtered.length === 1 ? '' : 's'} · prices subject to change
                   </span>
                 </div>
-                <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="premium-results-stagger listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 home-domains-section">
                   {showcaseFilter.paginated.map((d) => (
                     <ListingCardShell key={d.showcaseId} className="domain-showcase-card-shell">
                       <ShowcaseDomainCard item={d} stackPremiumBadge shareContext={{ shareType: 'DOMAIN_LISTING', originalQuery: d.domainName || d.name }} />
@@ -1579,7 +1609,7 @@ export default function DomainsPage() {
               )
             ) : (
               <>
-                <div className="listing-card-glow-grid domain-listing-grid domain-listing-grid--standard grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 min-[1600px]:grid-cols-4">
+                <div className="listing-card-glow-grid domain-listing-grid domain-listing-grid--standard grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 min-[1600px]:grid-cols-4 home-marketplace-domains-section">
                   {marketplaceFilter.paginated.map(d => (
                     <ListingCardShell key={d.id}>
                       <DomainListingCard

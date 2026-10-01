@@ -1810,22 +1810,22 @@ body.home-page-body .reg-mini-card:focus-visible .reg-mini-card__watermark polyg
   }
 }
 
-body.home-page-body .home-registrations-section {
+:is(body.home-page-body, body.catalog-home-cards) .home-registrations-section {
   background: #ffffff !important;
 }
 
-body.home-page-body .home-registrations-section .home-section-header {
+:is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .home-section-header {
   margin-bottom: 0.7rem;
 }
 
 /* Mobile only: catalog search chrome is dense; divider comes back on desktop via homepage rules */
 @media (max-width: 1023px) {
-  body.home-page-body .home-registrations-section .home-section-header__top {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .home-section-header__top {
     border-bottom: none !important;
   }
 }
 
-body.home-page-body .home-registrations-section .home-section-header__title {
+:is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .home-section-header__title {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -1833,7 +1833,7 @@ body.home-page-body .home-registrations-section .home-section-header__title {
   color: #0f172a;
 }
 
-body.home-page-body .home-registrations-section .home-section-header__title::before {
+:is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .home-section-header__title::before {
   content: '';
   position: absolute;
   left: 0;
@@ -2069,16 +2069,16 @@ body.home-page-body .reg-cards-row-wrap .reg-mini-card__price-play {
 /* Home Delta Registrations desktop/tablet: show FEE above the grey price box.
    Mobile keeps the existing compact in-box label from the max-width rules. */
 @media (min-width: 768px) {
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__footer {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__footer {
     padding-top: 1.72rem;
   }
 
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-box {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-box {
     position: relative;
     overflow: visible;
   }
 
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-box::before {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-box::before {
     content: 'FEE';
     position: absolute;
     left: 0.15rem;
@@ -2090,11 +2090,11 @@ body.home-page-body .reg-cards-row-wrap .reg-mini-card__price-play {
     line-height: 1;
   }
 
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-label {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-label {
     display: none;
   }
 
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-copy {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__price-copy {
     gap: 0;
   }
 }
@@ -2111,7 +2111,7 @@ body.home-page-body .reg-cards-row-wrap .reg-mini-card__price-play {
  * CSS makes that node the scrollport. Icon stays outside; share stays absolute.
  */
 @media (min-width: 768px) {
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge {
     display: inline-flex !important;
     align-items: center;
     align-self: flex-start;
@@ -2126,12 +2126,12 @@ body.home-page-body .reg-cards-row-wrap .reg-mini-card__price-play {
     box-sizing: border-box;
   }
 
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge svg {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge svg {
     flex: 0 0 auto !important;
   }
 
   /* Actual horizontal scroll container (max-width set in px by JS on desktop). */
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text {
     display: block !important;
     flex: 0 1 auto !important;
     min-width: 0 !important;
@@ -2146,17 +2146,17 @@ body.home-page-body .reg-cards-row-wrap .reg-mini-card__price-play {
     touch-action: pan-x;
   }
 
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text::-webkit-scrollbar {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text::-webkit-scrollbar {
     display: none !important;
     width: 0 !important;
     height: 0 !important;
   }
 
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text--overflow {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text--overflow {
     cursor: grab;
   }
 
-  body.home-page-body .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text-inner {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .reg-cards-row-wrap .reg-mini-card__badge-text-inner {
     display: inline-block;
     white-space: nowrap;
     max-width: none;
@@ -2164,7 +2164,7 @@ body.home-page-body .reg-cards-row-wrap .reg-mini-card__price-play {
 }
 
 @media (max-width: 767px) {
-  body.home-page-body .home-registrations-section {
+  :is(body.home-page-body, body.catalog-home-cards) .home-registrations-section {
     padding-top: 0.85rem !important;
   }
 
@@ -2238,7 +2238,7 @@ body.home-page-body .reg-cards-row-wrap .reg-mini-card__price-play {
 
 /* Delta Registrations: match the DeltaOs (Operating System) header View All
    - plain orange text + arrow, no pill button. */
-body.home-page-body .home-registrations-section .home-section-header__view-all {
+:is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .home-section-header__view-all {
   display: inline-flex !important;
   align-items: center !important;
   gap: 0.3rem !important;
@@ -2258,8 +2258,8 @@ body.home-page-body .home-registrations-section .home-section-header__view-all {
   transform: none !important;
 }
 
-body.home-page-body .home-registrations-section .home-section-header__view-all:hover,
-body.home-page-body .home-registrations-section .home-section-header__view-all:focus-visible {
+:is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .home-section-header__view-all:hover,
+:is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .home-section-header__view-all:focus-visible {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -2269,7 +2269,7 @@ body.home-page-body .home-registrations-section .home-section-header__view-all:f
   outline: none;
 }
 
-body.home-page-body .home-registrations-section .home-section-header__view-all .home-section-header__view-all-icon {
+:is(body.home-page-body, body.catalog-home-cards) .home-registrations-section .home-section-header__view-all .home-section-header__view-all-icon {
   width: 0.875rem !important;
   height: 0.875rem !important;
   transform: none !important;

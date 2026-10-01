@@ -2374,10 +2374,10 @@ body.app-layout-body .venture-listing-grid--page .venture-listing-card--coventur
 
 /* Homepage Ventures + DeltaOp: force blue pill border at rest.
    Exclude homepage-content Venture cards (Registrations-style grey panel). */
-body.home-page-body .home-ventures-section .venture-listing-card:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box,
-body.home-page-body .home-ventures-section .venture-listing-card:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box--venture,
-body.home-page-body .home-ventures-section .venture-listing-card--venture:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box,
-body.home-page-body .home-ventures-section .venture-listing-card--venture:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box--venture,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box--venture,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--venture:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--venture:not(.venture-listing-card--homepage-content) .domain-listing-card__price-box--venture,
 body.home-page-body .home-preview-card-border--assistance .va-listing-card__compensation,
 body.home-page-body .home-preview-card-border--assistance .domain-listing-card__price-box.va-listing-card__compensation,
 body.home-page-body .home-preview-card-border--assistance .virtual-assistant-listing-card .va-listing-card__compensation {
@@ -2394,12 +2394,12 @@ body.home-page-body .home-preview-card-border--assistance .virtual-assistant-lis
   Homepage Venture cards ONLY — rest state must match hover (Delta Registrations panel).
   Lives at end of this file because component CSS can load after home-saffron / price-section-icon.
 */
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box--venture,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box:hover,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content:hover .domain-listing-card__price-box,
-body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .domain-listing-card__price-box,
-body.home-page-body .home-ventures-section .home-preview-card-border--venture:focus-within .venture-listing-card--homepage-content .domain-listing-card__price-box {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box--venture,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box:hover,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content:hover .domain-listing-card__price-box,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .domain-listing-card__price-box,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .home-preview-card-border--venture:focus-within .venture-listing-card--homepage-content .domain-listing-card__price-box {
   position: relative !important;
   display: flex !important;
   align-items: center !important;
@@ -2422,7 +2422,7 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture:fo
   overflow: hidden !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text {
   display: flex !important;
   flex: 1 1 auto !important;
   min-width: 0 !important;
@@ -2432,8 +2432,8 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   gap: 0.16rem !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label--offer {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-text .venture-listing-card__price-label--offer {
   display: block !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -2445,21 +2445,21 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   text-transform: uppercase !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-value,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-value--compact {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-value,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-value--compact {
   color: #111827 !important;
   font-size: 1.2rem !important;
   font-weight: 600 !important;
   line-height: 1.05 !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:active,
-body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta,
-body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .domain-listing-card__price-cta {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:active,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .domain-listing-card__price-cta {
   position: absolute !important;
   top: 50% !important;
   right: 0.5rem !important;
@@ -2486,17 +2486,17 @@ body.home-page-body .home-ventures-section .home-preview-card-border--venture:ho
   overflow: visible !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta::before,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover::before {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta::before,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover::before {
   content: none !important;
   display: none !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta .price-section-v-icon {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta .price-section-v-icon {
   display: none !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-arrow-glyph {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-arrow-glyph {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -2506,7 +2506,7 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   line-height: 0 !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-arrow-glyph svg {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__price-arrow-glyph svg {
   display: block !important;
   width: 17px !important;
   height: 17px !important;
@@ -2514,29 +2514,29 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
   color: #ffffff !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__title,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__title--compact,
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__homepage-title-text {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__title,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__title--compact,
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__homepage-title-text {
   color: #071324 !important;
   font-weight: 700 !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__homepage-title-suffix {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__homepage-title-suffix {
   color: #0b86c6 !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__body-watermark {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .venture-listing-card__body-watermark {
   display: none !important;
 }
 
-body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer) > p {
+:is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__body > div.flex.flex-col:not(.venture-listing-card__footer) > p {
   font-size: 0.875rem !important;
 }
 
 /* Homepage mobile Ventures: nudge arrow further right inside the offer pill. */
 @media (max-width: 767px) {
-  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box,
-  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box--venture {
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box,
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-box--venture {
     padding: 0.55rem 2.35rem 0.55rem 0.85rem !important;
     min-height: 2.85rem !important;
     height: auto !important;
@@ -2544,13 +2544,13 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
     border-radius: 9999px !important;
   }
 
-  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta,
-  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
-  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover,
-  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
-  body.home-page-body .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:active,
-  body.home-page-body .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta,
-  body.home-page-body .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .domain-listing-card__price-cta {
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta.venture-listing-card__homepage-offer-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:hover,
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:focus-visible,
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .venture-listing-card--homepage-content .domain-listing-card__price-cta:active,
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .home-preview-card-border--venture .venture-listing-card--homepage-content .domain-listing-card__price-cta,
+  :is(body.home-page-body, body.catalog-home-cards) .home-ventures-section .home-preview-card-border--venture:hover .venture-listing-card--homepage-content .domain-listing-card__price-cta {
     position: absolute !important;
     top: 50% !important;
     right: 0.16rem !important;
@@ -2572,6 +2572,26 @@ body.home-page-body .home-ventures-section .venture-listing-card--homepage-conte
 body.home-page-body .home-domains-section .domain-search-card--listing .domain-listing-card-tld,
 body.home-page-body .home-domains-section .domain-search-card--listing .domain-search-card__name .text-sky-700 {
   color: #075985 !important;
+}
+
+/* Domains page only: the owner pencil is an inline-flex control, and the
+   homepage card rules stretch every inline-flex in the card footer. Keep
+   that pencil square. Homepage cards do not use .domains-page-wrap. */
+@media (min-width: 768px) {
+  body.catalog-home-cards .domains-page-wrap .home-marketplace-domains-section .domain-search-card--listing > .pt-3 button.w-10,
+  body.catalog-home-cards .domains-page-wrap .home-marketplace-domains-section .domain-search-card--listing > .mt-auto button.w-10,
+  body.catalog-home-cards .domains-page-wrap .home-domains-section .domain-search-card--listing > .pt-3 button.w-10,
+  body.catalog-home-cards .domains-page-wrap .home-domains-section .domain-search-card--listing > .mt-auto button.w-10 {
+    width: 2.5rem !important;
+    min-width: 2.5rem !important;
+    max-width: 2.5rem !important;
+    height: 2.5rem !important;
+    min-height: 2.5rem !important;
+    max-height: 2.5rem !important;
+    flex: 0 0 2.5rem !important;
+    padding: 0 !important;
+    aspect-ratio: 1 !important;
+  }
 }
 
 
